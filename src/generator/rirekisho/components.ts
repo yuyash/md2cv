@@ -441,6 +441,57 @@ export interface LeftPageProps {
   readonly today: TodayDate;
 }
 
+/**
+ * Check if "職歴" label is at the last row of left page
+ * If so, we need to move it to the right page
+ */
+function shouldMoveShokurekiToRightPage(
+  history: readonly HistoryRow[],
+  leftHistoryRows: number,
+): boolean {
+  // Get the data that would be on the left page
+  const leftPageData = history.slice(0, leftHistoryRows);
+  if (leftPageData.length === 0) return false;
+
+  // Check if the last row is "職歴"
+  const lastRow = leftPageData[leftPageData.length - 1];
+  return lastRow?.[2] === '職歴';
+}
+
+/**
+ * Get adjusted history data for left and right pages
+ * If "職歴" is at the last row of left page, leave an empty row instead
+ */
+export function getAdjustedHistoryData(
+  history: readonly HistoryRow[],
+  leftHistoryRows: number,
+): {
+  leftData: readonly HistoryRow[];
+  rightData: readonly HistoryRow[];
+  shokurekiMovedToRight: boolean;
+} {
+  const shouldMove = shouldMoveShokurekiToRightPage(history, leftHistoryRows);
+
+  if (shouldMove) {
+    // Find the index of "職歴" in the history
+    const shokurekiIndex = history.findIndex((row) => row[2] === '職歴');
+    if (shokurekiIndex >= 0 && shokurekiIndex < leftHistoryRows) {
+      // Left page: everything before "職歴" (leave empty row at the end)
+      const leftData = history.slice(0, shokurekiIndex);
+      // Right page: "職歴" and everything after
+      const rightData = history.slice(shokurekiIndex);
+      return { leftData, rightData, shokurekiMovedToRight: true };
+    }
+  }
+
+  // Normal case: split at leftHistoryRows
+  return {
+    leftData: history.slice(0, leftHistoryRows),
+    rightData: history.slice(leftHistoryRows),
+    shokurekiMovedToRight: false,
+  };
+}
+
 export function buildLeftPage({
   layout,
   info,
@@ -448,6 +499,9 @@ export function buildLeftPage({
   today,
 }: LeftPageProps): string {
   const { leftHistoryRows, tableMargin } = layout;
+
+  // Get adjusted data (may have "職歴" moved to right page)
+  const { leftData } = getAdjustedHistoryData(history, leftHistoryRows);
 
   return `
     <div class="page page--left">
@@ -464,7 +518,7 @@ export function buildLeftPage({
       <div class="history-container" style="margin-top: ${mm(tableMargin)}">
         ${buildHistoryTable({
           layout,
-          data: history.slice(0, leftHistoryRows),
+          data: leftData,
           rowCount: leftHistoryRows,
           title: '学 歴 ・ 職 歴',
         })}
@@ -498,14 +552,20 @@ export function buildRightPage({
     tableMargin,
   } = layout;
 
+  // Get adjusted data (may have "職歴" moved to right page)
+  const { rightData, shokurekiMovedToRight } = getAdjustedHistoryData(
+    history,
+    leftHistoryRows,
+  );
+
   // Build history continuation section (only if there are rows to show)
   const historySection =
-    rightHistoryRows > 0
+    rightHistoryRows > 0 || shokurekiMovedToRight
       ? `<div style="margin-bottom: ${mm(tableMargin)}">
           ${buildHistoryTable({
             layout,
-            data: history.slice(leftHistoryRows),
-            rowCount: rightHistoryRows,
+            data: rightData,
+            rowCount: Math.max(rightHistoryRows, rightData.length),
             title: '学歴・職歴',
             height: rightHistoryTableHeight,
           })}
@@ -527,7 +587,7 @@ export function buildRightPage({
     `;
 
   // License table margin: use margin-top only when history section doesn't exist
-  const licenseMarginTop = rightHistoryRows > 0 ? 0 : tableMargin;
+  const licenseMarginTop = rightHistoryRows > 0 || shokurekiMovedToRight ? 0 : tableMargin;
 
   return `
     <div class="page page--right">

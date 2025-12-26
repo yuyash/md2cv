@@ -700,4 +700,38 @@ describe('CLI E2E Tests', () => {
       expect(result.stderr).toContain('学歴・職歴または免許・資格の数を減らしてください');
     });
   });
+
+  describe('Rirekisho Shokureki Label Adjustment', () => {
+    beforeAll(() => cleanOutput());
+
+    it('should move 職歴 label to right page when it falls on last row of left page', () => {
+      const output = path.join(OUTPUT_DIR, 'rirekisho-shokureki-adjust');
+      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-shokureki-adjust-ja.md');
+      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p a4`);
+
+      expect(result.exitCode).toBe(0);
+      expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
+
+      const html = fs.readFileSync(`${output}_rirekisho.html`, 'utf-8');
+
+      // Split HTML into left and right pages
+      const leftPageMatch = html.match(/class="page page--left"[\s\S]*?(?=class="page page--right")/);
+      const rightPageMatch = html.match(/class="page page--right"[\s\S]*/);
+
+      expect(leftPageMatch).not.toBeNull();
+      expect(rightPageMatch).not.toBeNull();
+
+      const leftPage = leftPageMatch![0];
+      const rightPage = rightPageMatch![0];
+
+      // 職歴 label should NOT be on the left page (except in the header "学 歴 ・ 職 歴")
+      // Count occurrences of 職歴 in left page - should only be in header
+      const leftPageShokurekiCount = (leftPage.match(/職歴/g) || []).length;
+      // The header contains "学 歴 ・ 職 歴" which has 職歴
+      expect(leftPageShokurekiCount).toBeLessThanOrEqual(1);
+
+      // 職歴 label should be on the right page (in the continuation table)
+      expect(rightPage).toContain('>職歴<');
+    });
+  });
 });
