@@ -1,5 +1,7 @@
 # md2cv
 
+[English](README.md) | [日本語](README.ja.md)
+
 md2cv is a command-line tool that transforms Markdown documents into formatted PDF and HTML resumes. Simply write your CV in Markdown, and let md2cv handle the formatting and layout. The tool supports both western-style CVs and Japanese-style documents including rirekisho (履歴書) and shokumu-keirekisho (職務経歴書), making it ideal for international job seekers.
 
 ## Key Features
@@ -44,24 +46,43 @@ md2cv -i examples/example-cv-ja.md -f rirekisho -p a3
 
 # Generate both CV and rirekisho formats
 md2cv -i examples/example-cv-ja.md -f both -p a3
+
+# Generate rirekisho with photo
+md2cv -i examples/example-cv-ja.md -f rirekisho --photo photo.png
+
+# Generate rirekisho without motivation section
+md2cv -i examples/example-cv-ja.md -f rirekisho --hide-motivation
+
+# Generate CV with specific section order
+md2cv -i examples/example-cv-en.md --section-order "summary,experience,skills,education"
+
+# Generate CV with oldest experience first
+md2cv -i examples/example-cv-en.md --order asc
+
+# Enable verbose logging
+md2cv -i examples/example-cv-en.md --verbose
 ```
 
 ## CLI Options
 
 The following options are available to customize the output:
 
-| Option                     | Description                                  | Default         |
-| -------------------------- | -------------------------------------------- | --------------- |
-| `-i, --input <file>`       | Input markdown file (required)               | -               |
-| `-o, --output <path>`      | Output file path (without extension)         | Input directory |
-| `-f, --format <format>`    | Output format: `cv`, `rirekisho`, `both`     | `cv`            |
-| `-t, --output-type <type>` | Output type: `pdf`, `html`, `both`           | `pdf`           |
-| `-p, --paper-size <size>`  | Paper size: `a3`, `a4`, `b4`, `b5`, `letter` | `a4`            |
-| `-c, --config <file>`      | Configuration file (JSON or YAML)            | -               |
-| `--log-format <format>`    | Log format: `json`, `text`                   | `text`          |
-| `--debug`                  | Enable debug logging                         | `false`         |
-| `--version`                | Show version                                 | -               |
-| `--help`                   | Show help                                    | -               |
+| Option                     | Description                                                                                                      | Default         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------- |
+| `-i, --input <file>`       | Input markdown file (required)                                                                                   | -               |
+| `-o, --output <path>`      | Output file path (without extension)                                                                             | Input directory |
+| `-f, --format <format>`    | Output format: `cv`, `rirekisho`, `both`                                                                         | `cv`            |
+| `-t, --output-type <type>` | Output type: `pdf`, `html`, `both`                                                                               | `pdf`           |
+| `-p, --paper-size <size>`  | Paper size: `a3`, `a4`, `b4`, `b5`, `letter`                                                                     | `a4`            |
+| `-c, --config <file>`      | Configuration file (JSON or YAML)                                                                                | -               |
+| `--order <order>`          | Chronological order for CV format: `asc` (oldest first), `desc` (newest first). Rirekisho always uses asc.       | `desc`          |
+| `--hide-motivation`        | Hide motivation section in rirekisho format (increases history/license rows)                                     | `false`         |
+| `--photo <filepath>`       | Photo image file for rirekisho format (png, jpg, tiff)                                                           | -               |
+| `--section-order <list>`   | Comma-separated list of section IDs to include in CV output (e.g., `summary,experience,education,skills`)        | All sections    |
+| `--log-format <format>`    | Log format: `json`, `text`                                                                                       | `text`          |
+| `--verbose`                | Enable verbose logging                                                                                           | `false`         |
+| `--version`                | Show version                                                                                                     | -               |
+| `--help`                   | Show help                                                                                                        | -               |
 
 ## Markdown Format
 
@@ -95,6 +116,7 @@ Frontmatter fields can also be set via environment variables. This is useful for
 | `home_address2_furigana` | `HOME_ADDRESS2_FURIGANA`, `HOME_ADDRESS2_HURIGANA` | No       |
 | `gender`                 | `GENDER`                                           | No       |
 | `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | No       |
+| `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | No       |
 
 Priority: Frontmatter values override environment variables.
 
@@ -109,70 +131,151 @@ md2cv -i cv.md
 
 ### Sections
 
-Use standard markdown headings for sections:
+Use structured code blocks to define your CV content:
 
-```markdown
+````markdown
 # Summary
 
-Experienced software engineer with 10+ years...
+Experienced software engineer with 10+ years of expertise in building scalable web applications.
+Passionate about clean code and mentoring junior developers.
 
 # Experience
 
-## Senior Software Engineer | TechCorp
-
-**2020 - Present** | San Francisco, CA
-
-- Led development of microservices architecture
-- Mentored junior developers
-
-# Education
-
-## Bachelor of Science in Computer Science
-
-**University of California** | 2010 - 2014
-
-# Skills
-
-- Programming: TypeScript, Python, Go
-- Frameworks: React, Node.js, Django
-```
-
-### Structured Blocks
-
-For more control, use structured code blocks:
-
-````markdown
 ```resume:experience
 - company: TechCorp
+  location: San Francisco, CA
   roles:
     - title: Senior Software Engineer
+      team: Platform Team
       start: 2020-01
       end: present
+      summary:
+        - Leading backend development for core platform services
       highlights:
         - Led development of microservices architecture
         - Mentored junior developers
+        - Reduced API latency by 40%
+      projects:
+        - name: API Gateway
+          start: 2021-06
+          end: 2022-03
+          bullets:
+            - Designed and implemented rate limiting
+            - Integrated OAuth 2.0 authentication
+- company: StartupXYZ
+  location: New York, NY
+  roles:
+    - title: Software Engineer
+      start: 2017-03
+      end: 2019-12
+      highlights:
+        - Built real-time notification system
+        - Implemented CI/CD pipeline
 ```
+
+# Education
 
 ```resume:education
 - school: University of California
   degree: Bachelor of Science in Computer Science
+  location: Berkeley, CA
   start: 2010-09
   end: 2014-06
+  details:
+    - GPA: 3.8/4.0
+    - Dean's List 2012-2014
+- school: Stanford University
+  degree: Master of Science in Computer Science
+  start: 2014-09
+  end: 2016-06
 ```
+
+# Skills
+
+Categorized format:
 
 ```resume:skills
-- category: Programming
-  items: [TypeScript, Python, Go]
-- category: Frameworks
-  items: [React, Node.js, Django]
+categories:
+  - category: Programming Languages
+    items: [TypeScript, Python, Go, Rust]
+  - category: Frameworks
+    items: [React, Node.js, Django, FastAPI]
+  - category: Cloud & DevOps
+    items: [AWS, Docker, Kubernetes, Terraform]
 ```
 
+Grid format:
+
+```resume:skills
+columns: 4
+items:
+  - TypeScript
+  - Python
+  - Go
+  - Rust
+  - React
+  - Node.js
+  - Django
+  - FastAPI
+```
+
+# Certifications
+
 ```resume:certifications
-- name: AWS Solutions Architect
+- name: AWS Solutions Architect Professional
   issuer: Amazon Web Services
   date: 2023-01
+  url: https://aws.amazon.com/certification/
+- name: Certified Kubernetes Administrator
+  issuer: CNCF
+  date: 2022-06
 ```
+
+# Languages
+
+```resume:languages
+- language: English
+  level: Native
+- language: Japanese
+  level: Business (JLPT N1)
+- language: Spanish
+  level: Conversational
+```
+
+# Core Competencies
+
+```resume:competencies
+- header: Technical Leadership
+  description: Led cross-functional teams of 10+ engineers across multiple time zones
+- header: System Design
+  description: Designed scalable distributed systems handling 1M+ requests per second
+- header: Mentorship
+  description: Established engineering mentorship program with 20+ participants
+```
+
+# Motivation (rirekisho only)
+
+I am excited to apply for this position because of my passion for building
+innovative products that make a difference in people's lives.
+
+# Notes (rirekisho only)
+
+Available to start immediately. Open to relocation.
 ````
+
+#### Section Reference
+
+| Section ID     | Supported Tags                                                                    | Format    |
+| -------------- | --------------------------------------------------------------------------------- | --------- |
+| `summary`      | 概要, 職務要約, Summary, Professional Summary, Profile, Executive Summary         | CV        |
+| `experience`   | 職歴, 職務経歴, Experience, Work Experience, Professional Experience              | Both      |
+| `education`    | 学歴, Education                                                                   | Both      |
+| `skills`       | スキル, Skills, Technical Skills                                                  | Both      |
+| `certifications` | 免許・資格, 資格, 免許, Certifications                                          | Both      |
+| `languages`    | 語学, Languages, Language Skills                                                  | CV        |
+| `competencies` | 自己PR, Core Competencies, Key Competencies, Superpowers                          | Both      |
+| `motivation`   | 志望動機, 志望の動機, Motivation                                                  | Rirekisho |
+| `notes`        | 本人希望記入欄, Notes                                                             | Rirekisho |
 
 ## Configuration File
 
@@ -185,7 +288,11 @@ Create a `config.json` or `config.yaml`:
   "format": "both",
   "outputType": "pdf",
   "paperSize": "a4",
-  "logFormat": "text"
+  "logFormat": "text",
+  "chronologicalOrder": "desc",
+  "hideMotivation": false,
+  "photo": "photo.png",
+  "sectionOrder": ["summary", "experience", "education", "skills"]
 }
 ```
 
@@ -194,6 +301,14 @@ format: both
 outputType: pdf
 paperSize: a4
 logFormat: text
+chronologicalOrder: desc
+hideMotivation: false
+photo: photo.png
+sectionOrder:
+  - summary
+  - experience
+  - education
+  - skills
 ```
 
 ## Programmatic Usage
