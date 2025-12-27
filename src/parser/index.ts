@@ -23,7 +23,6 @@ import {
   loadFromEnv,
   loadFromFrontmatter,
   type CVMetadata,
-  type Gender,
 } from '../types/metadata.js';
 import {
   findSectionByTag,
@@ -143,7 +142,7 @@ function extractMetadata(tree: Root, errors: ParseError[]): CVMetadata | null {
   }
 
   // Build metadata: env vars first, then frontmatter overrides
-  const metadata: Record<string, string | Date | Gender | undefined> = {};
+  const metadata: Record<string, string | Date | undefined> = {};
 
   for (const fieldName of Object.keys(METADATA_FIELDS)) {
     // Load from env first
@@ -232,19 +231,19 @@ function parseDateOfBirth(str: string | undefined): Date | undefined {
   // YYYY-MM-DD or YYYY/MM/DD
   let m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
   if (m) {
-    return new Date(parseInt(m[1]!, 10), parseInt(m[2]!, 10) - 1, parseInt(m[3]!, 10));
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
   }
 
   // YYYY年MM月DD日
   m = s.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
   if (m) {
-    return new Date(parseInt(m[1]!, 10), parseInt(m[2]!, 10) - 1, parseInt(m[3]!, 10));
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
   }
 
   // MM/DD/YYYY or MM-DD-YYYY
   m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (m) {
-    return new Date(parseInt(m[3]!, 10), parseInt(m[1]!, 10) - 1, parseInt(m[2]!, 10));
+    return new Date(parseInt(m[3], 10), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
   }
 
   return undefined;
@@ -261,19 +260,19 @@ function parseYearMonth(str: string | undefined): Date | undefined {
   // YYYY-MM or YYYY/MM
   let m = s.match(/^(\d{4})[-/](\d{1,2})$/);
   if (m) {
-    return new Date(parseInt(m[1]!, 10), parseInt(m[2]!, 10) - 1, 1);
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, 1);
   }
 
   // YYYY年MM月
   m = s.match(/^(\d{4})年(\d{1,2})月/);
   if (m) {
-    return new Date(parseInt(m[1]!, 10), parseInt(m[2]!, 10) - 1, 1);
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, 1);
   }
 
   // YYYY only
   m = s.match(/^(\d{4})$/);
   if (m) {
-    return new Date(parseInt(m[1]!, 10), 0, 1);
+    return new Date(parseInt(m[1], 10), 0, 1);
   }
 
   return undefined;
@@ -301,7 +300,7 @@ function parseEndDate(str: string | undefined): Date | 'present' | undefined {
  * Parse gender string to Gender type
  * Supports: male/m/男, female/f/女, other
  */
-function parseGender(str: string | undefined): Gender {
+function parseGender(str: string | undefined): 'male' | 'female' | 'other' | undefined {
   if (!str) return undefined;
   const s = str.trim().toLowerCase();
   if (s === 'male' || s === 'm' || s === '男') return 'male';
