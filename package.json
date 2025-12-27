@@ -1,17 +1,20 @@
 {
   "name": "md2cv",
   "version": "1.0.0",
-  "description": "CV/Resume Generator - transforms Markdown CVs into PDF and HTML",
+  "description": "Transform Markdown into professional CVs and Japanese rirekisho (履歴書) - supports PDF/HTML output with multiple paper sizes",
   "type": "module",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "md2cv": "./dist/src/bin.js"
+    "md2cv": "./dist/bin.js"
   },
   "files": [
-    "dist/src",
+    "dist",
+    "examples/*.md",
+    "examples/*.png",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -41,15 +44,15 @@
     "generator",
     "japanese"
   ],
-  "author": "",
+  "author": "Yuya Shinde",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/yuyash/md2resume.git"
   },
-  "homepage": "",
+  "homepage": "https://github.com/yuyash/md2resume#readme",
   "bugs": {
-    "url": ""
+    "url": "https://github.com/yuyash/md2resume/issues"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

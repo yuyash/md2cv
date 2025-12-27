@@ -15,6 +15,7 @@ import type {
   SkillEntry,
   SkillsOptions,
 } from '../types/sections.js';
+import { isSectionValidForFormat } from '../types/sections.js';
 
 export interface CVJaOptions {
   readonly paperSize: PaperSize;
@@ -38,11 +39,6 @@ const PAGE_SIZES: Record<PaperSize, { width: number; height: number }> = {
   b5: { width: 176, height: 250 },
   letter: { width: 215.9, height: 279.4 },
 };
-
-/**
- * Section order for Japanese CV
- */
-const SECTION_ORDER = ['summary', 'experience', 'education', 'skills', 'certifications', 'languages'];
 
 /**
  * Default number of columns for skills grid
@@ -349,12 +345,12 @@ function renderSkills(entries: readonly SkillEntry[], options: SkillsOptions): s
     entries.some(e => e.category && (e.description || e.items.length > 0));
 
   if (isCategorized && entries.some(e => e.category)) {
-    // Categorized format: <category>: <description or items>
+    // Categorized format: • <category>: <description or items>
     return entries
       .filter(e => e.category)
       .map((entry) => {
         const content = entry.description || entry.items.join('、');
-        return `<div class="skill-category"><span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
+        return `<div class="skill-category">• <span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
       })
       .join('\n');
   }
@@ -449,30 +445,11 @@ function renderSectionContent(content: SectionContent, sectionId: string): strin
 }
 
 /**
- * Sort sections according to SECTION_ORDER
+ * Filter sections by format validity, preserving input order
+ * Note: Section ordering is now handled by filterAndOrderSections in generator/index.ts
  */
-function sortSections(sections: readonly ParsedSection[]): ParsedSection[] {
-  const sectionMap = new Map<string, ParsedSection>();
-  const otherSections: ParsedSection[] = [];
-
-  for (const section of sections) {
-    if (SECTION_ORDER.includes(section.id)) {
-      sectionMap.set(section.id, section);
-    } else {
-      otherSections.push(section);
-    }
-  }
-
-  const sorted: ParsedSection[] = [];
-  for (const id of SECTION_ORDER) {
-    const section = sectionMap.get(id);
-    if (section) {
-      sorted.push(section);
-    }
-  }
-
-  // Append any sections not in the predefined order
-  return [...sorted, ...otherSections];
+function filterSections(sections: readonly ParsedSection[]): ParsedSection[] {
+  return sections.filter(section => isSectionValidForFormat(section.id, 'cv'));
 }
 
 /**
@@ -483,10 +460,10 @@ export function generateCVJaHTML(cv: CVInput, options: CVJaOptions): string {
   const name = cv.metadata.name_ja ?? cv.metadata.name;
   const currentDate = getCurrentDateJa();
 
-  // Sort sections according to predefined order
-  const sortedSections = sortSections(cv.sections);
+  // Filter sections (order is preserved from input)
+  const filteredSections = filterSections(cv.sections);
 
-  const sectionsHtml = sortedSections
+  const sectionsHtml = filteredSections
     .map((section) => {
       return `
 <section>

@@ -154,5 +154,6 @@ coverage/
 # E2E test output
 tests/e2e/output/
 
-# Example outputs
-/examples/*
+# Example outputs (generated files only)
+examples/*.html
+examples/*.pdf

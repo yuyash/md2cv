@@ -579,6 +579,7 @@ describe('rirekisho/components', () => {
         history,
         license,
         motivation: 'テスト志望動機',
+        competencies: [],
         notes: 'テスト備考',
       });
 
@@ -597,6 +598,7 @@ describe('rirekisho/components', () => {
         history: [],
         license: [],
         motivation: '',
+        competencies: [],
         notes: '',
       });
 
@@ -615,6 +617,7 @@ describe('rirekisho/components', () => {
         history: [],
         license: [],
         motivation: 'テスト志望動機',
+        competencies: [],
         notes: 'テスト備考',
       });
 
@@ -622,6 +625,23 @@ describe('rirekisho/components', () => {
       expect(html).not.toContain('志望の動機');
       // Should still contain notes
       expect(html).toContain('本人希望記入欄');
+    });
+
+    it('should render competencies as bullet list', () => {
+      const layout = createTestLayout();
+      const html = buildRightPage({
+        layout,
+        history: [],
+        license: [],
+        motivation: 'テスト志望動機',
+        competencies: ['スキル1', 'スキル2', 'スキル3'],
+        notes: '',
+      });
+
+      expect(html).toContain('<ul');
+      expect(html).toContain('<li>スキル1</li>');
+      expect(html).toContain('<li>スキル2</li>');
+      expect(html).toContain('<li>スキル3</li>');
     });
   });
 });

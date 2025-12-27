@@ -17,6 +17,7 @@ import type {
 } from '../types/config.js';
 import type { CVMetadata } from '../types/metadata.js';
 import type { ParsedSection } from '../types/sections.js';
+import { findSectionByTag, isSectionValidForFormat } from '../types/sections.js';
 import { generateCVEnHTML } from './resume_en.js';
 import { generateCVJaHTML } from './resume_ja.js';
 import { generateRirekishoHTML } from './rirekisho/index.js';
@@ -102,20 +103,149 @@ function detectLanguage(cv: CVInput): 'en' | 'ja' {
 }
 
 /**
+ * Default section order for CV format
+ */
+const DEFAULT_CV_SECTION_ORDER = ['summary', 'experience', 'education', 'skills', 'certifications', 'languages', 'competencies', 'motivation'];
+
+/**
+ * Resolve section ID from tag or ID
+ * Returns the section ID if input matches a tag or is already an ID
+ */
+function resolveSectionId(input: string, sections: readonly ParsedSection[]): string | undefined {
+  // First check if it's a direct section ID match
+  const directMatch = sections.find(s => s.id === input);
+  if (directMatch) {
+    return directMatch.id;
+  }
+  
+  // Then check if it matches a section title (case-insensitive)
+  const titleMatch = sections.find(s => s.title.toLowerCase() === input.toLowerCase());
+  if (titleMatch) {
+    return titleMatch.id;
+  }
+  
+  // Finally, check SECTION_DEFINITIONS tags
+  const def = findSectionByTag(input);
+  if (def) {
+    // Check if this section exists in the input
+    const sectionExists = sections.find(s => s.id === def.id);
+    if (sectionExists) {
+      return def.id;
+    }
+  }
+  
+  return undefined;
+}
+
+/**
+ * Filter and order sections based on sectionOrder config
+ * If sectionOrder is provided, only include sections in that order
+ * If not provided, use default order for CV or include all sections for rirekisho
+ */
+function filterAndOrderSections(
+  sections: readonly ParsedSection[],
+  format: 'cv' | 'rirekisho',
+  sectionOrder: string[] | undefined,
+  logger: Logger,
+): ParsedSection[] {
+  // Get all section IDs from input
+  const allSectionIds = sections.map(s => s.id);
+  
+  // Determine which sections are valid for this format
+  const validSectionIds = allSectionIds.filter(id => isSectionValidForFormat(id, format));
+  const invalidSectionIds = allSectionIds.filter(id => !isSectionValidForFormat(id, format));
+  
+  let includedSectionIds: string[];
+  let skippedSectionIds: string[];
+  
+  if (format === 'cv') {
+    if (sectionOrder && sectionOrder.length > 0) {
+      // Resolve section order (tags/titles to IDs)
+      const resolvedOrder: string[] = [];
+      for (const input of sectionOrder) {
+        const resolvedId = resolveSectionId(input, sections);
+        if (resolvedId && validSectionIds.includes(resolvedId) && !resolvedOrder.includes(resolvedId)) {
+          resolvedOrder.push(resolvedId);
+        }
+      }
+      
+      // Use custom order - only include sections that are in sectionOrder AND valid for format
+      includedSectionIds = resolvedOrder;
+      skippedSectionIds = validSectionIds.filter(id => !resolvedOrder.includes(id));
+    } else {
+      // Use default order for CV
+      const orderedIds: string[] = [];
+      const remainingIds = new Set(validSectionIds);
+      
+      // Add sections in default order
+      for (const id of DEFAULT_CV_SECTION_ORDER) {
+        if (remainingIds.has(id)) {
+          orderedIds.push(id);
+          remainingIds.delete(id);
+        }
+      }
+      // Add any remaining sections not in default order
+      for (const id of remainingIds) {
+        orderedIds.push(id);
+      }
+      
+      includedSectionIds = orderedIds;
+      skippedSectionIds = [];
+    }
+  } else {
+    // Rirekisho: use all valid sections in original order
+    includedSectionIds = validSectionIds;
+    skippedSectionIds = [];
+  }
+  
+  // Log section information
+  logger.info({ sections: includedSectionIds }, 'Sections included');
+  if (skippedSectionIds.length > 0) {
+    logger.info({ sections: skippedSectionIds }, 'Sections skipped (not in section-order)');
+  }
+  if (invalidSectionIds.length > 0) {
+    logger.info({ sections: invalidSectionIds }, `Sections skipped (not valid for ${format} format)`);
+  }
+  
+  // Build ordered section list
+  const sectionMap = new Map(sections.map(s => [s.id, s]));
+  const orderedSections: ParsedSection[] = [];
+  
+  for (const id of includedSectionIds) {
+    const section = sectionMap.get(id);
+    if (section) {
+      orderedSections.push(section);
+    }
+  }
+  
+  return orderedSections;
+}
+
+/**
  * Generate HTML for CV format
  */
 function generateCVHTML(
   cv: CVInput,
   paperSize: PaperSize,
   _chronologicalOrder?: ChronologicalOrder,
+  sectionOrder?: string[],
+  logger?: Logger,
 ): string {
   const language = detectLanguage(cv);
   // TODO: Add chronological order support for CV format
 
-  if (language === 'ja') {
-    return generateCVJaHTML(cv, { paperSize });
+  // Filter and order sections if logger is provided
+  let sections = cv.sections;
+  if (logger) {
+    sections = filterAndOrderSections(cv.sections, 'cv', sectionOrder, logger);
   }
-  return generateCVEnHTML(cv, { paperSize });
+
+  const filteredCv = { ...cv, sections };
+
+  if (language === 'ja') {
+    return generateCVJaHTML(filteredCv, { paperSize });
+  }
+  return generateCVEnHTML(filteredCv, { paperSize });
 }
 
 /**
@@ -212,6 +342,10 @@ export async function generateOutput(
     // Generate HTML
     let html: string;
     if (format === 'rirekisho') {
+      // Log sections for rirekisho
+      const sections = filterAndOrderSections(cv.sections, 'rirekisho', undefined, logger);
+      const filteredCv = { ...cv, sections };
+
       // Read photo file if provided (only for rirekisho)
       let photoDataUri: string | undefined;
       if (config.photo) {
@@ -219,14 +353,14 @@ export async function generateOutput(
         logger.debug({ photo: config.photo }, 'Photo loaded for rirekisho');
       }
 
-      html = generateRirekishoHTML(cv, {
+      html = generateRirekishoHTML(filteredCv, {
         paperSize: config.paperSize,
         chronologicalOrder,
         hideMotivation: config.hideMotivation,
         photoDataUri,
       });
     } else {
-      html = generateCVHTML(cv, config.paperSize, chronologicalOrder);
+      html = generateCVHTML(cv, config.paperSize, chronologicalOrder, config.sectionOrder, logger);
     }
 
     const baseName = path.basename(config.output);

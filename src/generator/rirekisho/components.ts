@@ -413,6 +413,7 @@ export interface SectionBoxProps {
   readonly title: string;
   readonly subtitle?: string;
   readonly content: string;
+  readonly listItems?: readonly string[];
   readonly height?: number;
   readonly minHeight?: number;
 }
@@ -422,6 +423,7 @@ export function buildSectionBox({
   title,
   subtitle,
   content,
+  listItems,
   height,
   minHeight,
 }: SectionBoxProps): string {
@@ -437,10 +439,17 @@ export function buildSectionBox({
     containerStyle = `min-height: ${mm(minHeight)}`;
   }
 
+  // Build list HTML if listItems provided
+  let listHtml = '';
+  if (listItems && listItems.length > 0) {
+    const items = listItems.map((item) => `<li>${item}</li>`).join('');
+    listHtml = `<ul style="margin: ${mm(1 * scale)} 0 0 ${mm(8 * scale)}; padding: 0; list-style-type: disc;">${items}</ul>`;
+  }
+
   return `
     <div class="section-box" style="${containerStyle}">
       <div class="section-box__header">${title}${subtitleHtml}</div>
-      <div class="section-box__content text--small">${content}</div>
+      <div class="section-box__content text--small">${content}${listHtml}</div>
     </div>
   `;
 }
@@ -550,6 +559,7 @@ export interface RightPageProps {
   readonly history: readonly HistoryRow[];
   readonly license: readonly HistoryRow[];
   readonly motivation: string;
+  readonly competencies: readonly string[];
   readonly notes: string;
 }
 
@@ -558,6 +568,7 @@ export function buildRightPage({
   history,
   license,
   motivation,
+  competencies,
   notes,
 }: RightPageProps): string {
   const {
@@ -599,6 +610,7 @@ export function buildRightPage({
           layout,
           title: '志望の動機、特技、自己PR、アピールポイントなど',
           content: motivation,
+          listItems: competencies,
           height: motivationMinHeight,
         })}
       </div>

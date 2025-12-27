@@ -270,6 +270,7 @@ describe('rirekisho integration', () => {
         history,
         license,
         motivation: 'テスト志望動機',
+        competencies: [],
         notes: 'テスト備考',
       });
 
@@ -385,6 +386,7 @@ describe('rirekisho integration', () => {
         history: [],
         license: [],
         motivation,
+        competencies: [],
         notes,
       });
 

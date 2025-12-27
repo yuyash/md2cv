@@ -273,6 +273,29 @@ export function getSectionText(
   return '';
 }
 
+/**
+ * Get list items from a section (for competencies)
+ */
+export function getSectionList(
+  sections: readonly ParsedSection[],
+  ids: string[],
+): string[] {
+  for (const id of ids) {
+    const sec = sections.find((s) => s.id === id);
+    if (sec) {
+      if (sec.content.type === 'list') {
+        return sec.content.items.map((item) => escapeHtml(item));
+      }
+      if (sec.content.type === 'competencies') {
+        return sec.content.entries.map((entry) => 
+          escapeHtml(`${entry.header}: ${entry.description}`)
+        );
+      }
+    }
+  }
+  return [];
+}
+
 // ============================================================================
 // Data Counting
 // ============================================================================

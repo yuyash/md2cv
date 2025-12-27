@@ -32,6 +32,7 @@ export interface CLIOptions {
   readonly chronologicalOrder: ChronologicalOrder | undefined;
   readonly hideMotivation: boolean;
   readonly photo: string | undefined;
+  readonly sectionOrder: string | undefined;
 }
 
 /**
@@ -46,6 +47,7 @@ export interface ConfigFile {
   readonly chronologicalOrder?: ChronologicalOrder;
   readonly hideMotivation?: boolean;
   readonly photo?: string;
+  readonly sectionOrder?: string[];
 }
 
 /**
@@ -62,4 +64,5 @@ export interface ResolvedConfig {
   readonly chronologicalOrder: ChronologicalOrder | undefined;
   readonly hideMotivation: boolean;
   readonly photo: string | undefined;
+  readonly sectionOrder: string[] | undefined;
 }

@@ -13,6 +13,7 @@ import {
   buildLicenseData,
   countDataRows,
   extractPersonalInfo,
+  getSectionList,
   getSectionText,
   getTodayDate,
 } from './data.js';
@@ -61,6 +62,7 @@ export function generateRirekishoHTML(
   const history = buildHistoryData(input.sections, order);
   const license = buildLicenseData(input.sections, order);
   const motivation = getSectionText(input.sections, ['motivation']);
+  const competencies = getSectionList(input.sections, ['competencies']);
   const notes = getSectionText(input.sections, ['notes']);
 
   // Generate HTML with full-width footer
@@ -75,7 +77,7 @@ export function generateRirekishoHTML(
   <div class="spread">
     <main class="spread-content">
       ${buildLeftPage({ layout, info, history, today: todayDate, photoDataUri: options.photoDataUri })}
-      ${buildRightPage({ layout, history, license, motivation, notes })}
+      ${buildRightPage({ layout, history, license, motivation, competencies, notes })}
     </main>
     <footer class="spread-footer">
       ※「性別」欄：記載は任意です。未記載とすることも可能です。

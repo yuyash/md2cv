@@ -41,11 +41,6 @@ const PAGE_SIZES: Record<PaperSize, { width: number; height: number }> = {
 };
 
 /**
- * Section order for English CV
- */
-const SECTION_ORDER = ['summary', 'motivation', 'experience', 'education', 'skills'];
-
-/**
  * Escape HTML special characters
  */
 function escapeHtml(text: string): string {
@@ -417,12 +412,12 @@ function renderSkills(entries: readonly SkillEntry[], options: SkillsOptions): s
     entries.some(e => e.category && (e.description || e.items.length > 0));
 
   if (isCategorized && entries.some(e => e.category)) {
-    // Categorized format: <category>: <description or items>
+    // Categorized format: • <category>: <description or items>
     return entries
       .filter(e => e.category)
       .map((entry) => {
         const content = entry.description || entry.items.join(', ');
-        return `<div class="skill-category"><span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
+        return `<div class="skill-category">• <span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
       })
       .join('\n');
   }
@@ -555,33 +550,6 @@ function renderContactInfo(cv: CVInput): string {
 }
 
 /**
- * Sort sections according to SECTION_ORDER
- */
-function sortSections(sections: readonly ParsedSection[]): ParsedSection[] {
-  const sectionMap = new Map<string, ParsedSection>();
-  const otherSections: ParsedSection[] = [];
-
-  for (const section of sections) {
-    if (SECTION_ORDER.includes(section.id)) {
-      sectionMap.set(section.id, section);
-    } else {
-      otherSections.push(section);
-    }
-  }
-
-  const sorted: ParsedSection[] = [];
-  for (const id of SECTION_ORDER) {
-    const section = sectionMap.get(id);
-    if (section) {
-      sorted.push(section);
-    }
-  }
-
-  // Append any sections not in the predefined order
-  return [...sorted, ...otherSections];
-}
-
-/**
  * Generate English HTML CV
  */
 export function generateCVEnHTML(cv: CVInput, options: CVEnOptions): string {
@@ -589,10 +557,8 @@ export function generateCVEnHTML(cv: CVInput, options: CVEnOptions): string {
   const name = cv.metadata.name;
   const contactHtml = renderContactInfo(cv);
 
-  // Sort sections according to predefined order
-  const sortedSections = sortSections(cv.sections);
-
-  const sectionsHtml = sortedSections
+  // Use sections in the order provided (already filtered and ordered by generator/index.ts)
+  const sectionsHtml = cv.sections
     .map((section) => {
       return `
 <section>

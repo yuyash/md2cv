@@ -231,6 +231,9 @@ export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
     chronologicalOrder: cliOptions.chronologicalOrder ?? configFile.chronologicalOrder,
     hideMotivation: cliOptions.hideMotivation || configFile.hideMotivation || false,
     photo: photoPath,
+    sectionOrder: cliOptions.sectionOrder 
+      ? cliOptions.sectionOrder.split(',').map(s => s.trim())
+      : configFile.sectionOrder,
   };
 }
 
@@ -308,6 +311,10 @@ export function createCLIProgram(): Command {
       '--photo <filepath>',
       'Photo image file for rirekisho format (png, jpg, tiff). Only used with rirekisho format.',
     )
+    .option(
+      '--section-order <sections>',
+      'Comma-separated list of section IDs to include in CV output (e.g., "summary,experience,education,skills"). Sections not listed will be skipped. Only applies to CV format.',
+    )
     .option('--log-format <format>', 'Log format (json or text)', 'text')
     .option('--verbose', 'Enable verbose logging', false)
     .action(async (opts: Record<string, unknown>) => {
@@ -325,6 +332,7 @@ export function createCLIProgram(): Command {
             typeof opts.order === 'string' ? (opts.order as ChronologicalOrder) : undefined,
           hideMotivation: opts.hideMotivation === true,
           photo: typeof opts.photo === 'string' ? opts.photo : undefined,
+          sectionOrder: typeof opts.sectionOrder === 'string' ? opts.sectionOrder : undefined,
         };
 
         await runCLI(cliOptions);

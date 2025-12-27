@@ -45,7 +45,7 @@ export const SECTION_DEFINITIONS: readonly SectionDef[] = [
   },
   {
     id: 'experience',
-    tags: ['職歴', '職務経歴', 'Experience', 'Work Experience', 'Professional Experience'],
+    tags: ['職歴', '職務経歴', '職務履歴', 'Experience', 'Work Experience', 'Professional Experience'],
     usage: 'both',
     requiredFor: ['cv', 'rirekisho', 'both'],
   },
@@ -57,10 +57,17 @@ export const SECTION_DEFINITIONS: readonly SectionDef[] = [
   },
   {
     id: 'motivation',
+    tags: ['志望動機', '志望の動機', 'Motivation', 'Motivation for Applying'],
+    usage: 'rirekisho',
+    requiredFor: [],
+  },
+  {
+    id: 'competencies',
     tags: [
-      '志望動機',
       '自己PR',
-      'Motivation for Applying',
+      '自己pr',
+      '自己ＰＲ',
+      '自己ｐｒ',
       'Core Competencies',
       'Key Competencies',
       'Competencies',
