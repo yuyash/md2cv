@@ -339,7 +339,7 @@ describe('rirekisho integration', () => {
       const historyDesc = buildHistoryData(sections, 'desc');
 
       // Filter out label rows (学歴, 職歴, 現在に至る, 以上) and get years
-      const getYearsFromSection = (history: typeof historyAsc, sectionLabel: string) => {
+      const getYearsFromSection = (history: typeof historyAsc, sectionLabel: string): number[] => {
         const startIdx = history.findIndex((row) => row[2] === sectionLabel);
         if (startIdx === -1) return [];
         
