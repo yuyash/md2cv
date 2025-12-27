@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4](https://github.com/yuyash/md2cv/compare/v1.0.3...v1.0.4) (2025-12-27)
+
+
+### Bug Fixes
+
+* upgrade npm for trusted publishing support ([92dcbd9](https://github.com/yuyash/md2cv/commit/92dcbd9e87eef3b969faca24e174b93db5cc7c95))
+* upgrade npm for trusted publishing support ([1839b18](https://github.com/yuyash/md2cv/commit/1839b180fa3f79afa59c25302b0e00f98cb25ac3))
+
 ## [1.0.3](https://github.com/yuyash/md2cv/compare/v1.0.2...v1.0.3) (2025-12-27)
 
 
