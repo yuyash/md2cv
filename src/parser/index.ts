@@ -12,31 +12,31 @@ import { unified } from 'unified';
 import { parse as parseYaml } from 'yaml';
 
 import {
-  createParseError,
-  failure,
-  success,
-  type ParseError,
-  type Result,
+    createParseError,
+    failure,
+    success,
+    type ParseError,
+    type Result,
 } from '../types/index.js';
 import {
-  METADATA_FIELDS,
-  loadFromEnv,
-  loadFromFrontmatter,
-  type CVMetadata,
+    METADATA_FIELDS,
+    loadFromEnv,
+    loadFromFrontmatter,
+    type CVMetadata,
 } from '../types/metadata.js';
 import {
-  findSectionByTag,
-  type CertificationEntry,
-  type CompetencyEntry,
-  type EducationEntry,
-  type ExperienceEntry,
-  type LanguageEntry,
-  type ParsedSection,
-  type ProjectEntry,
-  type RoleEntry,
-  type SectionContent,
-  type SkillEntry,
-  type TableRow,
+    findSectionByTag,
+    type CertificationEntry,
+    type CompetencyEntry,
+    type EducationEntry,
+    type ExperienceEntry,
+    type LanguageEntry,
+    type ParsedSection,
+    type ProjectEntry,
+    type RoleEntry,
+    type SectionContent,
+    type SkillEntry,
+    type TableRow,
 } from '../types/sections.js';
 
 /**
@@ -84,13 +84,15 @@ function parseFrontmatterDelimiter(content: string): '---' | '+++' | null {
 }
 
 /**
- * Validate frontmatter delimiters match
+ * Validate frontmatter delimiters match (if frontmatter exists)
+ * Returns true if no frontmatter or valid frontmatter, false if malformed
  */
 function validateFrontmatterDelimiters(content: string, errors: ParseError[]): boolean {
   const delimiter = parseFrontmatterDelimiter(content);
+  
+  // No frontmatter is valid - it's optional
   if (!delimiter) {
-    errors.push(createParseError('Missing frontmatter', 1, 1, 'frontmatter'));
-    return false;
+    return true;
   }
 
   const lines = content.split('\n');
