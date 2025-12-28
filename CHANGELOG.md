@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/yuyash/md2cv/compare/v1.1.1...v1.2.0) (2025-12-28)
+
+
+### Features
+
+* add init command for template generation ([#14](https://github.com/yuyash/md2cv/issues/14)) ([bdf4749](https://github.com/yuyash/md2cv/commit/bdf4749226b7d3424fbc1c2398bbb6e1c2097e87))
+
 ## [1.1.1](https://github.com/yuyash/md2cv/compare/v1.1.0...v1.1.1) (2025-12-28)
 
 
