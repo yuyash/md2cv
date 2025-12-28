@@ -12,31 +12,31 @@ import { unified } from 'unified';
 import { parse as parseYaml } from 'yaml';
 
 import {
-    createParseError,
-    failure,
-    success,
-    type ParseError,
-    type Result,
+  createParseError,
+  failure,
+  success,
+  type ParseError,
+  type Result,
 } from '../types/index.js';
 import {
-    METADATA_FIELDS,
-    loadFromEnv,
-    loadFromFrontmatter,
-    type CVMetadata,
+  METADATA_FIELDS,
+  loadFromEnv,
+  loadFromFrontmatter,
+  type CVMetadata,
 } from '../types/metadata.js';
 import {
-    findSectionByTag,
-    type CertificationEntry,
-    type CompetencyEntry,
-    type EducationEntry,
-    type ExperienceEntry,
-    type LanguageEntry,
-    type ParsedSection,
-    type ProjectEntry,
-    type RoleEntry,
-    type SectionContent,
-    type SkillEntry,
-    type TableRow,
+  findSectionByTag,
+  type CertificationEntry,
+  type CompetencyEntry,
+  type EducationEntry,
+  type ExperienceEntry,
+  type LanguageEntry,
+  type ParsedSection,
+  type ProjectEntry,
+  type RoleEntry,
+  type SectionContent,
+  type SkillEntry,
+  type TableRow,
 } from '../types/sections.js';
 
 /**
@@ -74,10 +74,45 @@ function extractText(node: RootContent): string {
 }
 
 /**
+ * Remove HTML comments from the beginning of content
+ * This allows templates to have comments before frontmatter
+ * Note: This handles nested comment markers within comments
+ */
+function stripLeadingHtmlComments(content: string): string {
+  let result = content.trimStart();
+
+  // Keep removing HTML comments from the beginning
+  while (result.startsWith('<!--')) {
+    // Find the matching closing --> by counting nesting
+    let depth = 0;
+    let endIndex = -1;
+
+    for (let i = 0; i < result.length - 2; i++) {
+      if (result.substring(i, i + 4) === '<!--') {
+        depth++;
+        i += 3; // Skip past <!--
+      } else if (result.substring(i, i + 3) === '-->') {
+        depth--;
+        if (depth === 0) {
+          endIndex = i;
+          break;
+        }
+        i += 2; // Skip past -->
+      }
+    }
+
+    if (endIndex === -1) break;
+    result = result.substring(endIndex + 3).trimStart();
+  }
+
+  return result;
+}
+
+/**
  * Parse frontmatter delimiter type
  */
 function parseFrontmatterDelimiter(content: string): '---' | '+++' | null {
-  const trimmed = content.trimStart();
+  const trimmed = stripLeadingHtmlComments(content);
   if (trimmed.startsWith('---')) return '---';
   if (trimmed.startsWith('+++')) return '+++';
   return null;
@@ -87,15 +122,20 @@ function parseFrontmatterDelimiter(content: string): '---' | '+++' | null {
  * Validate frontmatter delimiters match (if frontmatter exists)
  * Returns true if no frontmatter or valid frontmatter, false if malformed
  */
-function validateFrontmatterDelimiters(content: string, errors: ParseError[]): boolean {
+function validateFrontmatterDelimiters(
+  content: string,
+  errors: ParseError[],
+): boolean {
   const delimiter = parseFrontmatterDelimiter(content);
-  
+
   // No frontmatter is valid - it's optional
   if (!delimiter) {
     return true;
   }
 
-  const lines = content.split('\n');
+  // Strip leading HTML comments before checking delimiters
+  const strippedContent = stripLeadingHtmlComments(content);
+  const lines = strippedContent.split('\n');
   let foundStart = false;
   let foundEnd = false;
 
@@ -139,7 +179,14 @@ function extractMetadata(tree: Root, errors: ParseError[]): CVMetadata | null {
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
-      errors.push(createParseError(`Invalid YAML frontmatter: ${msg}`, 1, 1, 'frontmatter'));
+      errors.push(
+        createParseError(
+          `Invalid YAML frontmatter: ${msg}`,
+          1,
+          1,
+          'frontmatter',
+        ),
+      );
       return null;
     }
   }
@@ -177,7 +224,9 @@ function parseListItems(listNode: List): string[] {
   const items: string[] = [];
   for (const item of listNode.children) {
     if (item.type === 'listItem' && item.children) {
-      const text = item.children.map((child) => extractText(child as RootContent)).join('');
+      const text = item.children
+        .map((child) => extractText(child as RootContent))
+        .join('');
       items.push(text.trim());
     }
   }
@@ -211,7 +260,8 @@ function parseTable(tableNode: Table): TableRow[] {
  */
 function safeString(value: unknown): string {
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value);
   return '';
 }
 
@@ -234,19 +284,31 @@ function parseDateOfBirth(str: string | undefined): Date | undefined {
   // YYYY-MM-DD or YYYY/MM/DD
   let m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
   if (m) {
-    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+    return new Date(
+      parseInt(m[1], 10),
+      parseInt(m[2], 10) - 1,
+      parseInt(m[3], 10),
+    );
   }
 
   // YYYY年MM月DD日
   m = s.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
   if (m) {
-    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+    return new Date(
+      parseInt(m[1], 10),
+      parseInt(m[2], 10) - 1,
+      parseInt(m[3], 10),
+    );
   }
 
   // MM/DD/YYYY or MM-DD-YYYY
   m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (m) {
-    return new Date(parseInt(m[3], 10), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+    return new Date(
+      parseInt(m[3], 10),
+      parseInt(m[1], 10) - 1,
+      parseInt(m[2], 10),
+    );
   }
 
   return undefined;
@@ -303,7 +365,9 @@ function parseEndDate(str: string | undefined): Date | 'present' | undefined {
  * Parse gender string to Gender type
  * Supports: male/m/男, female/f/女, other
  */
-function parseGender(str: string | undefined): 'male' | 'female' | 'other' | undefined {
+function parseGender(
+  str: string | undefined,
+): 'male' | 'female' | 'other' | undefined {
   if (!str) return undefined;
   const s = str.trim().toLowerCase();
   if (s === 'male' || s === 'm' || s === '男') return 'male';
@@ -339,7 +403,9 @@ function parseEducationBlock(code: string): EducationEntry[] {
         location: safeOptionalString(obj.location),
         start: parseYearMonth(safeOptionalString(obj.start)),
         end: parseYearMonth(safeOptionalString(obj.end)),
-        details: Array.isArray(obj.details) ? obj.details.map((d) => safeString(d)) : undefined,
+        details: Array.isArray(obj.details)
+          ? obj.details.map((d) => safeString(d))
+          : undefined,
       };
     });
   } catch {
@@ -489,12 +555,18 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
       const obj = parsed as Record<string, unknown>;
 
       // Format 1: Simple items list (grid format)
-      if (Array.isArray(obj.items) && obj.items.every((i) => typeof i === 'string')) {
-        const columns = typeof obj.columns === 'number' ? obj.columns : undefined;
+      if (
+        Array.isArray(obj.items) &&
+        obj.items.every((i) => typeof i === 'string')
+      ) {
+        const columns =
+          typeof obj.columns === 'number' ? obj.columns : undefined;
         const items = obj.items.map((i) => safeString(i));
         // Convert to single SkillEntry with empty category
         return {
-          entries: [{ category: '', items, description: undefined, level: undefined }],
+          entries: [
+            { category: '', items, description: undefined, level: undefined },
+          ],
           columns,
           format: 'grid',
         };
@@ -502,12 +574,15 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
 
       // Format 2 & 3: Categorized skills
       if (Array.isArray(obj.categories)) {
-        const columns = typeof obj.columns === 'number' ? obj.columns : undefined;
+        const columns =
+          typeof obj.columns === 'number' ? obj.columns : undefined;
         const entries = obj.categories.map((cat: unknown) => {
           const catObj = cat as Record<string, unknown>;
           return {
             category: safeString(catObj.category),
-            items: Array.isArray(catObj.items) ? catObj.items.map((i) => safeString(i)) : [],
+            items: Array.isArray(catObj.items)
+              ? catObj.items.map((i) => safeString(i))
+              : [],
             description: safeOptionalString(catObj.description),
             level: safeOptionalString(catObj.level),
           };
@@ -522,7 +597,9 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
       const obj = item as Record<string, unknown>;
       return {
         category: safeString(obj.category),
-        items: Array.isArray(obj.items) ? obj.items.map((i) => safeString(i)) : [],
+        items: Array.isArray(obj.items)
+          ? obj.items.map((i) => safeString(i))
+          : [],
         description: safeOptionalString(obj.description),
         level: safeOptionalString(obj.level),
       };
@@ -627,7 +704,11 @@ function parseSectionContent(nodes: RootContent[]): SectionContent {
     return { type: 'certifications', entries: certificationEntries };
   }
   if (skillEntries.length > 0) {
-    return { type: 'skills', entries: skillEntries, options: { columns: skillsColumns, format: skillsFormat } };
+    return {
+      type: 'skills',
+      entries: skillEntries,
+      options: { columns: skillsColumns, format: skillsFormat },
+    };
   }
   if (competencyEntries.length > 0) {
     return { type: 'competencies', entries: competencyEntries };
@@ -686,7 +767,9 @@ function parseSections(tree: Root): ParsedSection[] {
       }
 
       // Start new section
-      currentTitle = node.children.map((c) => extractText(c as RootContent)).join('');
+      currentTitle = node.children
+        .map((c) => extractText(c as RootContent))
+        .join('');
       currentNodes = [];
     } else if (currentTitle !== null) {
       currentNodes.push(node);
@@ -711,7 +794,9 @@ function parseSections(tree: Root): ParsedSection[] {
 /**
  * Parse markdown content
  */
-export function parseMarkdown(markdown: string): Result<ParsedCV, ParseError[]> {
+export function parseMarkdown(
+  markdown: string,
+): Result<ParsedCV, ParseError[]> {
   const errors: ParseError[] = [];
 
   // Validate frontmatter delimiters
@@ -719,9 +804,13 @@ export function parseMarkdown(markdown: string): Result<ParsedCV, ParseError[]> 
     return failure(errors);
   }
 
+  // Strip leading HTML comments before parsing
+  // This allows templates to have comments before frontmatter
+  const processedMarkdown = stripLeadingHtmlComments(markdown);
+
   try {
     const processor = createProcessor();
-    const tree = processor.parse(markdown);
+    const tree = processor.parse(processedMarkdown);
 
     // Extract metadata
     const metadata = extractMetadata(tree, errors);
@@ -739,7 +828,9 @@ export function parseMarkdown(markdown: string): Result<ParsedCV, ParseError[]> 
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
-    errors.push(createParseError(`Failed to parse markdown: ${msg}`, 1, 1, 'markdown'));
+    errors.push(
+      createParseError(`Failed to parse markdown: ${msg}`, 1, 1, 'markdown'),
+    );
     return failure(errors);
   }
 }

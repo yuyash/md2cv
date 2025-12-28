@@ -56,9 +56,11 @@ describe('validateCV', () => {
     const result = validateCV(cv, 'cv', mockLogger);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.some((e: ValidationError) => e.message.includes('email_address'))).toBe(
-        true,
-      );
+      expect(
+        result.error.some((e: ValidationError) =>
+          e.message.includes('email_address'),
+        ),
+      ).toBe(true);
     }
   });
 
@@ -76,9 +78,11 @@ describe('validateCV', () => {
     const result = validateCV(cv, 'cv', mockLogger);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.some((e: ValidationError) => e.message.includes('experience'))).toBe(
-        true,
-      );
+      expect(
+        result.error.some((e: ValidationError) =>
+          e.message.includes('experience'),
+        ),
+      ).toBe(true);
     }
   });
 
@@ -170,9 +174,19 @@ describe('validateCV metadata sources', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       // Should report all three missing required fields
-      expect(result.error.some((e: ValidationError) => e.message.includes('name'))).toBe(true);
-      expect(result.error.some((e: ValidationError) => e.message.includes('email_address'))).toBe(true);
-      expect(result.error.some((e: ValidationError) => e.message.includes('phone_number'))).toBe(true);
+      expect(
+        result.error.some((e: ValidationError) => e.message.includes('name')),
+      ).toBe(true);
+      expect(
+        result.error.some((e: ValidationError) =>
+          e.message.includes('email_address'),
+        ),
+      ).toBe(true);
+      expect(
+        result.error.some((e: ValidationError) =>
+          e.message.includes('phone_number'),
+        ),
+      ).toBe(true);
     }
   });
 
@@ -197,12 +211,16 @@ describe('validateCV metadata sources', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       // Error messages should mention both env var and frontmatter options
-      const nameError = result.error.find((e: ValidationError) => e.field === 'name');
+      const nameError = result.error.find(
+        (e: ValidationError) => e.field === 'name',
+      );
       expect(nameError).toBeDefined();
       expect(nameError?.message).toContain('NAME');
       expect(nameError?.message).toContain('frontmatter');
 
-      const phoneError = result.error.find((e: ValidationError) => e.field === 'phone_number');
+      const phoneError = result.error.find(
+        (e: ValidationError) => e.field === 'phone_number',
+      );
       expect(phoneError).toBeDefined();
       expect(phoneError?.message).toContain('PHONE_NUMBER');
       expect(phoneError?.message).toContain('frontmatter');

@@ -118,7 +118,9 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
   } = params;
 
   const preferred = PREFERRED_ROW_COUNTS[paperSize];
-  const motivationMinHeight = hideMotivation ? 0 : SECTION_HEIGHTS.motivationMin * scale;
+  const motivationMinHeight = hideMotivation
+    ? 0
+    : SECTION_HEIGHTS.motivationMin * scale;
   const notesMinHeight = SECTION_HEIGHTS.notesMin * scale;
 
   // Row height and font size constraints
@@ -152,7 +154,9 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
   };
 
   // Calculate initial heights with preferred 6:4 ratio for motivation/notes
-  const calcMotivationNotesHeights = (remaining: number): { motivation: number; notes: number } => {
+  const calcMotivationNotesHeights = (
+    remaining: number,
+  ): { motivation: number; notes: number } => {
     if (hideMotivation) {
       return { motivation: 0, notes: Math.max(notesMinHeight, remaining) };
     }
@@ -173,7 +177,11 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
   };
 
   // Calculate remaining space for motivation/notes (with variable row height)
-  const calcRemainingForSections = (histRows: number, licRows: number, rowHeight: number): number => {
+  const calcRemainingForSections = (
+    histRows: number,
+    licRows: number,
+    rowHeight: number,
+  ): number => {
     const histHeight = calculateTableHeight(histRows, rowHeight);
     const licHeight = calculateTableHeight(licRows, rowHeight);
     const marginCount = hideMotivation ? 2 : 3;
@@ -191,7 +199,9 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
     const histHeight = calculateTableHeight(histRows, rowHeight);
     const licHeight = calculateTableHeight(licRows, rowHeight);
     const marginCount = hideMotivation ? 2 : 3;
-    return histHeight + licHeight + motHeight + notHeight + marginCount * tableMargin;
+    return (
+      histHeight + licHeight + motHeight + notHeight + marginCount * tableMargin
+    );
   };
 
   // Check if current allocation fits (with variable row height)
@@ -202,7 +212,13 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
     notHeight: number,
     rowHeight: number,
   ): boolean => {
-    const total = calcTotalHeight(histRows, licRows, motHeight, notHeight, rowHeight);
+    const total = calcTotalHeight(
+      histRows,
+      licRows,
+      motHeight,
+      notHeight,
+      rowHeight,
+    );
     return total <= availableHeight + 0.1; // Small tolerance for floating point
   };
 
@@ -211,11 +227,24 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
   const licenseIsLarge = licenseDataRows > preferred.license;
 
   // Initial calculation with preferred rows
-  let remaining = calcRemainingForSections(rightHistoryRows, licenseRows, currentRowHeight);
-  let { motivation: motivationHeight, notes: notesHeight } = calcMotivationNotesHeights(remaining);
+  let remaining = calcRemainingForSections(
+    rightHistoryRows,
+    licenseRows,
+    currentRowHeight,
+  );
+  let { motivation: motivationHeight, notes: notesHeight } =
+    calcMotivationNotesHeights(remaining);
 
   // If everything fits, we're done
-  if (fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) {
+  if (
+    fitsInAvailable(
+      rightHistoryRows,
+      licenseRows,
+      motivationHeight,
+      notesHeight,
+      currentRowHeight,
+    )
+  ) {
     return {
       rightHistoryRows,
       licenseRows,
@@ -236,11 +265,28 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
     motivationHeight = motivationMinHeight;
     notesHeight = notesMinHeight;
 
-    if (!fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) {
+    if (
+      !fitsInAvailable(
+        rightHistoryRows,
+        licenseRows,
+        motivationHeight,
+        notesHeight,
+        currentRowHeight,
+      )
+    ) {
       // Step 2: Reduce history rows (empty rows first)
       while (rightHistoryRows > minHistoryRows) {
         rightHistoryRows--;
-        if (fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) break;
+        if (
+          fitsInAvailable(
+            rightHistoryRows,
+            licenseRows,
+            motivationHeight,
+            notesHeight,
+            currentRowHeight,
+          )
+        )
+          break;
       }
     }
   } else if (historyIsLarge && !licenseIsLarge) {
@@ -248,12 +294,34 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
     // Step 1: Reduce license rows (empty rows first)
     while (licenseRows > minLicenseRows) {
       licenseRows--;
-      remaining = calcRemainingForSections(rightHistoryRows, licenseRows, currentRowHeight);
-      ({ motivation: motivationHeight, notes: notesHeight } = calcMotivationNotesHeights(remaining));
-      if (fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) break;
+      remaining = calcRemainingForSections(
+        rightHistoryRows,
+        licenseRows,
+        currentRowHeight,
+      );
+      ({ motivation: motivationHeight, notes: notesHeight } =
+        calcMotivationNotesHeights(remaining));
+      if (
+        fitsInAvailable(
+          rightHistoryRows,
+          licenseRows,
+          motivationHeight,
+          notesHeight,
+          currentRowHeight,
+        )
+      )
+        break;
     }
 
-    if (!fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) {
+    if (
+      !fitsInAvailable(
+        rightHistoryRows,
+        licenseRows,
+        motivationHeight,
+        notesHeight,
+        currentRowHeight,
+      )
+    ) {
       // Step 2: Reduce motivation/notes to minimum
       motivationHeight = motivationMinHeight;
       notesHeight = notesMinHeight;
@@ -265,7 +333,15 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
     notesHeight = notesMinHeight;
 
     // If still doesn't fit, reduce empty rows from both tables
-    while (!fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) {
+    while (
+      !fitsInAvailable(
+        rightHistoryRows,
+        licenseRows,
+        motivationHeight,
+        notesHeight,
+        currentRowHeight,
+      )
+    ) {
       // Alternate reducing license and history empty rows
       let reduced = false;
 
@@ -274,7 +350,16 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
         reduced = true;
       }
 
-      if (!fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight) && rightHistoryRows > minHistoryRows) {
+      if (
+        !fitsInAvailable(
+          rightHistoryRows,
+          licenseRows,
+          motivationHeight,
+          notesHeight,
+          currentRowHeight,
+        ) &&
+        rightHistoryRows > minHistoryRows
+      ) {
         rightHistoryRows--;
         reduced = true;
       }
@@ -284,7 +369,15 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
 
     // If still doesn't fit after reducing rows, reduce row height and font size
     // This affects all tables on both left and right pages
-    if (!fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight)) {
+    if (
+      !fitsInAvailable(
+        rightHistoryRows,
+        licenseRows,
+        motivationHeight,
+        notesHeight,
+        currentRowHeight,
+      )
+    ) {
       // Calculate the optimal row height that fits all content
       // We need to find a row height where:
       // 1. Left page can fit leftHistoryRows (calculated from row height)
@@ -295,7 +388,8 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
       let highHeight = tableRowHeight;
       let bestRowHeight = minRowHeight;
 
-      for (let i = 0; i < 20; i++) { // Max 20 iterations for precision
+      for (let i = 0; i < 20; i++) {
+        // Max 20 iterations for precision
         const midHeight = (lowHeight + highHeight) / 2;
 
         // Recalculate overflow with this row height
@@ -306,7 +400,11 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
         const marginCount = hideMotivation ? 2 : 3;
         const rightTableRows = newRightHistoryRows + 1 + licenseRows + 1; // +1 for headers
         const rightTablesHeight = rightTableRows * midHeight;
-        const rightTotalHeight = rightTablesHeight + motivationMinHeight + notesMinHeight + marginCount * tableMargin;
+        const rightTotalHeight =
+          rightTablesHeight +
+          motivationMinHeight +
+          notesMinHeight +
+          marginCount * tableMargin;
 
         if (rightTotalHeight <= availableHeight + 0.1) {
           // This height works, try larger
@@ -345,11 +443,22 @@ function allocateRightPageSpace(params: AllocationParams): RightPageAllocation {
   }
 
   // Final recalculation - distribute any remaining space to motivation/notes
-  remaining = calcRemainingForSections(rightHistoryRows, licenseRows, currentRowHeight);
-  ({ motivation: motivationHeight, notes: notesHeight } = calcMotivationNotesHeights(remaining));
+  remaining = calcRemainingForSections(
+    rightHistoryRows,
+    licenseRows,
+    currentRowHeight,
+  );
+  ({ motivation: motivationHeight, notes: notesHeight } =
+    calcMotivationNotesHeights(remaining));
 
   // Check if content still overflows after all adjustments
-  const finalFits = fitsInAvailable(rightHistoryRows, licenseRows, motivationHeight, notesHeight, currentRowHeight);
+  const finalFits = fitsInAvailable(
+    rightHistoryRows,
+    licenseRows,
+    motivationHeight,
+    notesHeight,
+    currentRowHeight,
+  );
 
   return {
     rightHistoryRows,
@@ -399,16 +508,21 @@ export function calculateLayout(input: LayoutInput): LayoutDimensions {
   // Left page layout
   const leftHeaderHeight = calculateLeftHeaderHeight(scale);
   const leftContentHeight = pageHeight - footerHeight;
-  const leftTableAreaHeight = leftContentHeight - leftHeaderHeight - tableMargin;
+  const leftTableAreaHeight =
+    leftContentHeight - leftHeaderHeight - tableMargin;
 
   // Calculate how many rows fit on left page (using default row height initially)
   // -1 for header row, -1 for safety margin
-  const defaultLeftHistoryRows = Math.floor(leftTableAreaHeight / defaultTableRowHeight) - 2;
+  const defaultLeftHistoryRows =
+    Math.floor(leftTableAreaHeight / defaultTableRowHeight) - 2;
 
   // Calculate history overflow to right page (with default row height)
   const historyExtraRows = 4; // 学歴, 職歴, 現在に至る, 以上
   const totalHistoryNeeded = historyDataRows + historyExtraRows;
-  const historyOverflow = Math.max(0, totalHistoryNeeded - defaultLeftHistoryRows);
+  const historyOverflow = Math.max(
+    0,
+    totalHistoryNeeded - defaultLeftHistoryRows,
+  );
 
   // Right page layout - allocate space optimally
   const rightContentHeight = pageHeight - footerHeight;

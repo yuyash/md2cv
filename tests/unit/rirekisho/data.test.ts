@@ -66,13 +66,16 @@ describe('rirekisho/data', () => {
 
     it('should convert gender to Japanese', () => {
       expect(
-        extractPersonalInfo({ ...baseMetadata, gender: 'male' }, new Date()).gender,
+        extractPersonalInfo({ ...baseMetadata, gender: 'male' }, new Date())
+          .gender,
       ).toBe('男');
       expect(
-        extractPersonalInfo({ ...baseMetadata, gender: 'female' }, new Date()).gender,
+        extractPersonalInfo({ ...baseMetadata, gender: 'female' }, new Date())
+          .gender,
       ).toBe('女');
       expect(
-        extractPersonalInfo({ ...baseMetadata, gender: undefined }, new Date()).gender,
+        extractPersonalInfo({ ...baseMetadata, gender: undefined }, new Date())
+          .gender,
       ).toBe('');
     });
 
@@ -83,7 +86,10 @@ describe('rirekisho/data', () => {
       };
 
       // Before birthday
-      const beforeBirthday = extractPersonalInfo(metadata, new Date('2024-06-14'));
+      const beforeBirthday = extractPersonalInfo(
+        metadata,
+        new Date('2024-06-14'),
+      );
       expect(beforeBirthday.age).toBe(33);
 
       // On birthday
@@ -91,7 +97,10 @@ describe('rirekisho/data', () => {
       expect(onBirthday.age).toBe(34);
 
       // After birthday
-      const afterBirthday = extractPersonalInfo(metadata, new Date('2024-06-16'));
+      const afterBirthday = extractPersonalInfo(
+        metadata,
+        new Date('2024-06-16'),
+      );
       expect(afterBirthday.age).toBe(34);
     });
 
@@ -151,7 +160,9 @@ describe('rirekisho/data', () => {
       };
       const result = extractPersonalInfo(metadata, new Date());
 
-      expect(result.name).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(result.name).toBe(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+      );
       expect(result.address).toBe('Test &amp; Co.');
     });
   });
@@ -285,10 +296,14 @@ describe('rirekisho/data', () => {
       const result = buildHistoryData(sections, 'asc');
 
       // Should have 入社 entry
-      const hasNyusha = result.some((row) => row[2].includes('株式会社テスト 入社'));
+      const hasNyusha = result.some((row) =>
+        row[2].includes('株式会社テスト 入社'),
+      );
       expect(hasNyusha).toBe(true);
       // Should NOT have 退社 entry
-      const hasTaisha = result.some((row) => row[2].includes('株式会社テスト 退社'));
+      const hasTaisha = result.some((row) =>
+        row[2].includes('株式会社テスト 退社'),
+      );
       expect(hasTaisha).toBe(false);
     });
 
@@ -461,8 +476,18 @@ describe('rirekisho/data', () => {
           content: {
             type: 'certifications',
             entries: [
-              { name: '資格B', issuer: undefined, date: new Date('2021-06-01'), url: undefined },
-              { name: '資格A', issuer: undefined, date: new Date('2020-04-01'), url: undefined },
+              {
+                name: '資格B',
+                issuer: undefined,
+                date: new Date('2021-06-01'),
+                url: undefined,
+              },
+              {
+                name: '資格A',
+                issuer: undefined,
+                date: new Date('2020-04-01'),
+                url: undefined,
+              },
             ],
           },
         },
@@ -529,7 +554,9 @@ describe('rirekisho/data', () => {
       ];
       const result = getSectionText(sections, ['motivation']);
 
-      expect(result).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(result).toBe(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+      );
     });
 
     it('should return empty string for non-text content', () => {
@@ -565,8 +592,22 @@ describe('rirekisho/data', () => {
           content: {
             type: 'education',
             entries: [
-              { school: '大学A', degree: undefined, location: undefined, start: new Date(), end: new Date(), details: undefined },
-              { school: '大学B', degree: undefined, location: undefined, start: new Date(), end: new Date(), details: undefined },
+              {
+                school: '大学A',
+                degree: undefined,
+                location: undefined,
+                start: new Date(),
+                end: new Date(),
+                details: undefined,
+              },
+              {
+                school: '大学B',
+                degree: undefined,
+                location: undefined,
+                start: new Date(),
+                end: new Date(),
+                details: undefined,
+              },
             ],
           },
         },
@@ -588,14 +629,30 @@ describe('rirekisho/data', () => {
                 company: '会社A',
                 location: undefined,
                 roles: [
-                  { title: '役職', team: undefined, start: new Date(), end: new Date(), summary: undefined, highlights: undefined, projects: undefined }, // 2 rows
+                  {
+                    title: '役職',
+                    team: undefined,
+                    start: new Date(),
+                    end: new Date(),
+                    summary: undefined,
+                    highlights: undefined,
+                    projects: undefined,
+                  }, // 2 rows
                 ],
               },
               {
                 company: '会社B',
                 location: undefined,
                 roles: [
-                  { title: '役職', team: undefined, start: new Date(), end: 'present', summary: undefined, highlights: undefined, projects: undefined }, // 1 row (no 退社)
+                  {
+                    title: '役職',
+                    team: undefined,
+                    start: new Date(),
+                    end: 'present',
+                    summary: undefined,
+                    highlights: undefined,
+                    projects: undefined,
+                  }, // 1 row (no 退社)
                 ],
               },
             ],
@@ -615,9 +672,24 @@ describe('rirekisho/data', () => {
           content: {
             type: 'certifications',
             entries: [
-              { name: '資格A', issuer: undefined, date: undefined, url: undefined },
-              { name: '資格B', issuer: undefined, date: undefined, url: undefined },
-              { name: '資格C', issuer: undefined, date: undefined, url: undefined },
+              {
+                name: '資格A',
+                issuer: undefined,
+                date: undefined,
+                url: undefined,
+              },
+              {
+                name: '資格B',
+                issuer: undefined,
+                date: undefined,
+                url: undefined,
+              },
+              {
+                name: '資格C',
+                issuer: undefined,
+                date: undefined,
+                url: undefined,
+              },
             ],
           },
         },

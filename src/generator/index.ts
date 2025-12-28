@@ -9,15 +9,18 @@ import puppeteer from 'puppeteer';
 
 import type { Logger } from '../cli/index.js';
 import type {
-    ChronologicalOrder,
-    OutputFormat,
-    OutputType,
-    PaperSize,
-    ResolvedConfig,
+  ChronologicalOrder,
+  OutputFormat,
+  OutputType,
+  PaperSize,
+  ResolvedConfig,
 } from '../types/config.js';
 import type { CVMetadata } from '../types/metadata.js';
 import type { ParsedSection } from '../types/sections.js';
-import { findSectionByTag, isSectionValidForFormat } from '../types/sections.js';
+import {
+  findSectionByTag,
+  isSectionValidForFormat,
+} from '../types/sections.js';
 import { generateCVEnHTML } from './resume_en.js';
 import { generateCVJaHTML } from './resume_ja.js';
 import { generateRirekishoHTML } from './rirekisho/index.js';
@@ -62,14 +65,14 @@ const IMAGE_MIME_TYPES: Record<string, string> = {
 function readPhotoAsDataUri(photoPath: string): string {
   const ext = path.extname(photoPath).toLowerCase();
   const mimeType = IMAGE_MIME_TYPES[ext];
-  
+
   if (!mimeType) {
     throw new Error(`Unsupported image format: ${ext}`);
   }
-  
+
   const imageBuffer = fs.readFileSync(photoPath);
   const base64 = imageBuffer.toString('base64');
-  
+
   return `data:${mimeType};base64,${base64}`;
 }
 
@@ -112,35 +115,49 @@ function detectLanguage(cv: CVInput): 'en' | 'ja' {
 /**
  * Default section order for CV format
  */
-const DEFAULT_CV_SECTION_ORDER = ['summary', 'experience', 'education', 'skills', 'certifications', 'languages', 'competencies', 'motivation'];
+const DEFAULT_CV_SECTION_ORDER = [
+  'summary',
+  'experience',
+  'education',
+  'skills',
+  'certifications',
+  'languages',
+  'competencies',
+  'motivation',
+];
 
 /**
  * Resolve section ID from tag or ID
  * Returns the section ID if input matches a tag or is already an ID
  */
-function resolveSectionId(input: string, sections: readonly ParsedSection[]): string | undefined {
+function resolveSectionId(
+  input: string,
+  sections: readonly ParsedSection[],
+): string | undefined {
   // First check if it's a direct section ID match
-  const directMatch = sections.find(s => s.id === input);
+  const directMatch = sections.find((s) => s.id === input);
   if (directMatch) {
     return directMatch.id;
   }
-  
+
   // Then check if it matches a section title (case-insensitive)
-  const titleMatch = sections.find(s => s.title.toLowerCase() === input.toLowerCase());
+  const titleMatch = sections.find(
+    (s) => s.title.toLowerCase() === input.toLowerCase(),
+  );
   if (titleMatch) {
     return titleMatch.id;
   }
-  
+
   // Finally, check SECTION_DEFINITIONS tags
   const def = findSectionByTag(input);
   if (def) {
     // Check if this section exists in the input
-    const sectionExists = sections.find(s => s.id === def.id);
+    const sectionExists = sections.find((s) => s.id === def.id);
     if (sectionExists) {
       return def.id;
     }
   }
-  
+
   return undefined;
 }
 
@@ -156,34 +173,44 @@ function filterAndOrderSections(
   logger: Logger,
 ): ParsedSection[] {
   // Get all section IDs from input
-  const allSectionIds = sections.map(s => s.id);
-  
+  const allSectionIds = sections.map((s) => s.id);
+
   // Determine which sections are valid for this format
-  const validSectionIds = allSectionIds.filter(id => isSectionValidForFormat(id, format));
-  const invalidSectionIds = allSectionIds.filter(id => !isSectionValidForFormat(id, format));
-  
+  const validSectionIds = allSectionIds.filter((id) =>
+    isSectionValidForFormat(id, format),
+  );
+  const invalidSectionIds = allSectionIds.filter(
+    (id) => !isSectionValidForFormat(id, format),
+  );
+
   let includedSectionIds: string[];
   let skippedSectionIds: string[];
-  
+
   if (format === 'cv') {
     if (sectionOrder && sectionOrder.length > 0) {
       // Resolve section order (tags/titles to IDs)
       const resolvedOrder: string[] = [];
       for (const input of sectionOrder) {
         const resolvedId = resolveSectionId(input, sections);
-        if (resolvedId && validSectionIds.includes(resolvedId) && !resolvedOrder.includes(resolvedId)) {
+        if (
+          resolvedId &&
+          validSectionIds.includes(resolvedId) &&
+          !resolvedOrder.includes(resolvedId)
+        ) {
           resolvedOrder.push(resolvedId);
         }
       }
-      
+
       // Use custom order - only include sections that are in sectionOrder AND valid for format
       includedSectionIds = resolvedOrder;
-      skippedSectionIds = validSectionIds.filter(id => !resolvedOrder.includes(id));
+      skippedSectionIds = validSectionIds.filter(
+        (id) => !resolvedOrder.includes(id),
+      );
     } else {
       // Use default order for CV
       const orderedIds: string[] = [];
       const remainingIds = new Set(validSectionIds);
-      
+
       // Add sections in default order
       for (const id of DEFAULT_CV_SECTION_ORDER) {
         if (remainingIds.has(id)) {
@@ -195,7 +222,7 @@ function filterAndOrderSections(
       for (const id of remainingIds) {
         orderedIds.push(id);
       }
-      
+
       includedSectionIds = orderedIds;
       skippedSectionIds = [];
     }
@@ -204,27 +231,33 @@ function filterAndOrderSections(
     includedSectionIds = validSectionIds;
     skippedSectionIds = [];
   }
-  
+
   // Log section information
   logger.info({ sections: includedSectionIds }, 'Sections included');
   if (skippedSectionIds.length > 0) {
-    logger.info({ sections: skippedSectionIds }, 'Sections skipped (not in section-order)');
+    logger.info(
+      { sections: skippedSectionIds },
+      'Sections skipped (not in section-order)',
+    );
   }
   if (invalidSectionIds.length > 0) {
-    logger.info({ sections: invalidSectionIds }, `Sections skipped (not valid for ${format} format)`);
+    logger.info(
+      { sections: invalidSectionIds },
+      `Sections skipped (not valid for ${format} format)`,
+    );
   }
-  
+
   // Build ordered section list
-  const sectionMap = new Map(sections.map(s => [s.id, s]));
+  const sectionMap = new Map(sections.map((s) => [s.id, s]));
   const orderedSections: ParsedSection[] = [];
-  
+
   for (const id of includedSectionIds) {
     const section = sectionMap.get(id);
     if (section) {
       orderedSections.push(section);
     }
   }
-  
+
   return orderedSections;
 }
 
@@ -280,7 +313,10 @@ async function generatePDF(
     if (isRirekisho) {
       // Rirekisho uses landscape orientation with the specified paper size
       // PAGE_SIZES for rirekisho are already in landscape (width > height)
-      const rirekishoSizes: Record<PaperSize, { width: number; height: number }> = {
+      const rirekishoSizes: Record<
+        PaperSize,
+        { width: number; height: number }
+      > = {
         a3: { width: 420, height: 297 },
         a4: { width: 297, height: 210 },
         b4: { width: 364, height: 257 },
@@ -351,14 +387,22 @@ export async function generateOutput(
     let customStylesheet: string | undefined;
     if (config.stylesheet) {
       customStylesheet = readStylesheet(config.stylesheet);
-      logger.debug({ stylesheet: config.stylesheet }, 'Custom stylesheet loaded');
+      logger.debug(
+        { stylesheet: config.stylesheet },
+        'Custom stylesheet loaded',
+      );
     }
 
     // Generate HTML
     let html: string;
     if (format === 'rirekisho') {
       // Log sections for rirekisho
-      const sections = filterAndOrderSections(cv.sections, 'rirekisho', undefined, logger);
+      const sections = filterAndOrderSections(
+        cv.sections,
+        'rirekisho',
+        undefined,
+        logger,
+      );
       const filteredCv = { ...cv, sections };
 
       // Read photo file if provided (only for rirekisho)
@@ -376,7 +420,14 @@ export async function generateOutput(
         customStylesheet,
       });
     } else {
-      html = generateCVHTML(cv, config.paperSize, chronologicalOrder, config.sectionOrder, logger, customStylesheet);
+      html = generateCVHTML(
+        cv,
+        config.paperSize,
+        chronologicalOrder,
+        config.sectionOrder,
+        logger,
+        customStylesheet,
+      );
     }
 
     const baseName = path.basename(config.output);

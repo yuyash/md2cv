@@ -3,15 +3,22 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { calculateLayout, validateLayout } from '../../../src/generator/rirekisho/layout.js';
-import type { LayoutDimensions, LayoutInput, PaperSize } from '../../../src/generator/rirekisho/types.js';
 import {
-    FIXED_DIMENSIONS,
-    FONT_SIZE,
-    PAPER_SIZES,
-    PREFERRED_ROW_COUNTS,
-    ROW_HEIGHT,
-    SCALE_FACTORS,
+  calculateLayout,
+  validateLayout,
+} from '../../../src/generator/rirekisho/layout.js';
+import type {
+  LayoutDimensions,
+  LayoutInput,
+  PaperSize,
+} from '../../../src/generator/rirekisho/types.js';
+import {
+  FIXED_DIMENSIONS,
+  FONT_SIZE,
+  PAPER_SIZES,
+  PREFERRED_ROW_COUNTS,
+  ROW_HEIGHT,
+  SCALE_FACTORS,
 } from '../../../src/generator/rirekisho/types.js';
 
 describe('rirekisho/layout', () => {
@@ -81,11 +88,21 @@ describe('rirekisho/layout', () => {
         expect(layout.contactWidth).toBe(FIXED_DIMENSIONS.contactWidth * scale);
         expect(layout.genderWidth).toBe(FIXED_DIMENSIONS.genderWidth * scale);
         expect(layout.headerHeight).toBe(FIXED_DIMENSIONS.headerHeight * scale);
-        expect(layout.nameRowHeight).toBe(FIXED_DIMENSIONS.nameRowHeight * scale);
-        expect(layout.nameMainHeight).toBe(FIXED_DIMENSIONS.nameMainHeight * scale);
-        expect(layout.birthGenderHeight).toBe(FIXED_DIMENSIONS.birthGenderHeight * scale);
-        expect(layout.addressRowHeight).toBe(FIXED_DIMENSIONS.addressRowHeight * scale);
-        expect(layout.addressFuriganaHeight).toBe(FIXED_DIMENSIONS.addressFuriganaHeight * scale);
+        expect(layout.nameRowHeight).toBe(
+          FIXED_DIMENSIONS.nameRowHeight * scale,
+        );
+        expect(layout.nameMainHeight).toBe(
+          FIXED_DIMENSIONS.nameMainHeight * scale,
+        );
+        expect(layout.birthGenderHeight).toBe(
+          FIXED_DIMENSIONS.birthGenderHeight * scale,
+        );
+        expect(layout.addressRowHeight).toBe(
+          FIXED_DIMENSIONS.addressRowHeight * scale,
+        );
+        expect(layout.addressFuriganaHeight).toBe(
+          FIXED_DIMENSIONS.addressFuriganaHeight * scale,
+        );
       });
     });
 
@@ -104,8 +121,12 @@ describe('rirekisho/layout', () => {
         const layout = calculateLayout(input);
         const scale = SCALE_FACTORS.b4;
 
-        expect(layout.yearColumnWidth).toBe(FIXED_DIMENSIONS.yearColumnWidth * scale);
-        expect(layout.monthColumnWidth).toBe(FIXED_DIMENSIONS.monthColumnWidth * scale);
+        expect(layout.yearColumnWidth).toBe(
+          FIXED_DIMENSIONS.yearColumnWidth * scale,
+        );
+        expect(layout.monthColumnWidth).toBe(
+          FIXED_DIMENSIONS.monthColumnWidth * scale,
+        );
       });
     });
 
@@ -118,7 +139,9 @@ describe('rirekisho/layout', () => {
         expect(layout.rightHistoryRows).toBeGreaterThanOrEqual(
           PREFERRED_ROW_COUNTS.a3.rightHistory,
         );
-        expect(layout.licenseRows).toBeGreaterThanOrEqual(PREFERRED_ROW_COUNTS.a3.license);
+        expect(layout.licenseRows).toBeGreaterThanOrEqual(
+          PREFERRED_ROW_COUNTS.a3.license,
+        );
       });
 
       it('should calculate left history rows based on available space', () => {
@@ -178,14 +201,19 @@ describe('rirekisho/layout', () => {
         const layout = calculateLayout(input);
 
         // Table height = (dataRows + 1 header) * rowHeight
-        const expectedLeftTableHeight = (layout.leftHistoryRows + 1) * layout.tableRowHeight;
+        const expectedLeftTableHeight =
+          (layout.leftHistoryRows + 1) * layout.tableRowHeight;
         expect(layout.leftTableHeight).toBeCloseTo(expectedLeftTableHeight, 5);
 
         const expectedRightHistoryHeight =
           (layout.rightHistoryRows + 1) * layout.tableRowHeight;
-        expect(layout.rightHistoryTableHeight).toBeCloseTo(expectedRightHistoryHeight, 5);
+        expect(layout.rightHistoryTableHeight).toBeCloseTo(
+          expectedRightHistoryHeight,
+          5,
+        );
 
-        const expectedLicenseHeight = (layout.licenseRows + 1) * layout.tableRowHeight;
+        const expectedLicenseHeight =
+          (layout.licenseRows + 1) * layout.tableRowHeight;
         expect(layout.licenseTableHeight).toBeCloseTo(expectedLicenseHeight, 5);
       });
     });
@@ -205,7 +233,9 @@ describe('rirekisho/layout', () => {
         const scale = SCALE_FACTORS.a4;
 
         // Row height should be reduced from default
-        expect(layout.tableRowHeight).toBeLessThanOrEqual(ROW_HEIGHT.default * scale);
+        expect(layout.tableRowHeight).toBeLessThanOrEqual(
+          ROW_HEIGHT.default * scale,
+        );
       });
 
       it('should reduce font size proportionally with row height', () => {

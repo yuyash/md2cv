@@ -9,13 +9,13 @@
 
 import { buildLeftPage, buildRightPage } from './components.js';
 import {
-    buildHistoryData,
-    buildLicenseData,
-    countDataRows,
-    extractPersonalInfo,
-    getSectionList,
-    getSectionText,
-    getTodayDate,
+  buildHistoryData,
+  buildLicenseData,
+  countDataRows,
+  extractPersonalInfo,
+  getSectionList,
+  getSectionText,
+  getTodayDate,
 } from './data.js';
 import { calculateLayout, validateLayout } from './layout.js';
 import { generateCSS } from './styles.js';
@@ -66,8 +66,8 @@ export function generateRirekishoHTML(
   const notes = getSectionText(input.sections, ['notes']);
 
   // Generate HTML with full-width footer
-  const customStylesHtml = options.customStylesheet 
-    ? `<style class="custom-styles">${options.customStylesheet}</style>` 
+  const customStylesHtml = options.customStylesheet
+    ? `<style class="custom-styles">${options.customStylesheet}</style>`
     : '';
 
   return `<!DOCTYPE html>

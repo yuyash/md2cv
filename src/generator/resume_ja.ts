@@ -78,7 +78,10 @@ function formatEndDate(end: Date | 'present' | undefined): string {
 /**
  * Format date range
  */
-function formatDateRange(start: Date | undefined, end: Date | 'present' | undefined): string {
+function formatDateRange(
+  start: Date | undefined,
+  end: Date | 'present' | undefined,
+): string {
   const startStr = formatDate(start);
   const endStr = formatEndDate(end);
   if (startStr && endStr) return `${startStr} - ${endStr}`;
@@ -244,7 +247,6 @@ function generateStyles(paperSize: PaperSize): string {
   `;
 }
 
-
 /**
  * Render education section
  * Format:
@@ -356,15 +358,19 @@ function renderCertifications(entries: readonly CertificationEntry[]): string {
 /**
  * Render skills section - supports grid and categorized formats
  */
-function renderSkills(entries: readonly SkillEntry[], options: SkillsOptions): string {
+function renderSkills(
+  entries: readonly SkillEntry[],
+  options: SkillsOptions,
+): string {
   // Check if categorized format (entries have non-empty category with description)
-  const isCategorized = options.format === 'categorized' || 
-    entries.some(e => e.category && (e.description || e.items.length > 0));
+  const isCategorized =
+    options.format === 'categorized' ||
+    entries.some((e) => e.category && (e.description || e.items.length > 0));
 
-  if (isCategorized && entries.some(e => e.category)) {
+  if (isCategorized && entries.some((e) => e.category)) {
     // Categorized format: • <category>: <description or items>
     return entries
-      .filter(e => e.category)
+      .filter((e) => e.category)
       .map((entry) => {
         const content = entry.description || entry.items.join('、');
         return `<div class="skill-category">• <span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
@@ -386,7 +392,8 @@ function renderSkills(entries: readonly SkillEntry[], options: SkillsOptions): s
 
   const columns = options.columns ?? DEFAULT_SKILLS_COLUMNS;
   const colsClass = columns === 3 ? 'skills-grid--cols-3' : '';
-  const colsStyle = columns !== 3 ? `grid-template-columns: repeat(${columns}, 1fr);` : '';
+  const colsStyle =
+    columns !== 3 ? `grid-template-columns: repeat(${columns}, 1fr);` : '';
   let html = `<div class="skills-grid ${colsClass}"${colsStyle ? ` style="${colsStyle}"` : ''}>`;
   for (const item of allItems) {
     html += `<div class="skill-item">• ${escapeHtml(item)}</div>`;
@@ -398,13 +405,17 @@ function renderSkills(entries: readonly SkillEntry[], options: SkillsOptions): s
 /**
  * Render skills from list content as grid
  */
-function renderSkillsList(items: readonly string[], columns: number = DEFAULT_SKILLS_COLUMNS): string {
+function renderSkillsList(
+  items: readonly string[],
+  columns: number = DEFAULT_SKILLS_COLUMNS,
+): string {
   if (items.length === 0) {
     return '';
   }
 
   const colsClass = columns === 3 ? 'skills-grid--cols-3' : '';
-  const colsStyle = columns !== 3 ? `grid-template-columns: repeat(${columns}, 1fr);` : '';
+  const colsStyle =
+    columns !== 3 ? `grid-template-columns: repeat(${columns}, 1fr);` : '';
   let html = `<div class="skills-grid ${colsClass}"${colsStyle ? ` style="${colsStyle}"` : ''}>`;
   for (const item of items) {
     html += `<div class="skill-item">• ${escapeHtml(item)}</div>`;
@@ -432,7 +443,10 @@ function renderLanguages(entries: readonly LanguageEntry[]): string {
 /**
  * Render section content
  */
-function renderSectionContent(content: SectionContent, sectionId: string): string {
+function renderSectionContent(
+  content: SectionContent,
+  sectionId: string,
+): string {
   switch (content.type) {
     case 'text':
       return `<p>${escapeHtml(content.text)}</p>`;
@@ -442,7 +456,9 @@ function renderSectionContent(content: SectionContent, sectionId: string): strin
         return renderSkillsList(content.items);
       }
       return (
-        '<ul>' + content.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') + '</ul>'
+        '<ul>' +
+        content.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') +
+        '</ul>'
       );
     case 'education':
       return renderEducation(content.entries);
@@ -457,7 +473,9 @@ function renderSectionContent(content: SectionContent, sectionId: string): strin
     case 'table':
       return (
         '<ul>' +
-        content.rows.map((row) => `<li>${escapeHtml(row.content)}</li>`).join('\n') +
+        content.rows
+          .map((row) => `<li>${escapeHtml(row.content)}</li>`)
+          .join('\n') +
         '</ul>'
       );
     default:
@@ -470,7 +488,9 @@ function renderSectionContent(content: SectionContent, sectionId: string): strin
  * Note: Section ordering is now handled by filterAndOrderSections in generator/index.ts
  */
 function filterSections(sections: readonly ParsedSection[]): ParsedSection[] {
-  return sections.filter(section => isSectionValidForFormat(section.id, 'cv'));
+  return sections.filter((section) =>
+    isSectionValidForFormat(section.id, 'cv'),
+  );
 }
 
 /**
@@ -495,8 +515,8 @@ export function generateCVJaHTML(cv: CVInput, options: CVJaOptions): string {
     .join('\n');
 
   // Include custom stylesheet if provided
-  const customStylesHtml = options.customStylesheet 
-    ? `<style class="custom-styles">${options.customStylesheet}</style>` 
+  const customStylesHtml = options.customStylesheet
+    ? `<style class="custom-styles">${options.customStylesheet}</style>`
     : '';
 
   return `<!DOCTYPE html>

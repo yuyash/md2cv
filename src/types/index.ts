@@ -7,3 +7,4 @@ export * from './errors.js';
 export * from './metadata.js';
 export * from './result.js';
 export * from './sections.js';
+export * from './template.js';

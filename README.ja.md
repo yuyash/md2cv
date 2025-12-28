@@ -26,6 +26,35 @@ npx md2cv -i your-cv.md
 
 ## 使い方
 
+### テンプレートでクイックスタート
+
+テンプレートを生成して簡単に始められます：
+
+```bash
+# 英語の CV テンプレートを生成
+md2cv init -l en -f cv -o my-cv.md
+
+# 日本語の履歴書テンプレートを生成
+md2cv init -l ja -f rirekisho -o my-rirekisho.md
+
+# 両方のフォーマット用テンプレートを生成
+md2cv init -l ja -f both -o my-resume.md
+
+# 説明コメントなしでテンプレートを生成
+md2cv init -l ja -f cv --no-comments -o my-cv.md
+
+# 標準出力にテンプレートを出力
+md2cv init -l ja -f cv
+
+# 利用可能なテンプレート一覧を表示
+md2cv init --list-templates
+
+# 特定フォーマットの利用可能なセクション一覧を表示
+md2cv init -l ja -f cv --list-sections
+```
+
+### CV/履歴書の生成
+
 基本的な使用例:
 
 ```bash
@@ -66,7 +95,39 @@ md2cv -i examples/example-cv-ja.md --stylesheet custom.css
 md2cv -i examples/example-cv-ja.md --verbose
 ```
 
-## CLI オプション
+## CLI コマンド
+
+md2cv は2つのコマンドを提供します：
+
+### generate（デフォルト）
+
+Markdown ファイルから CV/履歴書を生成します。デフォルトコマンドです。
+
+```bash
+md2cv generate -i input.md [options]
+md2cv -i input.md [options]  # 'generate' は省略可能
+```
+
+### init
+
+テンプレートを生成して簡単に始められます。
+
+```bash
+md2cv init [options]
+```
+
+| オプション          | 説明                                             | デフォルト |
+| ------------------- | ------------------------------------------------ | ---------- |
+| `-o, --output`      | 出力ファイルパス（デフォルト: 標準出力）         | 標準出力   |
+| `-l, --lang`        | テンプレート言語（`en`, `ja`）                   | `en`       |
+| `-f, --format`      | 出力フォーマット（`cv`, `rirekisho`, `both`）    | `cv`       |
+| `--no-comments`     | テンプレートから説明コメントを除外               | -          |
+| `--list-templates`  | 利用可能なテンプレートと詳細を表示               | -          |
+| `--list-sections`   | 指定フォーマットの利用可能なセクションを表示     | -          |
+
+## generate オプション
+
+`generate` コマンドで使用できるオプション：
 
 | オプション                 | 説明                                                                                           | デフォルト      |
 | -------------------------- | ---------------------------------------------------------------------------------------------- | --------------- |

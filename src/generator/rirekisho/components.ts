@@ -89,17 +89,22 @@ export interface NameSectionProps {
 export function buildNameSection({ layout, info }: NameSectionProps): string {
   const { photoWidth, nameMainHeight, scale, pageWidth } = layout;
   const nameRowStyle = `margin-right: ${mm(photoWidth)}`;
-  
+
   // Calculate available width for name/furigana (pageWidth - photoWidth - label width - padding)
   const labelWidthMm = 14 * scale;
   const availableWidthMm = pageWidth - photoWidth - labelWidthMm - 4 * scale;
-  
+
   // Calculate font sizes based on text length
-  const furiganaFontSize = calculateFontSize(info.furigana, availableWidthMm, scale, {
-    maxFontPt: 8 * scale,
-    minFontPt: 5 * scale,
-    paddingMm: 4 * scale,
-  });
+  const furiganaFontSize = calculateFontSize(
+    info.furigana,
+    availableWidthMm,
+    scale,
+    {
+      maxFontPt: 8 * scale,
+      minFontPt: 5 * scale,
+      paddingMm: 4 * scale,
+    },
+  );
   const nameFontSize = calculateFontSize(info.name, availableWidthMm, scale, {
     maxFontPt: 16 * scale,
     minFontPt: 10 * scale,
@@ -168,8 +173,14 @@ export function buildAddressRow({
   info,
   isPrimary,
 }: AddressRowProps): string {
-  const { contactWidth, scale, addressRowHeight, addressFuriganaHeight, pageWidth, photoWidth } =
-    layout;
+  const {
+    contactWidth,
+    scale,
+    addressRowHeight,
+    addressFuriganaHeight,
+    pageWidth,
+    photoWidth,
+  } = layout;
   const address = isPrimary ? info.address : info.address2;
   const addressFurigana = isPrimary
     ? info.addressFurigana
@@ -177,21 +188,32 @@ export function buildAddressRow({
   const postCode = isPrimary ? info.postCode : info.postCode2;
   const phone = isPrimary ? info.phone : info.phone2;
   const email = isPrimary ? info.email : info.email2;
-  
+
   // Calculate available width for address (pageWidth - contactWidth - label - padding)
-  const addressAvailableWidth = pageWidth - photoWidth - contactWidth - 12 * scale;
-  
+  const addressAvailableWidth =
+    pageWidth - photoWidth - contactWidth - 12 * scale;
+
   // Calculate font sizes
-  const addressFuriganaFontSize = calculateFontSize(addressFurigana || '', addressAvailableWidth, scale, {
-    maxFontPt: 8 * scale,
-    minFontPt: 5 * scale,
-    paddingMm: 4 * scale,
-  });
-  const addressFontSize = calculateFontSize(address || '', addressAvailableWidth, scale, {
-    maxFontPt: 12 * scale,
-    minFontPt: 7 * scale,
-    paddingMm: 4 * scale,
-  });
+  const addressFuriganaFontSize = calculateFontSize(
+    addressFurigana || '',
+    addressAvailableWidth,
+    scale,
+    {
+      maxFontPt: 8 * scale,
+      minFontPt: 5 * scale,
+      paddingMm: 4 * scale,
+    },
+  );
+  const addressFontSize = calculateFontSize(
+    address || '',
+    addressAvailableWidth,
+    scale,
+    {
+      maxFontPt: 12 * scale,
+      minFontPt: 7 * scale,
+      paddingMm: 4 * scale,
+    },
+  );
   const phoneFontSize = calculateFontSize(phone || '', contactWidth, scale, {
     maxFontPt: 8 * scale,
     minFontPt: 5 * scale,
@@ -256,7 +278,7 @@ export interface PhotoBoxProps {
 
 export function buildPhotoBox({ layout, photoDataUri }: PhotoBoxProps): string {
   const { photoWidth, scale } = layout;
-  
+
   // If photo is provided, show the image
   if (photoDataUri) {
     return `
@@ -267,7 +289,7 @@ export function buildPhotoBox({ layout, photoDataUri }: PhotoBoxProps): string {
       </div>
     `;
   }
-  
+
   // Default: show instructions
   return `
     <div style="position: absolute; right: 0; top: ${mm(-9 * scale)}; width: ${mm(photoWidth)}">
@@ -617,7 +639,8 @@ export function buildRightPage({
     `;
 
   // License table margin: use margin-top only when history section doesn't exist
-  const licenseMarginTop = rightHistoryRows > 0 || shokurekiMovedToRight ? 0 : tableMargin;
+  const licenseMarginTop =
+    rightHistoryRows > 0 || shokurekiMovedToRight ? 0 : tableMargin;
 
   return `
     <div class="page page--right">

@@ -3,7 +3,7 @@
  * Tests all CLI options and combinations
  */
 
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -13,13 +13,25 @@ const OUTPUT_DIR = path.join(__dirname, 'output');
 const CLI_PATH = path.join(__dirname, '../../dist/bin.js');
 
 // Helper to run CLI command
-function runCLI(args: string): { stdout: string; stderr: string; exitCode: number } {
+function runCLI(args: string): {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+} {
   try {
-    const stdout = execSync(`node ${CLI_PATH} ${args}`, {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-    return { stdout, stderr: '', exitCode: 0 };
+    const result = spawnSync(
+      'node',
+      [CLI_PATH, ...args.split(' ').filter((a) => a)],
+      {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      },
+    );
+    return {
+      stdout: result.stdout ?? '',
+      stderr: result.stderr ?? '',
+      exitCode: result.status ?? 0,
+    };
   } catch (error) {
     const e = error as { stdout?: string; stderr?: string; status?: number };
     return {
@@ -55,7 +67,10 @@ describe('CLI E2E Tests', () => {
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
     // Build the project first
-    execSync('npm run build', { cwd: path.join(__dirname, '../..'), stdio: 'ignore' });
+    execSync('npm run build', {
+      cwd: path.join(__dirname, '../..'),
+      stdio: 'ignore',
+    });
   });
 
   afterAll(() => {
@@ -73,6 +88,13 @@ describe('CLI E2E Tests', () => {
       const result = runCLI('--help');
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('md2cv');
+      expect(result.stdout).toContain('generate');
+      expect(result.stdout).toContain('init');
+    });
+
+    it('should show generate command help', () => {
+      const result = runCLI('generate --help');
+      expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('-i, --input');
       expect(result.stdout).toContain('-o, --output');
       expect(result.stdout).toContain('-f, --format');
@@ -253,7 +275,9 @@ describe('CLI E2E Tests', () => {
       it(`should generate rirekisho with correct ${size.toUpperCase()} dimensions`, () => {
         const output = path.join(OUTPUT_DIR, `rirekisho-${size}`);
         const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-        const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p ${size}`);
+        const result = runCLI(
+          `-i ${input} -o ${output} -f rirekisho -t html -p ${size}`,
+        );
 
         expect(result.exitCode).toBe(0);
         expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
@@ -281,7 +305,9 @@ describe('CLI E2E Tests', () => {
       it(`should have all required sections for ${size.toUpperCase()}`, () => {
         const output = path.join(OUTPUT_DIR, `rirekisho-sections-${size}`);
         const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-        const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p ${size}`);
+        const result = runCLI(
+          `-i ${input} -o ${output} -f rirekisho -t html -p ${size}`,
+        );
 
         expect(result.exitCode).toBe(0);
 
@@ -305,7 +331,9 @@ describe('CLI E2E Tests', () => {
         expect(html).toContain('<td');
 
         // Check that table rows have height set (for consistent layout)
-        const trWithHeight = (html.match(/<tr style="height: [\d.]+mm">/g) || []).length;
+        const trWithHeight = (
+          html.match(/<tr style="height: [\d.]+mm">/g) || []
+        ).length;
         expect(trWithHeight).toBeGreaterThan(0);
       });
     }
@@ -317,7 +345,9 @@ describe('CLI E2E Tests', () => {
     it('should include motivation section by default', () => {
       const output = path.join(OUTPUT_DIR, 'motivation-default');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p a4`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html -p a4`,
+      );
 
       expect(result.exitCode).toBe(0);
       const html = fs.readFileSync(`${output}_rirekisho.html`, 'utf-8');
@@ -347,7 +377,9 @@ describe('CLI E2E Tests', () => {
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
       const config = path.join(FIXTURES_DIR, 'config-full.json');
       // Explicitly use -f both to test config file loading works
-      const result = runCLI(`-i ${input} -o ${output} -c ${config} -f both -t both -p a3`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -c ${config} -f both -t both -p a3`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_cv.pdf`)).toBe(true);
@@ -361,7 +393,9 @@ describe('CLI E2E Tests', () => {
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
       const config = path.join(FIXTURES_DIR, 'config-full.yaml');
       // Explicitly use -f both to test config file loading works
-      const result = runCLI(`-i ${input} -o ${output} -c ${config} -f both -t both -p a3`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -c ${config} -f both -t both -p a3`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_cv.pdf`)).toBe(true);
@@ -383,7 +417,9 @@ describe('CLI E2E Tests', () => {
       const input = path.join(FIXTURES_DIR, 'resume-en.md');
       const config = path.join(FIXTURES_DIR, 'config-full.json');
       // config has format: both, but CLI overrides to cv
-      const result = runCLI(`-i ${input} -o ${output} -c ${config} -f cv -t pdf`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -c ${config} -f cv -t pdf`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_cv.pdf`)).toBe(true);
@@ -409,7 +445,9 @@ describe('CLI E2E Tests', () => {
     it('should output text format logs with --log-format text', () => {
       const output = path.join(OUTPUT_DIR, 'log-text-explicit');
       const input = path.join(FIXTURES_DIR, 'resume-en.md');
-      const result = runCLI(`-i ${input} -o ${output} --verbose --log-format text`);
+      const result = runCLI(
+        `-i ${input} -o ${output} --verbose --log-format text`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('DEBUG');
@@ -418,7 +456,9 @@ describe('CLI E2E Tests', () => {
     it('should output JSON format logs with --log-format json', () => {
       const output = path.join(OUTPUT_DIR, 'log-json');
       const input = path.join(FIXTURES_DIR, 'resume-en.md');
-      const result = runCLI(`-i ${input} -o ${output} --verbose --log-format json`);
+      const result = runCLI(
+        `-i ${input} -o ${output} --verbose --log-format json`,
+      );
 
       expect(result.exitCode).toBe(0);
       // JSON format should have structured output
@@ -444,7 +484,9 @@ describe('CLI E2E Tests', () => {
     it('should show debug logs with --verbose', () => {
       const output = path.join(OUTPUT_DIR, 'verbose-on');
       const input = path.join(FIXTURES_DIR, 'resume-en.md');
-      const result = runCLI(`-i ${input} -o ${output} --verbose --log-format json`);
+      const result = runCLI(
+        `-i ${input} -o ${output} --verbose --log-format json`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('"level":"DEBUG"');
@@ -592,7 +634,9 @@ describe('CLI E2E Tests', () => {
       it(`should handle extreme content on ${size.toUpperCase()} paper`, () => {
         const output = path.join(OUTPUT_DIR, `rirekisho-extreme-${size}`);
         const input = path.join(FIXTURES_DIR, 'resume-rirekisho-extreme-ja.md');
-        const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t both -p ${size}`);
+        const result = runCLI(
+          `-i ${input} -o ${output} -f rirekisho -t both -p ${size}`,
+        );
 
         expect(result.exitCode).toBe(0);
         expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
@@ -633,7 +677,9 @@ describe('CLI E2E Tests', () => {
     it('should generate PDF without errors for extreme content', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-extreme-pdf');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-extreme-ja.md');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t pdf -p a4`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t pdf -p a4`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_rirekisho.pdf`)).toBe(true);
@@ -652,9 +698,17 @@ describe('CLI E2E Tests', () => {
 
       for (const size of paperSizes) {
         it(`should succeed on ${size.toUpperCase()} with normal data`, () => {
-          const output = path.join(OUTPUT_DIR, `rirekisho-borderline-pass-${size}`);
-          const input = path.join(FIXTURES_DIR, 'resume-rirekisho-borderline-pass-ja.md');
-          const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p ${size}`);
+          const output = path.join(
+            OUTPUT_DIR,
+            `rirekisho-borderline-pass-${size}`,
+          );
+          const input = path.join(
+            FIXTURES_DIR,
+            'resume-rirekisho-borderline-pass-ja.md',
+          );
+          const result = runCLI(
+            `-i ${input} -o ${output} -f rirekisho -t html -p ${size}`,
+          );
 
           expect(result.exitCode).toBe(0);
           expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
@@ -670,21 +724,39 @@ describe('CLI E2E Tests', () => {
 
       for (const size of failingSizes) {
         it(`should fail on ${size.toUpperCase()} with borderline data`, () => {
-          const output = path.join(OUTPUT_DIR, `rirekisho-borderline-fail-${size}`);
-          const input = path.join(FIXTURES_DIR, 'resume-rirekisho-borderline-fail-ja.md');
-          const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p ${size}`);
+          const output = path.join(
+            OUTPUT_DIR,
+            `rirekisho-borderline-fail-${size}`,
+          );
+          const input = path.join(
+            FIXTURES_DIR,
+            'resume-rirekisho-borderline-fail-ja.md',
+          );
+          const result = runCLI(
+            `-i ${input} -o ${output} -f rirekisho -t html -p ${size}`,
+          );
 
           expect(result.exitCode).toBe(1);
-          expect(result.stderr).toContain('データが多すぎてページに収まりません');
+          expect(result.stderr).toContain(
+            'データが多すぎてページに収まりません',
+          );
           expect(fileExists(`${output}_rirekisho.html`)).toBe(false);
         });
       }
 
       for (const size of passingSizes) {
         it(`should succeed on ${size.toUpperCase()} with borderline data`, () => {
-          const output = path.join(OUTPUT_DIR, `rirekisho-borderline-fail-${size}`);
-          const input = path.join(FIXTURES_DIR, 'resume-rirekisho-borderline-fail-ja.md');
-          const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p ${size}`);
+          const output = path.join(
+            OUTPUT_DIR,
+            `rirekisho-borderline-fail-${size}`,
+          );
+          const input = path.join(
+            FIXTURES_DIR,
+            'resume-rirekisho-borderline-fail-ja.md',
+          );
+          const result = runCLI(
+            `-i ${input} -o ${output} -f rirekisho -t html -p ${size}`,
+          );
 
           expect(result.exitCode).toBe(0);
           expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
@@ -698,11 +770,18 @@ describe('CLI E2E Tests', () => {
       for (const size of paperSizes) {
         it(`should fail on ${size.toUpperCase()} with overflow data`, () => {
           const output = path.join(OUTPUT_DIR, `rirekisho-overflow-${size}`);
-          const input = path.join(FIXTURES_DIR, 'resume-rirekisho-overflow-ja.md');
-          const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p ${size}`);
+          const input = path.join(
+            FIXTURES_DIR,
+            'resume-rirekisho-overflow-ja.md',
+          );
+          const result = runCLI(
+            `-i ${input} -o ${output} -f rirekisho -t html -p ${size}`,
+          );
 
           expect(result.exitCode).toBe(1);
-          expect(result.stderr).toContain('データが多すぎてページに収まりません');
+          expect(result.stderr).toContain(
+            'データが多すぎてページに収まりません',
+          );
           expect(fileExists(`${output}_rirekisho.html`)).toBe(false);
         });
       }
@@ -711,11 +790,15 @@ describe('CLI E2E Tests', () => {
     it('should show Japanese error message for overflow', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-overflow-error-msg');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-overflow-ja.md');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p a3`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html -p a3`,
+      );
 
       expect(result.exitCode).toBe(1);
       expect(result.stderr).toContain('データが多すぎてページに収まりません');
-      expect(result.stderr).toContain('学歴・職歴または免許・資格の数を減らしてください');
+      expect(result.stderr).toContain(
+        '学歴・職歴または免許・資格の数を減らしてください',
+      );
     });
   });
 
@@ -724,8 +807,13 @@ describe('CLI E2E Tests', () => {
 
     it('should move 職歴 label to right page when it falls on last row of left page', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-shokureki-adjust');
-      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-shokureki-adjust-ja.md');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p a4`);
+      const input = path.join(
+        FIXTURES_DIR,
+        'resume-rirekisho-shokureki-adjust-ja.md',
+      );
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html -p a4`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
@@ -733,7 +821,9 @@ describe('CLI E2E Tests', () => {
       const html = fs.readFileSync(`${output}_rirekisho.html`, 'utf-8');
 
       // Split HTML into left and right pages
-      const leftPageMatch = html.match(/class="page page--left"[\s\S]*?(?=class="page page--right")/);
+      const leftPageMatch = html.match(
+        /class="page page--left"[\s\S]*?(?=class="page page--right")/,
+      );
       const rightPageMatch = html.match(/class="page page--right"[\s\S]*/);
 
       expect(leftPageMatch).not.toBeNull();
@@ -759,7 +849,9 @@ describe('CLI E2E Tests', () => {
     it('should fail with non-existent photo file', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-photo-notfound');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html --photo /nonexistent/photo.png`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html --photo /nonexistent/photo.png`,
+      );
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('Photo file not found');
@@ -769,7 +861,9 @@ describe('CLI E2E Tests', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-photo-unsupported');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
       // Use the markdown file itself as an invalid photo format
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html --photo ${input}`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html --photo ${input}`,
+      );
 
       expect(result.exitCode).not.toBe(0);
       expect(result.stderr).toContain('Unsupported photo format');
@@ -779,7 +873,9 @@ describe('CLI E2E Tests', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-photo');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
       const photo = path.join(FIXTURES_DIR, 'test-photo.png');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t html -p a4 --photo ${photo}`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html -p a4 --photo ${photo}`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
@@ -800,7 +896,9 @@ describe('CLI E2E Tests', () => {
       const output = path.join(OUTPUT_DIR, 'rirekisho-photo-pdf');
       const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
       const photo = path.join(FIXTURES_DIR, 'test-photo.png');
-      const result = runCLI(`-i ${input} -o ${output} -f rirekisho -t pdf -p a4 --photo ${photo}`);
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t pdf -p a4 --photo ${photo}`,
+      );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_rirekisho.pdf`)).toBe(true);
@@ -869,6 +967,162 @@ describe('CLI E2E Tests', () => {
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_cv.pdf`)).toBe(true);
+    });
+  });
+
+  describe('Init Command', () => {
+    beforeAll(() => cleanOutput());
+
+    describe('Template Generation', () => {
+      it('should generate English CV template to stdout', () => {
+        const result = runCLI('init -l en -f cv');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('name: John Doe');
+        expect(result.stdout).toContain('# Summary');
+        expect(result.stdout).toContain('# Experience');
+        expect(result.stdout).toContain('# Education');
+        expect(result.stdout).toContain('# Skills');
+      });
+
+      it('should generate Japanese CV template to stdout', () => {
+        const result = runCLI('init -l ja -f cv');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('name: 山田 太郎');
+        expect(result.stdout).toContain('# 職務要約');
+        expect(result.stdout).toContain('# 職歴');
+        expect(result.stdout).toContain('# 学歴');
+      });
+
+      it('should generate rirekisho template', () => {
+        const result = runCLI('init -l ja -f rirekisho');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('# 職歴');
+        expect(result.stdout).toContain('# 志望動機');
+        expect(result.stdout).toContain('# 本人希望記入欄');
+        expect(result.stdout).not.toContain('# 職務要約');
+      });
+
+      it('should generate both format template', () => {
+        const result = runCLI('init -l en -f both');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('# Summary');
+        expect(result.stdout).toContain('# Motivation');
+        expect(result.stdout).toContain('# Notes');
+      });
+
+      it('should generate template to file', () => {
+        const output = path.join(OUTPUT_DIR, 'init-template.md');
+        const result = runCLI(`init -l en -f cv -o ${output}`);
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).toContain('Template created:');
+        expect(fileExists(output)).toBe(true);
+
+        const content = fs.readFileSync(output, 'utf-8');
+        expect(content).toContain('name: John Doe');
+        expect(content).toContain('# Summary');
+      });
+
+      it('should generate template without comments', () => {
+        const result = runCLI('init -l en -f cv --no-comments');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).not.toContain('<!--');
+        expect(result.stdout).not.toContain('-->');
+        expect(result.stdout).not.toContain('md2cv Template');
+      });
+
+      it('should include comments by default', () => {
+        const result = runCLI('init -l en -f cv');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('<!--');
+        expect(result.stdout).toContain('-->');
+        expect(result.stdout).toContain('md2cv Template');
+      });
+    });
+
+    describe('List Templates', () => {
+      it('should list available templates', () => {
+        const result = runCLI('init --list-templates');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('Available templates:');
+        expect(result.stdout).toContain('en - English');
+        expect(result.stdout).toContain('ja - 日本語 (Japanese)');
+        expect(result.stdout).toContain('Formats:');
+        expect(result.stdout).toContain('cv, rirekisho, both');
+      });
+    });
+
+    describe('List Sections', () => {
+      it('should list sections for English CV', () => {
+        const result = runCLI('init -l en -f cv --list-sections');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('Available sections (cv format):');
+        expect(result.stdout).toContain('summary');
+        expect(result.stdout).toContain('experience');
+        expect(result.stdout).toContain('education');
+        expect(result.stdout).toContain('skills');
+        expect(result.stdout).toContain('Title:');
+        expect(result.stdout).toContain('Usage:');
+        expect(result.stdout).toContain('Description:');
+      });
+
+      it('should list sections for Japanese rirekisho', () => {
+        const result = runCLI('init -l ja -f rirekisho --list-sections');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain(
+          '利用可能なセクション (rirekisho フォーマット):',
+        );
+        expect(result.stdout).toContain('experience');
+        expect(result.stdout).toContain('motivation');
+        expect(result.stdout).toContain('notes');
+        expect(result.stdout).toContain('タイトル:');
+        expect(result.stdout).toContain('用途:');
+        expect(result.stdout).toContain('説明:');
+      });
+    });
+
+    describe('Error Handling', () => {
+      it('should fail with invalid language', () => {
+        const result = runCLI('init -l fr -f cv');
+
+        expect(result.exitCode).not.toBe(0);
+        expect(result.stderr).toContain('Invalid language');
+        expect(result.stderr).toContain('Available: en, ja');
+      });
+
+      it('should fail with invalid format', () => {
+        const result = runCLI('init -l en -f invalid');
+
+        expect(result.exitCode).not.toBe(0);
+        expect(result.stderr).toContain('Invalid format');
+        expect(result.stderr).toContain('Available: cv, rirekisho, both');
+      });
+    });
+
+    describe('Default Values', () => {
+      it('should use English as default language', () => {
+        const result = runCLI('init -f cv');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('name: John Doe');
+      });
+
+      it('should use cv as default format', () => {
+        const result = runCLI('init -l en');
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('# Summary');
+        expect(result.stdout).not.toContain('# Motivation');
+      });
     });
   });
 });

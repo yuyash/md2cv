@@ -45,7 +45,14 @@ export const SECTION_DEFINITIONS: readonly SectionDef[] = [
   },
   {
     id: 'experience',
-    tags: ['職歴', '職務経歴', '職務履歴', 'Experience', 'Work Experience', 'Professional Experience'],
+    tags: [
+      '職歴',
+      '職務経歴',
+      '職務履歴',
+      'Experience',
+      'Work Experience',
+      'Professional Experience',
+    ],
     usage: 'both',
     requiredFor: ['cv', 'rirekisho', 'both'],
   },
@@ -102,7 +109,9 @@ export const SECTION_DEFINITIONS: readonly SectionDef[] = [
  */
 export function findSectionByTag(tag: string): SectionDef | undefined {
   const normalizedTag = tag.toLowerCase().trim();
-  return SECTION_DEFINITIONS.find((def) => def.tags.some((t) => t.toLowerCase() === normalizedTag));
+  return SECTION_DEFINITIONS.find((def) =>
+    def.tags.some((t) => t.toLowerCase() === normalizedTag),
+  );
 }
 
 /**
@@ -124,7 +133,9 @@ export function getValidTagsForFormat(format: OutputFormat): string[] {
 export function getRequiredSectionsForFormat(format: OutputFormat): string[] {
   return SECTION_DEFINITIONS.filter((def) => {
     if (format === 'both') {
-      return def.requiredFor.includes('cv') || def.requiredFor.includes('rirekisho');
+      return (
+        def.requiredFor.includes('cv') || def.requiredFor.includes('rirekisho')
+      );
     }
     return def.requiredFor.includes(format) || def.requiredFor.includes('both');
   }).map((def) => def.id);
@@ -133,7 +144,10 @@ export function getRequiredSectionsForFormat(format: OutputFormat): string[] {
 /**
  * Check if a section is valid for a given output format
  */
-export function isSectionValidForFormat(sectionId: string, format: OutputFormat): boolean {
+export function isSectionValidForFormat(
+  sectionId: string,
+  format: OutputFormat,
+): boolean {
   const def = SECTION_DEFINITIONS.find((d) => d.id === sectionId);
   if (!def) return false;
   if (format === 'both') return true;
@@ -238,10 +252,23 @@ export type SectionContent =
   | { readonly type: 'text'; readonly text: string }
   | { readonly type: 'list'; readonly items: readonly string[] }
   | { readonly type: 'education'; readonly entries: readonly EducationEntry[] }
-  | { readonly type: 'experience'; readonly entries: readonly ExperienceEntry[] }
-  | { readonly type: 'certifications'; readonly entries: readonly CertificationEntry[] }
-  | { readonly type: 'skills'; readonly entries: readonly SkillEntry[]; readonly options: SkillsOptions }
-  | { readonly type: 'competencies'; readonly entries: readonly CompetencyEntry[] }
+  | {
+      readonly type: 'experience';
+      readonly entries: readonly ExperienceEntry[];
+    }
+  | {
+      readonly type: 'certifications';
+      readonly entries: readonly CertificationEntry[];
+    }
+  | {
+      readonly type: 'skills';
+      readonly entries: readonly SkillEntry[];
+      readonly options: SkillsOptions;
+    }
+  | {
+      readonly type: 'competencies';
+      readonly entries: readonly CompetencyEntry[];
+    }
   | { readonly type: 'languages'; readonly entries: readonly LanguageEntry[] }
   | { readonly type: 'table'; readonly rows: readonly TableRow[] };
 

@@ -287,8 +287,8 @@ export function getSectionList(
         return sec.content.items.map((item) => escapeHtml(item));
       }
       if (sec.content.type === 'competencies') {
-        return sec.content.entries.map((entry) => 
-          escapeHtml(`${entry.header}: ${entry.description}`)
+        return sec.content.entries.map((entry) =>
+          escapeHtml(`${entry.header}: ${entry.description}`),
         );
       }
     }

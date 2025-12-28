@@ -123,7 +123,9 @@ phone_number: 03-1234-5678
     const result = parseMarkdown(markdown);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      const eduSection = result.value.sections.find((s) => s.id === 'education');
+      const eduSection = result.value.sections.find(
+        (s) => s.id === 'education',
+      );
       expect(eduSection).toBeDefined();
       expect(eduSection?.content.type).toBe('table');
       if (eduSection?.content.type === 'table') {
@@ -187,7 +189,9 @@ Some experience content.
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.value.metadata.name).toBe('Frontmatter User');
-      expect(result.value.metadata.email_address).toBe('frontmatter@example.com');
+      expect(result.value.metadata.email_address).toBe(
+        'frontmatter@example.com',
+      );
       expect(result.value.metadata.phone_number).toBe('111-111-1111');
     }
   });

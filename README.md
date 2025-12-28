@@ -26,6 +26,35 @@ npx md2cv -i your-cv.md
 
 ## Usage
 
+### Quick Start with Templates
+
+The easiest way to get started is to generate a template:
+
+```bash
+# Generate an English CV template
+md2cv init -l en -f cv -o my-cv.md
+
+# Generate a Japanese rirekisho template
+md2cv init -l ja -f rirekisho -o my-rirekisho.md
+
+# Generate a template for both formats
+md2cv init -l en -f both -o my-resume.md
+
+# Generate template without explanatory comments
+md2cv init -l en -f cv --no-comments -o my-cv.md
+
+# Output template to stdout
+md2cv init -l ja -f cv
+
+# List available templates
+md2cv init --list-templates
+
+# List available sections for a specific format
+md2cv init -l en -f cv --list-sections
+```
+
+### Generating CV/Resume
+
 Here are some common examples to get you started:
 
 ```bash
@@ -66,9 +95,39 @@ md2cv -i examples/example-cv-en.md --stylesheet custom.css
 md2cv -i examples/example-cv-en.md --verbose
 ```
 
-## CLI Options
+## CLI Commands
 
-The following options are available to customize the output:
+md2cv provides two commands:
+
+### generate (default)
+
+Generate CV/resume from a markdown file. This is the default command.
+
+```bash
+md2cv generate -i input.md [options]
+md2cv -i input.md [options]  # 'generate' can be omitted
+```
+
+### init
+
+Generate a markdown template to help you get started.
+
+```bash
+md2cv init [options]
+```
+
+| Option              | Description                                      | Default |
+| ------------------- | ------------------------------------------------ | ------- |
+| `-o, --output`      | Output file path (default: stdout)               | stdout  |
+| `-l, --lang`        | Template language (`en`, `ja`)                   | `en`    |
+| `-f, --format`      | Output format (`cv`, `rirekisho`, `both`)        | `cv`    |
+| `--no-comments`     | Exclude explanatory comments from template       | -       |
+| `--list-templates`  | List available templates and their details       | -       |
+| `--list-sections`   | List available sections for the specified format | -       |
+
+## Generate Options
+
+The following options are available for the `generate` command:
 
 | Option                     | Description                                                                                                      | Default         |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------- |
@@ -271,15 +330,15 @@ Available to start immediately. Open to relocation.
 
 | Section ID     | Supported Tags                                                                    | Format    |
 | -------------- | --------------------------------------------------------------------------------- | --------- |
-| `summary`      | 概要, 職務要約, Summary, Professional Summary, Profile, Executive Summary         | CV        |
-| `experience`   | 職歴, 職務経歴, Experience, Work Experience, Professional Experience              | Both      |
-| `education`    | 学歴, Education                                                                   | Both      |
-| `skills`       | スキル, Skills, Technical Skills                                                  | Both      |
-| `certifications` | 免許・資格, 資格, 免許, Certifications                                          | Both      |
-| `languages`    | 語学, Languages, Language Skills                                                  | CV        |
-| `competencies` | 自己PR, Core Competencies, Key Competencies, Superpowers                          | Both      |
-| `motivation`   | 志望動機, 志望の動機, Motivation                                                  | Rirekisho |
-| `notes`        | 本人希望記入欄, Notes                                                             | Rirekisho |
+| `summary`      | Summary, Professional Summary, Profile, Executive Summary, 概要, 職務要約           | CV        |
+| `experience`   | Experience, Work Experience, Professional Experience, 職歴, 職務経歴                | Both      |
+| `education`    | Education, 学歴                                                                   | Both      |
+| `skills`       | Skills, Technical Skills, スキル                                                  | Both      |
+| `certifications` | Certifications, 免許・資格, 資格, 免許.                                           | Both      |
+| `languages`    | Languages, Language Skills語学                                                    | CV        |
+| `competencies` | Core Competencies, Key Competencies, Superpowers, 自己PR                          | Both      |
+| `motivation`   | Motivation, 志望動機, 志望の動機                                                    | Rirekisho |
+| `notes`        | Notes, 本人希望記入欄                                                               | Rirekisho |
 
 ## Configuration File
 

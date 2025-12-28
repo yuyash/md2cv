@@ -10,21 +10,27 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-    buildLeftPage,
-    buildRightPage,
-    getAdjustedHistoryData,
+  buildLeftPage,
+  buildRightPage,
+  getAdjustedHistoryData,
 } from '../../src/generator/rirekisho/components.js';
 import {
-    buildHistoryData,
-    buildLicenseData,
-    countDataRows,
-    extractPersonalInfo,
-    getSectionText,
+  buildHistoryData,
+  buildLicenseData,
+  countDataRows,
+  extractPersonalInfo,
+  getSectionText,
 } from '../../src/generator/rirekisho/data.js';
 import { generateRirekishoHTML } from '../../src/generator/rirekisho/index.js';
-import { calculateLayout, validateLayout } from '../../src/generator/rirekisho/layout.js';
+import {
+  calculateLayout,
+  validateLayout,
+} from '../../src/generator/rirekisho/layout.js';
 import { generateCSS } from '../../src/generator/rirekisho/styles.js';
-import type { RirekishoInput, RirekishoOptions } from '../../src/generator/rirekisho/types.js';
+import type {
+  RirekishoInput,
+  RirekishoOptions,
+} from '../../src/generator/rirekisho/types.js';
 import type { CVMetadata } from '../../src/types/metadata.js';
 import type { ParsedSection } from '../../src/types/sections.js';
 
@@ -137,7 +143,9 @@ describe('rirekisho integration', () => {
 
       // Layout should accommodate the data
       expect(layout.leftHistoryRows).toBeGreaterThan(0);
-      expect(layout.licenseRows).toBeGreaterThanOrEqual(dataCounts.licenseDataRows);
+      expect(layout.licenseRows).toBeGreaterThanOrEqual(
+        dataCounts.licenseDataRows,
+      );
     });
 
     it('should adjust row height for large data', () => {
@@ -294,10 +302,8 @@ describe('rirekisho integration', () => {
 
       // If 職歴 would be at the last row of left page
       if (shokurekiIndex === layout.leftHistoryRows - 1) {
-        const { leftData, rightData, shokurekiMovedToRight } = getAdjustedHistoryData(
-          history,
-          layout.leftHistoryRows,
-        );
+        const { leftData, rightData, shokurekiMovedToRight } =
+          getAdjustedHistoryData(history, layout.leftHistoryRows);
 
         expect(shokurekiMovedToRight).toBe(true);
         expect(rightData[0][2]).toBe('職歴');
@@ -339,15 +345,23 @@ describe('rirekisho integration', () => {
       const historyDesc = buildHistoryData(sections, 'desc');
 
       // Filter out label rows (学歴, 職歴, 現在に至る, 以上) and get years
-      const getYearsFromSection = (history: typeof historyAsc, sectionLabel: string): number[] => {
+      const getYearsFromSection = (
+        history: typeof historyAsc,
+        sectionLabel: string,
+      ): number[] => {
         const startIdx = history.findIndex((row) => row[2] === sectionLabel);
         if (startIdx === -1) return [];
-        
+
         const years: number[] = [];
         for (let i = startIdx + 1; i < history.length; i++) {
           const row = history[i];
           // Stop at next section label or special labels
-          if (row[2] === '学歴' || row[2] === '職歴' || row[2] === '現在に至る' || row[2] === '以上') {
+          if (
+            row[2] === '学歴' ||
+            row[2] === '職歴' ||
+            row[2] === '現在に至る' ||
+            row[2] === '以上'
+          ) {
             break;
           }
           if (row[0] !== '') {

@@ -46,7 +46,10 @@ export function isFailure<T, E>(result: Result<T, E>): result is Failure<E> {
 /**
  * Maps a successful Result's value using the provided function
  */
-export function map<T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> {
+export function map<T, U, E>(
+  result: Result<T, E>,
+  fn: (value: T) => U,
+): Result<U, E> {
   if (result.ok) {
     return success(fn(result.value));
   }
@@ -56,7 +59,10 @@ export function map<T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<
 /**
  * Maps a failed Result's error using the provided function
  */
-export function mapError<T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> {
+export function mapError<T, E, F>(
+  result: Result<T, E>,
+  fn: (error: E) => F,
+): Result<T, F> {
   if (!result.ok) {
     return failure(fn(result.error));
   }
@@ -68,7 +74,7 @@ export function mapError<T, E, F>(result: Result<T, E>, fn: (error: E) => F): Re
  */
 export function flatMap<T, U, E>(
   result: Result<T, E>,
-  fn: (value: T) => Result<U, E>
+  fn: (value: T) => Result<U, E>,
 ): Result<U, E> {
   if (result.ok) {
     return fn(result.value);

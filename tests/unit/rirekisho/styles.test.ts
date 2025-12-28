@@ -5,8 +5,14 @@
 import { describe, expect, it } from 'vitest';
 import { calculateLayout } from '../../../src/generator/rirekisho/layout.js';
 import { generateCSS } from '../../../src/generator/rirekisho/styles.js';
-import type { LayoutDimensions, PaperSize } from '../../../src/generator/rirekisho/types.js';
-import { PAPER_SIZES, SCALE_FACTORS } from '../../../src/generator/rirekisho/types.js';
+import type {
+  LayoutDimensions,
+  PaperSize,
+} from '../../../src/generator/rirekisho/types.js';
+import {
+  PAPER_SIZES,
+  SCALE_FACTORS,
+} from '../../../src/generator/rirekisho/types.js';
 
 describe('rirekisho/styles', () => {
   // Helper to create layout for testing
@@ -23,14 +29,18 @@ describe('rirekisho/styles', () => {
         const layout = createTestLayout('a3');
         const css = generateCSS(layout);
 
-        expect(css).toContain(`size: ${PAPER_SIZES.a3.width}mm ${PAPER_SIZES.a3.height}mm landscape`);
+        expect(css).toContain(
+          `size: ${PAPER_SIZES.a3.width}mm ${PAPER_SIZES.a3.height}mm landscape`,
+        );
       });
 
       it('should set correct page size for A4', () => {
         const layout = createTestLayout('a4');
         const css = generateCSS(layout);
 
-        expect(css).toContain(`size: ${PAPER_SIZES.a4.width}mm ${PAPER_SIZES.a4.height}mm landscape`);
+        expect(css).toContain(
+          `size: ${PAPER_SIZES.a4.width}mm ${PAPER_SIZES.a4.height}mm landscape`,
+        );
       });
 
       it('should set margin to 0', () => {
@@ -266,7 +276,9 @@ describe('rirekisho/styles', () => {
         const css = generateCSS(layout);
 
         // Border uses CSS variable for width
-        expect(css).toContain('var(--rirekisho-border-width) dashed var(--rirekisho-color-border)');
+        expect(css).toContain(
+          'var(--rirekisho-border-width) dashed var(--rirekisho-color-border)',
+        );
       });
 
       it('should define photo-box--with-image class', () => {
@@ -282,7 +294,9 @@ describe('rirekisho/styles', () => {
 
         // Check that photo-box--with-image has solid border using CSS variable
         expect(css).toContain('.photo-box--with-image');
-        expect(css).toContain('var(--rirekisho-border-width) solid var(--rirekisho-color-border)');
+        expect(css).toContain(
+          'var(--rirekisho-border-width) solid var(--rirekisho-color-border)',
+        );
       });
     });
 

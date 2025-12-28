@@ -4,24 +4,24 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-    buildAddressRow,
-    buildBirthGenderRow,
-    buildHeader,
-    buildHistoryTable,
-    buildLeftPage,
-    buildLicenseTable,
-    buildNameSection,
-    buildPhotoBox,
-    buildRightPage,
-    buildSectionBox,
-    getAdjustedHistoryData,
+  buildAddressRow,
+  buildBirthGenderRow,
+  buildHeader,
+  buildHistoryTable,
+  buildLeftPage,
+  buildLicenseTable,
+  buildNameSection,
+  buildPhotoBox,
+  buildRightPage,
+  buildSectionBox,
+  getAdjustedHistoryData,
 } from '../../../src/generator/rirekisho/components.js';
 import { calculateLayout } from '../../../src/generator/rirekisho/layout.js';
 import type {
-    HistoryRow,
-    LayoutDimensions,
-    PersonalInfo,
-    TodayDate,
+  HistoryRow,
+  LayoutDimensions,
+  PersonalInfo,
+  TodayDate,
 } from '../../../src/generator/rirekisho/types.js';
 
 describe('rirekisho/components', () => {
@@ -236,7 +236,8 @@ describe('rirekisho/components', () => {
 
     it('should render image when photoDataUri is provided', () => {
       const layout = createTestLayout();
-      const photoDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      const photoDataUri =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
       const html = buildPhotoBox({ layout, photoDataUri });
 
       expect(html).toContain('<img');
@@ -557,7 +558,13 @@ describe('rirekisho/components', () => {
       const history: HistoryRow[] = [];
       const photoDataUri = 'data:image/png;base64,testphoto';
 
-      const html = buildLeftPage({ layout, info, history, today, photoDataUri });
+      const html = buildLeftPage({
+        layout,
+        info,
+        history,
+        today,
+        photoDataUri,
+      });
 
       expect(html).toContain('<img');
       expect(html).toContain(`src="${photoDataUri}"`);

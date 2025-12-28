@@ -69,7 +69,7 @@ export function createParseError(
   line: number,
   column: number,
   source: string,
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
 ): ParseError {
   return {
     type: 'parse',
@@ -91,7 +91,7 @@ export function createValidationError(
   field: string,
   expected: string,
   received: string,
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
 ): ValidationError {
   return {
     type: 'validation',
@@ -112,7 +112,7 @@ export function createTransformError(
   message: string,
   section: string,
   operation: string,
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
 ): TransformError {
   return {
     type: 'transform',
@@ -132,7 +132,7 @@ export function createOutputError(
   message: string,
   format: 'pdf' | 'html',
   cause?: Error,
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
 ): OutputError {
   return {
     type: 'output',
@@ -153,7 +153,7 @@ export function createConfigError(
   path: string,
   expected: string,
   received: string,
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
 ): ConfigError {
   return {
     type: 'config',
@@ -177,7 +177,7 @@ export function createLintError(
   column: number,
   ruleId: string,
   severity: 'error' | 'warning',
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
 ): LintError {
   return {
     type: 'lint',
