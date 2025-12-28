@@ -392,6 +392,13 @@ if (result.ok) {
 }
 ```
 
+## Development
+
+For information about project structure, testing, and contributing, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+[![Coverage](https://img.shields.io/endpoint?url=https://yuyash.github.io/md2cv/badge.json)](https://yuyash.github.io/md2cv/)
+[![CI](https://github.com/yuyash/md2cv/actions/workflows/ci.yml/badge.svg)](https://github.com/yuyash/md2cv/actions/workflows/ci.yml)
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 (GPL-3.0). This means you are free to use, modify, and distribute this software, provided that any derivative works are also distributed under the same license. For more details, see the [LICENSE](LICENSE) file.

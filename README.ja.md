@@ -397,6 +397,13 @@ if (result.ok) {
 }
 ```
 
+## 開発
+
+プロジェクト構造、テスト、コントリビューションについては [DEVELOPMENT.md](DEVELOPMENT.md) を参照してください。
+
+[![Coverage](https://img.shields.io/endpoint?url=https://yuyash.github.io/md2cv/badge.json)](https://yuyash.github.io/md2cv/)
+[![CI](https://github.com/yuyash/md2cv/actions/workflows/ci.yml/badge.svg)](https://github.com/yuyash/md2cv/actions/workflows/ci.yml)
+
 ## ライセンス
 
 このプロジェクトは GNU General Public License v3.0 (GPL-3.0) の下でライセンスされています。このソフトウェアは自由に使用、変更、配布できますが、派生物も同じライセンスの下で配布する必要があります。詳細は [LICENSE](LICENSE) ファイルを参照してください。
