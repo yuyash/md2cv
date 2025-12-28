@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/yuyash/md2cv/compare/v1.1.0...v1.1.1) (2025-12-28)
+
+
+### Bug Fixes
+
+* make frontmatter optional and add comprehensive metadata tests ([#12](https://github.com/yuyash/md2cv/issues/12)) ([7703dce](https://github.com/yuyash/md2cv/commit/7703dce920d71b9fabb68310040f14d2390c0f70))
+
 ## [1.1.0](https://github.com/yuyash/md2cv/compare/v1.0.5...v1.1.0) (2025-12-28)
 
 
