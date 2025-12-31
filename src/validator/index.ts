@@ -82,8 +82,7 @@ function validateSections(
   // Warn about unknown sections
   // Get all H1 headings from raw content to check for unknown sections
   const h1Regex = /^#\s+(.+)$/gm;
-  let match;
-  while ((match = h1Regex.exec(cv.rawContent)) !== null) {
+  for (const match of cv.rawContent.matchAll(h1Regex)) {
     const title = match[1]?.trim();
     if (title) {
       const sectionDef = findSectionByTag(title);

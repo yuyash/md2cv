@@ -4,12 +4,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import {
-  generateCVEnHTML,
-  type CVInput,
-} from '../../src/generator/resume_en.js';
+import { generateEnHtml, type CVInput } from '../../src/generator/resume_en.js';
 
-describe('generateCVEnHTML', () => {
+describe('generateEnHtml', () => {
   const createBasicCV = (): CVInput => ({
     metadata: {
       name: 'John Doe',
@@ -21,7 +18,7 @@ describe('generateCVEnHTML', () => {
 
   it('should generate valid HTML document', () => {
     const cv = createBasicCV();
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('<!DOCTYPE html>');
     expect(html).toContain('<html lang="en">');
@@ -30,7 +27,7 @@ describe('generateCVEnHTML', () => {
 
   it('should include name in header', () => {
     const cv = createBasicCV();
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('John Doe');
     expect(html).toContain('<h1 class="cv-name">John Doe</h1>');
@@ -38,7 +35,7 @@ describe('generateCVEnHTML', () => {
 
   it('should include contact information', () => {
     const cv = createBasicCV();
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('john@example.com');
     expect(html).toContain('+1-555-1234');
@@ -52,7 +49,7 @@ describe('generateCVEnHTML', () => {
         linkedin: 'https://linkedin.com/in/johndoe',
       },
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('https://linkedin.com/in/johndoe');
   });
@@ -65,7 +62,7 @@ describe('generateCVEnHTML', () => {
         home_address: 'Tokyo, Japan',
       },
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Tokyo, Japan');
   });
@@ -81,7 +78,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Summary');
     expect(html).toContain('Experienced software engineer');
@@ -110,7 +107,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Education');
     expect(html).toContain('MIT');
@@ -148,7 +145,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Experience');
     expect(html).toContain('Tech Corp');
@@ -191,7 +188,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Project Alpha');
     expect(html).toContain('Built new feature');
@@ -212,7 +209,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Skills');
     expect(html).toContain('JavaScript');
@@ -239,7 +236,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Languages');
     expect(html).toContain('Frameworks');
@@ -263,7 +260,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Certifications');
     expect(html).toContain('AWS Solutions Architect');
@@ -288,7 +285,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Languages');
     expect(html).toContain('English');
@@ -316,7 +313,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('Core Competencies');
     expect(html).toContain('Leadership');
@@ -334,7 +331,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('<li>Item 1</li>');
     expect(html).toContain('<li>Item 2</li>');
@@ -357,7 +354,7 @@ describe('generateCVEnHTML', () => {
         },
       ],
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('<li>Event 1</li>');
     expect(html).toContain('<li>Event 2</li>');
@@ -371,7 +368,7 @@ describe('generateCVEnHTML', () => {
         name: 'John <script>alert("XSS")</script> Doe',
       },
     };
-    const html = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const html = generateEnHtml(cv, { paperSize: 'a4' });
 
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
@@ -380,7 +377,7 @@ describe('generateCVEnHTML', () => {
   it('should include custom stylesheet when provided', () => {
     const cv = createBasicCV();
     const customCSS = '.custom { color: red; }';
-    const html = generateCVEnHTML(cv, {
+    const html = generateEnHtml(cv, {
       paperSize: 'a4',
       customStylesheet: customCSS,
     });
@@ -392,10 +389,10 @@ describe('generateCVEnHTML', () => {
   it('should use different paper sizes', () => {
     const cv = createBasicCV();
 
-    const htmlA4 = generateCVEnHTML(cv, { paperSize: 'a4' });
+    const htmlA4 = generateEnHtml(cv, { paperSize: 'a4' });
     expect(htmlA4).toContain('210mm 297mm');
 
-    const htmlLetter = generateCVEnHTML(cv, { paperSize: 'letter' });
+    const htmlLetter = generateEnHtml(cv, { paperSize: 'letter' });
     expect(htmlLetter).toContain('215.9mm 279.4mm');
   });
 });

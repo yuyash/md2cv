@@ -131,21 +131,22 @@ export const INIT_OPTIONS = {
 
 /**
  * CLI options parsed from command line
+ * Optional fields use `?:` syntax since CLI parser may not provide all values
  */
 export interface CLIOptions {
   readonly input: string;
-  readonly output: string | undefined;
-  readonly format: OutputFormat;
-  readonly outputType: OutputType;
-  readonly paperSize: PaperSize | undefined;
-  readonly config: string | undefined;
+  readonly output?: string;
+  readonly format?: OutputFormat;
+  readonly outputType?: OutputType;
+  readonly paperSize?: PaperSize;
+  readonly config?: string;
   readonly debug: boolean;
-  readonly logFormat: LogFormat;
-  readonly chronologicalOrder: ChronologicalOrder | undefined;
-  readonly hideMotivation: boolean;
-  readonly photo: string | undefined;
-  readonly sectionOrder: string | undefined;
-  readonly stylesheet: string | undefined;
+  readonly logFormat?: LogFormat;
+  readonly chronologicalOrder?: ChronologicalOrder;
+  readonly hideMotivation?: boolean;
+  readonly photo?: string;
+  readonly sectionOrder?: string;
+  readonly stylesheet?: string;
 }
 
 /**
@@ -175,9 +176,17 @@ export interface ResolvedConfig {
   readonly paperSize: PaperSize;
   readonly debug: boolean;
   readonly logFormat: LogFormat;
-  readonly chronologicalOrder: ChronologicalOrder | undefined;
+  readonly chronologicalOrder?: ChronologicalOrder;
   readonly hideMotivation: boolean;
-  readonly photo: string | undefined;
-  readonly sectionOrder: string[] | undefined;
-  readonly stylesheet: string | undefined;
+  readonly photo?: string;
+  readonly sectionOrder?: string[];
+  readonly stylesheet?: string;
+}
+
+/**
+ * Options for CV/Resume HTML generation
+ */
+export interface CVOptions {
+  readonly paperSize: PaperSize;
+  readonly customStylesheet?: string;
 }

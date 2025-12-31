@@ -10,31 +10,24 @@ import puppeteer from 'puppeteer';
 import type { Logger } from '../cli/index.js';
 import type {
   ChronologicalOrder,
+  CVOptions,
   OutputFormat,
   OutputType,
   PaperSize,
   ResolvedConfig,
 } from '../types/config.js';
-import type { CVMetadata } from '../types/metadata.js';
 import type { ParsedSection } from '../types/sections.js';
 import {
   findSectionByTag,
   isSectionValidForFormat,
 } from '../types/sections.js';
-import { generateCVEnHTML } from './resume_en.js';
-import { generateCVJaHTML } from './resume_ja.js';
+import type { CVInput } from './common.js';
+import { generateEnHtml } from './resume_en.js';
+import { generateJaHtml } from './resume_ja.js';
 import { generateRirekishoHTML } from './rirekisho/index.js';
 
 // Re-export generators
-export { generateCVEnHTML, generateCVJaHTML, generateRirekishoHTML };
-
-/**
- * Input for CV generation (internal type)
- */
-interface CVInput {
-  readonly metadata: CVMetadata;
-  readonly sections: readonly ParsedSection[];
-}
+export { generateEnHtml, generateJaHtml, generateRirekishoHTML };
 
 /**
  * Page size dimensions in mm (portrait orientation for CV)
@@ -203,8 +196,8 @@ function resolveSectionId(
 function filterAndOrderSections(
   sections: readonly ParsedSection[],
   format: 'cv' | 'rirekisho',
-  sectionOrder: string[] | undefined,
   logger: Logger,
+  sectionOrder?: string[],
 ): ParsedSection[] {
   // Get all section IDs from input
   const allSectionIds = sections.map((s) => s.id);
@@ -297,30 +290,34 @@ function filterAndOrderSections(
 
 /**
  * Generate HTML for CV format
+ * Note: chronologicalOrder is not yet implemented for CV format.
+ * CV format currently uses the order as defined in the markdown file.
  */
-function generateCVHTML(
+function generateHtml(
   cv: CVInput,
   paperSize: PaperSize,
-  _chronologicalOrder?: ChronologicalOrder,
   sectionOrder?: string[],
   logger?: Logger,
   customStylesheet?: string,
 ): string {
   const language = detectLanguage(cv);
-  // TODO: Add chronological order support for CV format
 
   // Filter and order sections if logger is provided
-  let sections = cv.sections;
+  let sections: readonly ParsedSection[] = cv.sections;
   if (logger) {
-    sections = filterAndOrderSections(cv.sections, 'cv', sectionOrder, logger);
+    sections = filterAndOrderSections(cv.sections, 'cv', logger, sectionOrder);
   }
 
-  const filteredCv = { ...cv, sections };
+  const filteredCv: CVInput = { ...cv, sections };
+
+  const options: CVOptions = customStylesheet
+    ? { paperSize, customStylesheet }
+    : { paperSize };
 
   if (language === 'ja') {
-    return generateCVJaHTML(filteredCv, { paperSize, customStylesheet });
+    return generateJaHtml(filteredCv, options);
   }
-  return generateCVEnHTML(filteredCv, { paperSize, customStylesheet });
+  return generateEnHtml(filteredCv, options);
 }
 
 /**
@@ -420,12 +417,7 @@ export async function generateOutput(
     let html: string;
     if (format === 'rirekisho') {
       // Log sections for rirekisho
-      const sections = filterAndOrderSections(
-        cv.sections,
-        'rirekisho',
-        undefined,
-        logger,
-      );
+      const sections = filterAndOrderSections(cv.sections, 'rirekisho', logger);
       const filteredCv = { ...cv, sections };
 
       // Read photo file if provided (only for rirekisho)
@@ -439,14 +431,13 @@ export async function generateOutput(
         paperSize: config.paperSize,
         chronologicalOrder,
         hideMotivation: config.hideMotivation,
-        photoDataUri,
-        customStylesheet,
+        ...(photoDataUri !== undefined && { photoDataUri }),
+        ...(customStylesheet !== undefined && { customStylesheet }),
       });
     } else {
-      html = generateCVHTML(
+      html = generateHtml(
         cv,
         config.paperSize,
-        chronologicalOrder,
         config.sectionOrder,
         logger,
         customStylesheet,

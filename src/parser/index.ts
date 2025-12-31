@@ -395,15 +395,21 @@ function parseEducationBlock(code: string): EducationEntry[] {
     // Handle both single object and array
     const items = Array.isArray(parsed) ? parsed : [parsed];
 
-    return items.map((item: unknown) => {
-      const obj = item as Record<string, unknown>;
-      return {
-        school: safeString(obj.school),
-        degree: safeOptionalString(obj.degree),
-        location: safeOptionalString(obj.location),
-        start: parseYearMonth(safeOptionalString(obj.start)),
-        end: parseYearMonth(safeOptionalString(obj.end)),
-        details: Array.isArray(obj.details)
+    return items
+      .map((item: unknown) => {
+        const obj = item as Record<string, unknown>;
+        const school = safeString(obj.school);
+        const degree = safeOptionalString(obj.degree);
+        const start = parseYearMonth(safeOptionalString(obj.start));
+        const end = parseYearMonth(safeOptionalString(obj.end));
+
+        // Skip entries missing required fields (degree is optional for rirekisho format)
+        if (!school || !start || !end) {
+          return null;
+        }
+
+        const location = safeOptionalString(obj.location);
+        const details = Array.isArray(obj.details)
           ? obj.details.map((d) => {
               // Handle YAML parsing objects like { "GPA": "3.8/4.0" } as "GPA: 3.8/4.0"
               if (typeof d === 'object' && d !== null) {
@@ -417,12 +423,89 @@ function parseEducationBlock(code: string): EducationEntry[] {
               }
               return safeString(d);
             })
-          : undefined,
-      };
-    });
+          : undefined;
+
+        return {
+          school,
+          degree,
+          start,
+          end,
+          ...(location !== undefined && { location }),
+          ...(details !== undefined && {
+            details: details as readonly string[],
+          }),
+        } as EducationEntry;
+      })
+      .filter((entry): entry is EducationEntry => entry !== null);
   } catch {
     return [];
   }
+}
+
+/**
+ * Parse a project entry from YAML
+ */
+function parseProjectEntry(proj: Record<string, unknown>): ProjectEntry | null {
+  const name = safeString(proj.name);
+  const start = parseYearMonth(safeOptionalString(proj.start));
+  const end = parseYearMonth(safeOptionalString(proj.end));
+
+  // Skip entries missing required fields
+  if (!name || !start || !end) {
+    return null;
+  }
+
+  const bullets = Array.isArray(proj.bullets)
+    ? proj.bullets.map((b) => safeString(b))
+    : undefined;
+
+  return {
+    name,
+    start,
+    end,
+    ...(bullets !== undefined && { bullets }),
+  };
+}
+
+/**
+ * Parse a role entry from YAML
+ */
+function parseRoleEntry(role: Record<string, unknown>): RoleEntry | null {
+  const title = safeString(role.title || role.role);
+  const start = parseYearMonth(safeOptionalString(role.start));
+  const end = parseEndDate(safeOptionalString(role.end));
+
+  // Skip entries missing required fields
+  if (!title || !start || !end) {
+    return null;
+  }
+
+  const team = safeOptionalString(role.team);
+  const summary = parseSummary(role.summary);
+  const highlights = Array.isArray(role.highlights)
+    ? role.highlights.map((h) => safeString(h))
+    : undefined;
+
+  const projects: ProjectEntry[] = [];
+  if (Array.isArray(role.projects)) {
+    for (const projItem of role.projects) {
+      const proj = projItem as Record<string, unknown>;
+      const projectEntry = parseProjectEntry(proj);
+      if (projectEntry) {
+        projects.push(projectEntry);
+      }
+    }
+  }
+
+  return {
+    title,
+    start,
+    end,
+    ...(team !== undefined && { team }),
+    ...(summary !== undefined && { summary }),
+    ...(highlights !== undefined && { highlights }),
+    ...(projects.length > 0 && { projects }),
+  };
 }
 
 /**
@@ -434,79 +517,43 @@ function parseExperienceBlock(code: string): ExperienceEntry[] {
     // Handle both single object and array
     const items = Array.isArray(parsed) ? parsed : [parsed];
 
-    return items.map((item: unknown) => {
+    const entries: ExperienceEntry[] = [];
+    for (const item of items) {
       const obj = item as Record<string, unknown>;
+      const company = safeString(obj.company);
       const roles: RoleEntry[] = [];
 
       // Support both nested roles array and flat role definition
       if (Array.isArray(obj.roles)) {
         for (const roleItem of obj.roles) {
           const role = roleItem as Record<string, unknown>;
-          const projects: ProjectEntry[] = [];
-
-          if (Array.isArray(role.projects)) {
-            for (const projItem of role.projects) {
-              const proj = projItem as Record<string, unknown>;
-              projects.push({
-                name: safeString(proj.name),
-                start: parseYearMonth(safeOptionalString(proj.start)),
-                end: parseYearMonth(safeOptionalString(proj.end)),
-                bullets: Array.isArray(proj.bullets)
-                  ? proj.bullets.map((b) => safeString(b))
-                  : undefined,
-              });
-            }
-          }
-
-          roles.push({
-            title: safeString(role.title),
-            team: safeOptionalString(role.team),
-            start: parseYearMonth(safeOptionalString(role.start)),
-            end: parseEndDate(safeOptionalString(role.end)),
-            summary: parseSummary(role.summary),
-            highlights: Array.isArray(role.highlights)
-              ? role.highlights.map((h) => safeString(h))
-              : undefined,
-            projects: projects.length > 0 ? projects : undefined,
-          });
-        }
-      } else if (obj.role) {
-        // Flat role definition (role, team, start, end at top level)
-        const projects: ProjectEntry[] = [];
-
-        if (Array.isArray(obj.projects)) {
-          for (const projItem of obj.projects) {
-            const proj = projItem as Record<string, unknown>;
-            projects.push({
-              name: safeString(proj.name),
-              start: parseYearMonth(safeOptionalString(proj.start)),
-              end: parseYearMonth(safeOptionalString(proj.end)),
-              bullets: Array.isArray(proj.bullets)
-                ? proj.bullets.map((b) => safeString(b))
-                : undefined,
-            });
+          const roleEntry = parseRoleEntry(role);
+          if (roleEntry) {
+            roles.push(roleEntry);
           }
         }
-
-        roles.push({
-          title: safeString(obj.role),
-          team: safeOptionalString(obj.team),
-          start: parseYearMonth(safeOptionalString(obj.start)),
-          end: parseEndDate(safeOptionalString(obj.end)),
-          summary: parseSummary(obj.summary),
-          highlights: Array.isArray(obj.highlights)
-            ? obj.highlights.map((h) => safeString(h))
-            : undefined,
-          projects: projects.length > 0 ? projects : undefined,
-        });
+      } else if (obj.role || obj.title) {
+        // Flat role definition (role/title, team, start, end at top level)
+        const roleEntry = parseRoleEntry(obj);
+        if (roleEntry) {
+          roles.push(roleEntry);
+        }
       }
 
-      return {
-        company: safeString(obj.company),
-        location: safeOptionalString(obj.location),
-        roles,
-      };
-    });
+      // Skip entries missing required fields
+      if (!company || roles.length === 0) {
+        continue;
+      }
+
+      const location = safeOptionalString(obj.location);
+
+      entries.push({
+        company,
+        roles: roles as readonly RoleEntry[],
+        ...(location !== undefined && { location }),
+      });
+    }
+    return entries;
   } catch {
     return [];
   }
@@ -521,15 +568,28 @@ function parseCertificationsBlock(code: string): CertificationEntry[] {
     // Handle both single object and array
     const items = Array.isArray(parsed) ? parsed : [parsed];
 
-    return items.map((item: unknown) => {
-      const obj = item as Record<string, unknown>;
-      return {
-        name: safeString(obj.name),
-        issuer: safeOptionalString(obj.issuer),
-        date: parseYearMonth(safeOptionalString(obj.date)),
-        url: safeOptionalString(obj.url),
-      };
-    });
+    return items
+      .map((item: unknown) => {
+        const obj = item as Record<string, unknown>;
+        const name = safeString(obj.name);
+        const date = parseYearMonth(safeOptionalString(obj.date));
+
+        // Skip entries missing required fields
+        if (!name || !date) {
+          return null;
+        }
+
+        const issuer = safeOptionalString(obj.issuer);
+        const url = safeOptionalString(obj.url);
+
+        return {
+          name,
+          date,
+          ...(issuer !== undefined && { issuer }),
+          ...(url !== undefined && { url }),
+        };
+      })
+      .filter((entry): entry is CertificationEntry => entry !== null);
   } catch {
     return [];
   }
@@ -554,31 +614,50 @@ function parseCertificationsBlock(code: string): CertificationEntry[] {
  */
 interface ParsedSkillsResult {
   entries: SkillEntry[];
-  columns: number | undefined;
-  format: 'grid' | 'categorized' | undefined;
+  columns: number;
+  format: 'grid' | 'categorized';
+}
+
+function parseSkillEntry(catObj: Record<string, unknown>): SkillEntry {
+  const category = safeString(catObj.category);
+  const items = Array.isArray(catObj.items)
+    ? catObj.items.map((i) => safeString(i))
+    : undefined;
+  const description = safeOptionalString(catObj.description);
+  const level = safeOptionalString(catObj.level);
+
+  return {
+    category,
+    ...(items !== undefined && { items }),
+    ...(description !== undefined && { description }),
+    ...(level !== undefined && { level }),
+  };
 }
 
 function parseSkillsBlock(code: string): ParsedSkillsResult {
+  const defaultResult: ParsedSkillsResult = {
+    entries: [],
+    columns: 3,
+    format: 'grid',
+  };
+
   try {
     const parsed: unknown = parseYaml(code);
 
     // Check if it's the new format with columns and items at top level
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       const obj = parsed as Record<string, unknown>;
+      const columns = typeof obj.columns === 'number' ? obj.columns : 3;
 
       // Format 1: Simple items list (grid format)
       if (
         Array.isArray(obj.items) &&
         obj.items.every((i) => typeof i === 'string')
       ) {
-        const columns =
-          typeof obj.columns === 'number' ? obj.columns : undefined;
         const items = obj.items.map((i) => safeString(i));
         // Convert to single SkillEntry with empty category
         return {
-          entries: [
-            { category: '', items, description: undefined, level: undefined },
-          ],
+          entries: [{ category: '', items }],
           columns,
           format: 'grid',
         };
@@ -586,40 +665,22 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
 
       // Format 2 & 3: Categorized skills
       if (Array.isArray(obj.categories)) {
-        const columns =
-          typeof obj.columns === 'number' ? obj.columns : undefined;
-        const entries = obj.categories.map((cat: unknown) => {
-          const catObj = cat as Record<string, unknown>;
-          return {
-            category: safeString(catObj.category),
-            items: Array.isArray(catObj.items)
-              ? catObj.items.map((i) => safeString(i))
-              : [],
-            description: safeOptionalString(catObj.description),
-            level: safeOptionalString(catObj.level),
-          };
-        });
+        const entries = obj.categories.map((cat: unknown) =>
+          parseSkillEntry(cat as Record<string, unknown>),
+        );
         return { entries, columns, format: 'categorized' };
       }
     }
 
     // Legacy format: array of { category, items, level }
     const items = Array.isArray(parsed) ? parsed : [parsed];
-    const entries = items.map((item: unknown) => {
-      const obj = item as Record<string, unknown>;
-      return {
-        category: safeString(obj.category),
-        items: Array.isArray(obj.items)
-          ? obj.items.map((i) => safeString(i))
-          : [],
-        description: safeOptionalString(obj.description),
-        level: safeOptionalString(obj.level),
-      };
-    });
+    const entries = items.map((item: unknown) =>
+      parseSkillEntry(item as Record<string, unknown>),
+    );
 
-    return { entries, columns: undefined, format: undefined };
+    return { entries, columns: 3, format: 'categorized' };
   } catch {
-    return { entries: [], columns: undefined, format: undefined };
+    return defaultResult;
   }
 }
 
@@ -653,13 +714,20 @@ function parseLanguagesBlock(code: string): LanguageEntry[] {
     // Handle both single object and array
     const items = Array.isArray(parsed) ? parsed : [parsed];
 
-    return items.map((item: unknown) => {
-      const obj = item as Record<string, unknown>;
-      return {
-        language: safeString(obj.language),
-        level: safeOptionalString(obj.level),
-      };
-    });
+    return items
+      .map((item: unknown) => {
+        const obj = item as Record<string, unknown>;
+        const language = safeString(obj.language);
+        const level = safeOptionalString(obj.level);
+
+        // Skip entries missing required fields
+        if (!language || !level) {
+          return null;
+        }
+
+        return { language, level };
+      })
+      .filter((entry): entry is LanguageEntry => entry !== null);
   } catch {
     return [];
   }
@@ -719,7 +787,10 @@ function parseSectionContent(nodes: RootContent[]): SectionContent {
     return {
       type: 'skills',
       entries: skillEntries,
-      options: { columns: skillsColumns, format: skillsFormat },
+      options: {
+        columns: skillsColumns ?? 3,
+        format: skillsFormat ?? 'grid',
+      },
     };
   }
   if (competencyEntries.length > 0) {

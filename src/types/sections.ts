@@ -190,11 +190,11 @@ export function getTagsForLanguage(
  */
 export interface EducationEntry {
   readonly school: string;
-  readonly degree: string | undefined;
-  readonly location: string | undefined;
-  readonly start: Date | undefined;
-  readonly end: Date | undefined;
-  readonly details: readonly string[] | undefined;
+  readonly degree?: string;
+  readonly start: Date;
+  readonly end: Date;
+  readonly location?: string;
+  readonly details?: readonly string[];
 }
 
 /**
@@ -202,9 +202,9 @@ export interface EducationEntry {
  */
 export interface ProjectEntry {
   readonly name: string;
-  readonly start: Date | undefined;
-  readonly end: Date | undefined;
-  readonly bullets: readonly string[] | undefined;
+  readonly start: Date;
+  readonly end: Date;
+  readonly bullets?: readonly string[];
 }
 
 /**
@@ -212,12 +212,12 @@ export interface ProjectEntry {
  */
 export interface RoleEntry {
   readonly title: string;
-  readonly team: string | undefined;
-  readonly start: Date | undefined;
-  readonly end: Date | 'present' | undefined;
-  readonly summary: readonly string[] | undefined;
-  readonly highlights: readonly string[] | undefined;
-  readonly projects: readonly ProjectEntry[] | undefined;
+  readonly start: Date;
+  readonly end: Date | 'present';
+  readonly team?: string;
+  readonly summary?: readonly string[];
+  readonly highlights?: readonly string[];
+  readonly projects?: readonly ProjectEntry[];
 }
 
 /**
@@ -225,8 +225,8 @@ export interface RoleEntry {
  */
 export interface ExperienceEntry {
   readonly company: string;
-  readonly location: string | undefined;
   readonly roles: readonly RoleEntry[];
+  readonly location?: string;
 }
 
 /**
@@ -234,9 +234,9 @@ export interface ExperienceEntry {
  */
 export interface CertificationEntry {
   readonly name: string;
-  readonly issuer: string | undefined;
-  readonly date: Date | undefined;
-  readonly url: string | undefined;
+  readonly date: Date;
+  readonly issuer?: string;
+  readonly url?: string;
 }
 
 /**
@@ -247,17 +247,17 @@ export interface CertificationEntry {
  */
 export interface SkillEntry {
   readonly category: string;
-  readonly items: readonly string[];
-  readonly description: string | undefined;
-  readonly level: string | undefined;
+  readonly items?: readonly string[];
+  readonly description?: string;
+  readonly level?: string;
 }
 
 /**
  * Skills section options
  */
 export interface SkillsOptions {
-  readonly columns: number | undefined;
-  readonly format: 'grid' | 'categorized' | undefined;
+  readonly columns: number;
+  readonly format: 'grid' | 'categorized';
 }
 
 /**
@@ -273,7 +273,7 @@ export interface CompetencyEntry {
  */
 export interface LanguageEntry {
   readonly language: string;
-  readonly level: string | undefined;
+  readonly level: string;
 }
 
 /**

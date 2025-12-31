@@ -3,105 +3,19 @@
  * Generates HTML for English CV format with Times font family
  */
 
-import type { PaperSize } from '../types/config.js';
-import type { CVMetadata } from '../types/metadata.js';
-import type {
-  CertificationEntry,
-  CompetencyEntry,
-  EducationEntry,
-  ExperienceEntry,
-  LanguageEntry,
-  ParsedSection,
-  SectionContent,
-  SkillEntry,
-  SkillsOptions,
-} from '../types/sections.js';
+import type { CVOptions, PaperSize } from '../types/config.js';
+import type { CVInput } from './common.js';
+import {
+  PAGE_SIZES,
+  enDateFormatter,
+  escapeHtml,
+  renderSectionContent,
+} from './common.js';
 
-export interface CVEnOptions {
-  readonly paperSize: PaperSize;
-  readonly customStylesheet?: string | undefined;
-}
+export type { CVInput };
 
 /**
- * Input for CV generation
- */
-export interface CVInput {
-  readonly metadata: CVMetadata;
-  readonly sections: readonly ParsedSection[];
-}
-
-/**
- * Page size dimensions in mm
- * CV uses portrait orientation (width < height)
- */
-const PAGE_SIZES: Record<PaperSize, { width: number; height: number }> = {
-  a3: { width: 297, height: 420 },
-  a4: { width: 210, height: 297 },
-  b4: { width: 257, height: 364 },
-  b5: { width: 182, height: 257 },
-  letter: { width: 215.9, height: 279.4 },
-};
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  if (text == null) return '';
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/**
- * Format date for display
- */
-function formatDate(date: Date | undefined): string {
-  if (!date) return '';
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return `${months[date.getMonth()]} ${date.getFullYear()}`;
-}
-
-/**
- * Format end date which can be Date or 'present'
- */
-function formatEndDate(end: Date | 'present' | undefined): string {
-  if (!end) return '';
-  if (end === 'present') return 'Present';
-  return formatDate(end);
-}
-
-/**
- * Format date range
- */
-function formatDateRange(
-  start: Date | undefined,
-  end: Date | 'present' | undefined,
-): string {
-  const startStr = formatDate(start);
-  const endStr = formatEndDate(end);
-  if (startStr && endStr) return `${startStr} - ${endStr}`;
-  if (startStr) return startStr;
-  return '';
-}
-
-/**
- * Generate base CSS styles
+ * Generate base CSS styles for English CV
  */
 function generateStyles(paperSize: PaperSize): string {
   const size = PAGE_SIZES[paperSize];
@@ -291,295 +205,6 @@ function generateStyles(paperSize: PaperSize): string {
 }
 
 /**
- * Render education section
- * Format:
- *   <school> —— <start - end>
- *   <degree> — <location>
- *   <details>
- */
-function renderEducation(entries: readonly EducationEntry[]): string {
-  return entries
-    .map((entry) => {
-      const dateRange = formatDateRange(entry.start, entry.end);
-      let html = '<div class="entry">';
-
-      // Title line: <school> —— <date range>
-      html += '<div class="entry-header">';
-      html += `<span class="entry-title">${escapeHtml(entry.school)}</span>`;
-      if (dateRange) {
-        html += `<span class="entry-date">${escapeHtml(dateRange)}</span>`;
-      }
-      html += '</div>';
-
-      // Subtitle line: <degree> — <location>
-      const subtitleParts: string[] = [];
-      if (entry.degree) {
-        subtitleParts.push(escapeHtml(entry.degree));
-      }
-      if (entry.location) {
-        subtitleParts.push(escapeHtml(entry.location));
-      }
-      if (subtitleParts.length > 0) {
-        html += `<div class="entry-subtitle">${subtitleParts.join(' — ')}</div>`;
-      }
-
-      // Details - filter out empty strings
-      const nonEmptyDetails = entry.details?.filter((d) => d && d.trim()) ?? [];
-      if (nonEmptyDetails.length > 0) {
-        html += '<ul>';
-        for (const detail of nonEmptyDetails) {
-          html += `<li>${escapeHtml(detail)}</li>`;
-        }
-        html += '</ul>';
-      }
-      html += '</div>';
-      return html;
-    })
-    .join('\n');
-}
-
-/**
- * Render experience section
- * Format:
- *   <company name> -- <role>        <start - end>
- *   <team_name> -- <location>
- *   <summary>
- *   <highlights>
- */
-function renderExperience(entries: readonly ExperienceEntry[]): string {
-  return entries
-    .flatMap((entry) => {
-      return entry.roles.map((role) => {
-        const dateRange = formatDateRange(role.start, role.end);
-        let html = '<div class="entry">';
-
-        // Section title: <company> —— <role>    <date range>
-        html += '<div class="entry-header">';
-        html += `<span class="entry-title">${escapeHtml(entry.company)} —— ${escapeHtml(role.title)}</span>`;
-        if (dateRange) {
-          html += `<span class="entry-date">${escapeHtml(dateRange)}</span>`;
-        }
-        html += '</div>';
-
-        // Sub title: <team> — <location>
-        const subtitleParts: string[] = [];
-        if (role.team) {
-          subtitleParts.push(escapeHtml(role.team));
-        }
-        if (entry.location) {
-          subtitleParts.push(escapeHtml(entry.location));
-        }
-        if (subtitleParts.length > 0) {
-          html += `<div class="entry-subtitle">${subtitleParts.join(' — ')}</div>`;
-        }
-
-        // Summary
-        if (role.summary && role.summary.length > 0) {
-          html += '<div class="entry-summary">';
-          html += role.summary.map((s) => escapeHtml(s)).join(' ');
-          html += '</div>';
-        }
-
-        // Highlights
-        if (role.highlights && role.highlights.length > 0) {
-          html += '<ul>';
-          for (const highlight of role.highlights) {
-            html += `<li>${escapeHtml(highlight)}</li>`;
-          }
-          html += '</ul>';
-        }
-
-        // Projects
-        if (role.projects && role.projects.length > 0) {
-          for (const project of role.projects) {
-            const projDateRange = formatDateRange(project.start, project.end);
-            html += '<div class="project">';
-            html += `<span class="project-name">${escapeHtml(project.name)}</span>`;
-            if (projDateRange) {
-              html += ` <span class="entry-date">(${escapeHtml(projDateRange)})</span>`;
-            }
-            if (project.bullets && project.bullets.length > 0) {
-              html += '<ul>';
-              for (const bullet of project.bullets) {
-                html += `<li>${escapeHtml(bullet)}</li>`;
-              }
-              html += '</ul>';
-            }
-            html += '</div>';
-          }
-        }
-
-        html += '</div>';
-        return html;
-      });
-    })
-    .join('\n');
-}
-
-/**
- * Render certifications section
- */
-function renderCertifications(entries: readonly CertificationEntry[]): string {
-  return entries
-    .map((entry) => {
-      let html = `<div class="cert-item">• ${escapeHtml(entry.name)}`;
-      if (entry.date) {
-        html += ` (${escapeHtml(formatDate(entry.date))})`;
-      }
-      html += '</div>';
-      return html;
-    })
-    .join('\n');
-}
-
-/**
- * Default number of columns for skills grid
- */
-const DEFAULT_SKILLS_COLUMNS = 3;
-
-/**
- * Render skills section - supports grid and categorized formats
- */
-function renderSkills(
-  entries: readonly SkillEntry[],
-  options: SkillsOptions,
-): string {
-  // Check if categorized format (entries have non-empty category with description)
-  const isCategorized =
-    options.format === 'categorized' ||
-    entries.some((e) => e.category && (e.description || e.items.length > 0));
-
-  if (isCategorized && entries.some((e) => e.category)) {
-    // Categorized format: • <category>: <description or items>
-    return entries
-      .filter((e) => e.category)
-      .map((entry) => {
-        const content = entry.description || entry.items.join(', ');
-        return `<div class="skill-category">• <span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
-      })
-      .join('\n');
-  }
-
-  // Grid format: flatten all items
-  const allItems: string[] = [];
-  for (const entry of entries) {
-    for (const item of entry.items) {
-      allItems.push(item);
-    }
-  }
-
-  if (allItems.length === 0) {
-    return '';
-  }
-
-  const columns = options.columns ?? DEFAULT_SKILLS_COLUMNS;
-  const colsClass = columns === 3 ? 'skills-grid--cols-3' : '';
-  const colsStyle =
-    columns !== 3 ? `grid-template-columns: repeat(${columns}, 1fr);` : '';
-  let html = `<div class="skills-grid ${colsClass}"${colsStyle ? ` style="${colsStyle}"` : ''}>`;
-  for (const item of allItems) {
-    html += `<div class="skill-item">• ${escapeHtml(item)}</div>`;
-  }
-  html += '</div>';
-  return html;
-}
-
-/**
- * Render skills from list content as grid
- */
-function renderSkillsList(
-  items: readonly string[],
-  columns: number = DEFAULT_SKILLS_COLUMNS,
-): string {
-  if (items.length === 0) {
-    return '';
-  }
-
-  const colsClass = columns === 3 ? 'skills-grid--cols-3' : '';
-  const colsStyle =
-    columns !== 3 ? `grid-template-columns: repeat(${columns}, 1fr);` : '';
-  let html = `<div class="skills-grid ${colsClass}"${colsStyle ? ` style="${colsStyle}"` : ''}>`;
-  for (const item of items) {
-    html += `<div class="skill-item">• ${escapeHtml(item)}</div>`;
-  }
-  html += '</div>';
-  return html;
-}
-
-/**
- * Render core competencies section
- */
-function renderCompetencies(entries: readonly CompetencyEntry[]): string {
-  return entries
-    .map((entry) => {
-      return `<div class="competency-entry"><span class="competency-header">${escapeHtml(entry.header)}:</span> ${escapeHtml(entry.description)}</div>`;
-    })
-    .join('\n');
-}
-
-/**
- * Render languages section
- */
-function renderLanguages(entries: readonly LanguageEntry[]): string {
-  return entries
-    .map((entry) => {
-      let html = `<span class="lang-item">${escapeHtml(entry.language)}`;
-      if (entry.level) {
-        html += ` (${escapeHtml(entry.level)})`;
-      }
-      html += '</span>';
-      return html;
-    })
-    .join(' • ');
-}
-
-/**
- * Render section content
- */
-function renderSectionContent(
-  content: SectionContent,
-  sectionId: string,
-): string {
-  switch (content.type) {
-    case 'text':
-      return `<p>${escapeHtml(content.text)}</p>`;
-    case 'list':
-      // For skills section, render as grid
-      if (sectionId === 'skills') {
-        return renderSkillsList(content.items);
-      }
-      return (
-        '<ul>' +
-        content.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') +
-        '</ul>'
-      );
-    case 'education':
-      return renderEducation(content.entries);
-    case 'experience':
-      return renderExperience(content.entries);
-    case 'certifications':
-      return renderCertifications(content.entries);
-    case 'skills':
-      return renderSkills(content.entries, content.options);
-    case 'competencies':
-      return renderCompetencies(content.entries);
-    case 'languages':
-      return renderLanguages(content.entries);
-    case 'table':
-      // Tables are mainly for rirekisho, render as list for resume
-      return (
-        '<ul>' +
-        content.rows
-          .map((row) => `<li>${escapeHtml(row.content)}</li>`)
-          .join('\n') +
-        '</ul>'
-      );
-    default:
-      return '';
-  }
-}
-
-/**
  * Render contact info line: home_address | phone_number | email | linkedin
  */
 function renderContactInfo(cv: CVInput): string {
@@ -612,7 +237,7 @@ function renderContactInfo(cv: CVInput): string {
 /**
  * Generate English HTML CV
  */
-export function generateCVEnHTML(cv: CVInput, options: CVEnOptions): string {
+export function generateEnHtml(cv: CVInput, options: CVOptions): string {
   const styles = generateStyles(options.paperSize);
   const name = cv.metadata.name;
   const contactHtml = renderContactInfo(cv);
@@ -623,7 +248,7 @@ export function generateCVEnHTML(cv: CVInput, options: CVEnOptions): string {
       return `
 <section class="cv-section cv-section--${section.id}">
   <h2>${escapeHtml(section.title)}</h2>
-  ${renderSectionContent(section.content, section.id)}
+  ${renderSectionContent(section.content, section.id, enDateFormatter)}
 </section>`;
     })
     .join('\n');

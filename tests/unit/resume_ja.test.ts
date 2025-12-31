@@ -4,12 +4,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import {
-  generateCVJaHTML,
-  type CVInput,
-} from '../../src/generator/resume_ja.js';
+import { generateJaHtml, type CVInput } from '../../src/generator/resume_ja.js';
 
-describe('generateCVJaHTML', () => {
+describe('generateJaHtml', () => {
   const createBasicCV = (): CVInput => ({
     metadata: {
       name: 'John Doe',
@@ -22,7 +19,7 @@ describe('generateCVJaHTML', () => {
 
   it('should generate valid HTML document', () => {
     const cv = createBasicCV();
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('<!DOCTYPE html>');
     expect(html).toContain('<html lang="ja">');
@@ -31,7 +28,7 @@ describe('generateCVJaHTML', () => {
 
   it('should include Japanese name in header', () => {
     const cv = createBasicCV();
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('山田太郎');
   });
@@ -45,14 +42,14 @@ describe('generateCVJaHTML', () => {
       },
       sections: [],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('John Doe');
   });
 
   it('should include document title 職務経歴書', () => {
     const cv = createBasicCV();
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('職務経歴書');
     expect(html).toContain('<div class="document-title">職務経歴書</div>');
@@ -60,7 +57,7 @@ describe('generateCVJaHTML', () => {
 
   it('should include current date in Japanese format', () => {
     const cv = createBasicCV();
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     // Should contain date in format like "2024年12月28日現在"
     expect(html).toMatch(/\d{4}年\d{1,2}月\d{1,2}日現在/);
@@ -87,7 +84,7 @@ describe('generateCVJaHTML', () => {
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('学歴');
     expect(html).toContain('東京大学');
@@ -123,7 +120,7 @@ describe('generateCVJaHTML', () => {
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('職歴');
     expect(html).toContain('株式会社テック');
@@ -142,13 +139,15 @@ describe('generateCVJaHTML', () => {
           title: 'スキル',
           content: {
             type: 'skills',
-            entries: [{ items: ['JavaScript', 'TypeScript', 'Python'] }],
-            options: { format: 'grid' },
+            entries: [
+              { category: '', items: ['JavaScript', 'TypeScript', 'Python'] },
+            ],
+            options: { columns: 3, format: 'grid' },
           },
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('スキル');
     expect(html).toContain('JavaScript');
@@ -171,12 +170,12 @@ describe('generateCVJaHTML', () => {
                 description: 'React、Vue、Angular',
               },
             ],
-            options: { format: 'categorized' },
+            options: { columns: 3, format: 'categorized' },
           },
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('言語');
     expect(html).toContain('フレームワーク');
@@ -194,13 +193,16 @@ describe('generateCVJaHTML', () => {
             type: 'certifications',
             entries: [
               { name: '基本情報技術者', date: new Date(2020, 3, 1) }, // April 2020
-              { name: 'AWS認定ソリューションアーキテクト' },
+              {
+                name: 'AWS認定ソリューションアーキテクト',
+                date: new Date(2021, 5, 1),
+              },
             ],
           },
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('資格');
     expect(html).toContain('基本情報技術者');
@@ -225,7 +227,7 @@ describe('generateCVJaHTML', () => {
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('語学');
     expect(html).toContain('日本語');
@@ -245,7 +247,7 @@ describe('generateCVJaHTML', () => {
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('概要');
     expect(html).toContain('10年以上のソフトウェア開発経験');
@@ -262,7 +264,7 @@ describe('generateCVJaHTML', () => {
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('<li>項目1</li>');
     expect(html).toContain('<li>項目2</li>');
@@ -278,14 +280,14 @@ describe('generateCVJaHTML', () => {
           content: {
             type: 'table',
             rows: [
-              { date: '2020年', content: 'イベント1' },
-              { date: '2021年', content: 'イベント2' },
+              { year: '2020', month: '4', content: 'イベント1' },
+              { year: '2021', month: '6', content: 'イベント2' },
             ],
           },
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('<li>イベント1</li>');
     expect(html).toContain('<li>イベント2</li>');
@@ -308,14 +310,20 @@ describe('generateCVJaHTML', () => {
             entries: [
               {
                 company: '株式会社テック',
-                roles: [{ title: 'エンジニア', start: new Date(2020, 0, 1) }], // January 2020
+                roles: [
+                  {
+                    title: 'エンジニア',
+                    start: new Date(2020, 0, 1), // January 2020
+                    end: 'present',
+                  },
+                ],
               },
             ],
           },
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     // motivation is rirekisho-only, should be filtered out
     expect(html).not.toContain('志望動機');
@@ -330,7 +338,7 @@ describe('generateCVJaHTML', () => {
         name_ja: '山田<script>alert("XSS")</script>太郎',
       },
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
@@ -339,7 +347,7 @@ describe('generateCVJaHTML', () => {
   it('should include custom stylesheet when provided', () => {
     const cv = createBasicCV();
     const customCSS = '.custom { color: red; }';
-    const html = generateCVJaHTML(cv, {
+    const html = generateJaHtml(cv, {
       paperSize: 'a4',
       customStylesheet: customCSS,
     });
@@ -351,11 +359,11 @@ describe('generateCVJaHTML', () => {
   it('should use different paper sizes', () => {
     const cv = createBasicCV();
 
-    const htmlA4 = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const htmlA4 = generateJaHtml(cv, { paperSize: 'a4' });
     expect(htmlA4).toContain('210mm 297mm');
 
     // B4 is portrait orientation (width < height)
-    const htmlB4 = generateCVJaHTML(cv, { paperSize: 'b4' });
+    const htmlB4 = generateJaHtml(cv, { paperSize: 'b4' });
     expect(htmlB4).toContain('257mm 364mm');
   });
 
@@ -370,7 +378,7 @@ describe('generateCVJaHTML', () => {
         },
       ],
     };
-    const html = generateCVJaHTML(cv, { paperSize: 'a4' });
+    const html = generateJaHtml(cv, { paperSize: 'a4' });
 
     expect(html).toContain('skills-grid');
     expect(html).toContain('JavaScript');

@@ -38,7 +38,7 @@ import { validateCV } from '../validator/index.js';
 // Read version from package.json
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function findPackageJson(): string {
+function findPackageJson(): string | null {
   const candidates = [
     path.resolve(__dirname, '../../../package.json'), // from dist/src/cli
     path.resolve(__dirname, '../../package.json'), // from src/cli
@@ -50,14 +50,18 @@ function findPackageJson(): string {
     }
   }
 
-  throw new Error('package.json not found');
+  return null;
 }
 
+const FALLBACK_VERSION = '0.0.0-unknown';
 const packageJsonPath = findPackageJson();
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8')) as {
-  version: string;
-};
-const VERSION = packageJson.version;
+const VERSION = packageJsonPath
+  ? (
+      JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8')) as {
+        version: string;
+      }
+    ).version
+  : FALLBACK_VERSION;
 
 /**
  * Log level names
@@ -286,15 +290,22 @@ export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
     paperSize: cliOptions.paperSize ?? configFile.paperSize ?? 'a4',
     debug: cliOptions.debug,
     logFormat: cliOptions.logFormat ?? configFile.logFormat ?? 'text',
-    chronologicalOrder:
-      cliOptions.chronologicalOrder ?? configFile.chronologicalOrder,
     hideMotivation:
       cliOptions.hideMotivation || configFile.hideMotivation || false,
-    photo: photoPath,
-    sectionOrder: cliOptions.sectionOrder
-      ? cliOptions.sectionOrder.split(',').map((s) => s.trim())
-      : configFile.sectionOrder,
-    stylesheet: stylesheetPath,
+    ...(cliOptions.chronologicalOrder !== undefined
+      ? { chronologicalOrder: cliOptions.chronologicalOrder }
+      : configFile.chronologicalOrder !== undefined
+        ? { chronologicalOrder: configFile.chronologicalOrder }
+        : {}),
+    ...(photoPath !== undefined && { photo: photoPath }),
+    ...(cliOptions.sectionOrder
+      ? {
+          sectionOrder: cliOptions.sectionOrder.split(',').map((s) => s.trim()),
+        }
+      : configFile.sectionOrder
+        ? { sectionOrder: configFile.sectionOrder }
+        : {}),
+    ...(stylesheetPath !== undefined && { stylesheet: stylesheetPath }),
   };
 }
 
@@ -356,7 +367,7 @@ export async function runCLI(options: CLIOptions): Promise<void> {
 export interface InitOptions {
   readonly language: TemplateLanguage;
   readonly format: OutputFormat;
-  readonly output: string | undefined;
+  readonly output?: string;
   readonly noComments: boolean;
   readonly listTemplates: boolean;
   readonly listSections: boolean;
@@ -468,28 +479,32 @@ export function createCLIProgram(): Command {
       try {
         const cliOptions: CLIOptions = {
           input: String(opts.input),
-          output: typeof opts.output === 'string' ? opts.output : undefined,
-          format: (opts.format as OutputFormat) ?? 'cv',
-          outputType: (opts.outputType as OutputType) ?? 'pdf',
-          paperSize:
-            typeof opts.paperSize === 'string'
-              ? (opts.paperSize as PaperSize)
-              : undefined,
-          config: typeof opts.config === 'string' ? opts.config : undefined,
           debug: opts.verbose === true,
-          logFormat: (opts.logFormat as LogFormat) ?? 'text',
-          chronologicalOrder:
-            typeof opts.order === 'string'
-              ? (opts.order as ChronologicalOrder)
-              : undefined,
-          hideMotivation: opts.hideMotivation === true,
-          photo: typeof opts.photo === 'string' ? opts.photo : undefined,
-          sectionOrder:
-            typeof opts.sectionOrder === 'string'
-              ? opts.sectionOrder
-              : undefined,
-          stylesheet:
-            typeof opts.stylesheet === 'string' ? opts.stylesheet : undefined,
+          ...(typeof opts.output === 'string' && { output: opts.output }),
+          ...(typeof opts.format === 'string' && {
+            format: opts.format as OutputFormat,
+          }),
+          ...(typeof opts.outputType === 'string' && {
+            outputType: opts.outputType as OutputType,
+          }),
+          ...(typeof opts.paperSize === 'string' && {
+            paperSize: opts.paperSize as PaperSize,
+          }),
+          ...(typeof opts.config === 'string' && { config: opts.config }),
+          ...(typeof opts.logFormat === 'string' && {
+            logFormat: opts.logFormat as LogFormat,
+          }),
+          ...(typeof opts.order === 'string' && {
+            chronologicalOrder: opts.order as ChronologicalOrder,
+          }),
+          ...(opts.hideMotivation === true && { hideMotivation: true }),
+          ...(typeof opts.photo === 'string' && { photo: opts.photo }),
+          ...(typeof opts.sectionOrder === 'string' && {
+            sectionOrder: opts.sectionOrder,
+          }),
+          ...(typeof opts.stylesheet === 'string' && {
+            stylesheet: opts.stylesheet,
+          }),
         };
 
         await runCLI(cliOptions);
@@ -547,10 +562,10 @@ export function createCLIProgram(): Command {
         const initOptions: InitOptions = {
           language: langValue,
           format: formatValue as OutputFormat,
-          output: typeof opts.output === 'string' ? opts.output : undefined,
           noComments: opts.comments === false,
           listTemplates: opts.listTemplates === true,
           listSections: opts.listSections === true,
+          ...(typeof opts.output === 'string' && { output: opts.output }),
         };
 
         const outputPath = runInit(initOptions);

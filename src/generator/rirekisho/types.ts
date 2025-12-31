@@ -20,9 +20,9 @@ export interface RirekishoOptions {
   readonly chronologicalOrder?: ChronologicalOrder;
   readonly hideMotivation?: boolean;
   /** Base64 encoded photo data URI (e.g., "data:image/png;base64,...") */
-  readonly photoDataUri?: string | undefined;
+  readonly photoDataUri?: string;
   /** Custom CSS stylesheet content to append after default styles */
-  readonly customStylesheet?: string | undefined;
+  readonly customStylesheet?: string;
 }
 
 /** Input data for the Rirekisho generator */
