@@ -5,10 +5,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  createPosition,
-  createRange,
-  createRangeFromNumbers,
-  located,
+    createPosition,
+    createRange,
+    createRangeFromNumbers,
+    located,
 } from '../../src/types/position.js';
 
 describe('Position type', () => {

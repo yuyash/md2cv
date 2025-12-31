@@ -458,9 +458,7 @@ description: |
         expect(isSuccess(result)).toBe(true);
         if (isSuccess(result)) {
           expect(result.value.codeBlocks.length).toBe(1);
-          expect(result.value.codeBlocks[0].content).toContain(
-            'multiple lines',
-          );
+          expect(result.value.codeBlocks[0].content).toContain('multiple lines');
         }
       });
 
