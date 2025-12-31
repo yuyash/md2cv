@@ -7,7 +7,9 @@ import { describe, expect, it } from 'vitest';
 import {
   findSectionByTag,
   getRequiredSectionsForFormat,
+  getTagsForLanguage,
   getValidTagsForFormat,
+  isJapaneseText,
   isSectionValidForFormat,
   SECTION_DEFINITIONS,
 } from '../../src/types/sections.js';
@@ -219,5 +221,85 @@ describe('isSectionValidForFormat', () => {
       expect(isSectionValidForFormat('invalid', 'rirekisho')).toBe(false);
       expect(isSectionValidForFormat('nonexistent', 'both')).toBe(false);
     });
+  });
+});
+
+describe('isJapaneseText', () => {
+  it('should return true for Hiragana', () => {
+    expect(isJapaneseText('あいうえお')).toBe(true);
+  });
+
+  it('should return true for Katakana', () => {
+    expect(isJapaneseText('アイウエオ')).toBe(true);
+  });
+
+  it('should return true for Kanji', () => {
+    expect(isJapaneseText('漢字')).toBe(true);
+    expect(isJapaneseText('職歴')).toBe(true);
+  });
+
+  it('should return true for mixed Japanese and English', () => {
+    expect(isJapaneseText('Hello 世界')).toBe(true);
+    expect(isJapaneseText('自己PR')).toBe(true);
+  });
+
+  it('should return false for English only', () => {
+    expect(isJapaneseText('Experience')).toBe(false);
+    expect(isJapaneseText('Work Experience')).toBe(false);
+  });
+
+  it('should return false for empty string', () => {
+    expect(isJapaneseText('')).toBe(false);
+  });
+});
+
+describe('getTagsForLanguage', () => {
+  it('should return English tags for experience section', () => {
+    const tags = getTagsForLanguage('experience', 'en');
+
+    expect(tags).toContain('Experience');
+    expect(tags).toContain('Work Experience');
+    expect(tags).toContain('Professional Experience');
+    expect(tags).not.toContain('職歴');
+    expect(tags).not.toContain('職務経歴');
+  });
+
+  it('should return Japanese tags for experience section', () => {
+    const tags = getTagsForLanguage('experience', 'ja');
+
+    expect(tags).toContain('職歴');
+    expect(tags).toContain('職務経歴');
+    expect(tags).toContain('職務履歴');
+    expect(tags).not.toContain('Experience');
+    expect(tags).not.toContain('Work Experience');
+  });
+
+  it('should return English tags for education section', () => {
+    const tags = getTagsForLanguage('education', 'en');
+
+    expect(tags).toContain('Education');
+    expect(tags).not.toContain('学歴');
+  });
+
+  it('should return Japanese tags for education section', () => {
+    const tags = getTagsForLanguage('education', 'ja');
+
+    expect(tags).toContain('学歴');
+    expect(tags).not.toContain('Education');
+  });
+
+  it('should return empty array for unknown section', () => {
+    const tags = getTagsForLanguage('unknown', 'en');
+
+    expect(tags).toEqual([]);
+  });
+
+  it('should handle sections with only one language', () => {
+    // Notes section has both Japanese and English tags
+    const enTags = getTagsForLanguage('notes', 'en');
+    const jaTags = getTagsForLanguage('notes', 'ja');
+
+    expect(enTags).toContain('Notes');
+    expect(jaTags).toContain('本人希望記入欄');
   });
 });

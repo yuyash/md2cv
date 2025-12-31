@@ -11,7 +11,7 @@ email_address2: taro.yamada2@example.com
 phone_number2: 03-1234-5678
 post_code2: 100-0001
 home_address2: 東京都千代田区千代田 1 - 1
-home_address_furigana2: とうきょうと ちよだく ちよだ
+home_address2_furigana: とうきょうと ちよだく ちよだ
 dob: 1995-04-15
 gender: 男
 ---

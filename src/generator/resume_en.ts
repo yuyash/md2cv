@@ -32,12 +32,13 @@ export interface CVInput {
 
 /**
  * Page size dimensions in mm
+ * CV uses portrait orientation (width < height)
  */
 const PAGE_SIZES: Record<PaperSize, { width: number; height: number }> = {
-  a3: { width: 420, height: 297 },
+  a3: { width: 297, height: 420 },
   a4: { width: 210, height: 297 },
-  b4: { width: 364, height: 257 },
-  b5: { width: 176, height: 250 },
+  b4: { width: 257, height: 364 },
+  b5: { width: 182, height: 257 },
   letter: { width: 215.9, height: 279.4 },
 };
 
@@ -45,6 +46,7 @@ const PAGE_SIZES: Record<PaperSize, { width: number; height: number }> = {
  * Escape HTML special characters
  */
 function escapeHtml(text: string): string {
+  if (text == null) return '';
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -103,6 +105,7 @@ function formatDateRange(
  */
 function generateStyles(paperSize: PaperSize): string {
   const size = PAGE_SIZES[paperSize];
+  const pageMargin = 15; // mm
 
   return `
     :root {
@@ -123,12 +126,15 @@ function generateStyles(paperSize: PaperSize): string {
     }
     @page {
       size: ${size.width}mm ${size.height}mm;
-      margin: 15mm;
+      margin: ${pageMargin}mm;
     }
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+    html {
+      background: #e0e0e0;
     }
     body {
       font-family: var(--cv-font-family);
@@ -136,9 +142,10 @@ function generateStyles(paperSize: PaperSize): string {
       line-height: var(--cv-line-height);
       color: var(--cv-color-text);
       background: var(--cv-color-background);
-      max-width: 800px;
+      width: ${size.width}mm;
+      min-height: ${size.height}mm;
       margin: 0 auto;
-      padding: 20px;
+      padding: ${pageMargin}mm;
     }
     header {
       text-align: center;
@@ -271,9 +278,13 @@ function generateStyles(paperSize: PaperSize): string {
       font-size: var(--cv-font-size-xs);
     }
     @media print {
+      html {
+        background: none;
+      }
       body {
+        width: auto;
+        min-height: auto;
         padding: 0;
-        max-width: none;
       }
     }
   `;
@@ -312,10 +323,11 @@ function renderEducation(entries: readonly EducationEntry[]): string {
         html += `<div class="entry-subtitle">${subtitleParts.join(' — ')}</div>`;
       }
 
-      // Details
-      if (entry.details && entry.details.length > 0) {
+      // Details - filter out empty strings
+      const nonEmptyDetails = entry.details?.filter((d) => d && d.trim()) ?? [];
+      if (nonEmptyDetails.length > 0) {
         html += '<ul>';
-        for (const detail of entry.details) {
+        for (const detail of nonEmptyDetails) {
           html += `<li>${escapeHtml(detail)}</li>`;
         }
         html += '</ul>';
@@ -577,11 +589,15 @@ function renderContactInfo(cv: CVInput): string {
     parts.push(escapeHtml(cv.metadata.home_address));
   }
 
-  parts.push(escapeHtml(cv.metadata.phone_number));
+  if (cv.metadata.phone_number) {
+    parts.push(escapeHtml(cv.metadata.phone_number));
+  }
 
-  parts.push(
-    `<a href="mailto:${escapeHtml(cv.metadata.email_address)}">${escapeHtml(cv.metadata.email_address)}</a>`,
-  );
+  if (cv.metadata.email_address) {
+    parts.push(
+      `<a href="mailto:${escapeHtml(cv.metadata.email_address)}">${escapeHtml(cv.metadata.email_address)}</a>`,
+    );
+  }
 
   if (cv.metadata.linkedin) {
     const linkedinUrl = cv.metadata.linkedin;

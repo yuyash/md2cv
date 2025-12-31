@@ -43,20 +43,21 @@ describe('escapeHtml', () => {
 });
 
 describe('PAGE_SIZES', () => {
+  // PAGE_SIZES is portrait orientation (width < height)
   it('should have correct A4 dimensions', () => {
     expect(PAGE_SIZES.a4).toEqual({ width: 210, height: 297 });
   });
 
   it('should have correct A3 dimensions', () => {
-    expect(PAGE_SIZES.a3).toEqual({ width: 420, height: 297 });
+    expect(PAGE_SIZES.a3).toEqual({ width: 297, height: 420 });
   });
 
   it('should have correct B4 dimensions', () => {
-    expect(PAGE_SIZES.b4).toEqual({ width: 364, height: 257 });
+    expect(PAGE_SIZES.b4).toEqual({ width: 257, height: 364 });
   });
 
   it('should have correct B5 dimensions', () => {
-    expect(PAGE_SIZES.b5).toEqual({ width: 176, height: 250 });
+    expect(PAGE_SIZES.b5).toEqual({ width: 182, height: 257 });
   });
 
   it('should have correct letter dimensions', () => {

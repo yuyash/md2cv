@@ -404,7 +404,19 @@ function parseEducationBlock(code: string): EducationEntry[] {
         start: parseYearMonth(safeOptionalString(obj.start)),
         end: parseYearMonth(safeOptionalString(obj.end)),
         details: Array.isArray(obj.details)
-          ? obj.details.map((d) => safeString(d))
+          ? obj.details.map((d) => {
+              // Handle YAML parsing objects like { "GPA": "3.8/4.0" } as "GPA: 3.8/4.0"
+              if (typeof d === 'object' && d !== null) {
+                const entries = Object.entries(d as Record<string, unknown>);
+                if (entries.length > 0) {
+                  return entries
+                    .map(([k, v]) => `${k}: ${safeString(v)}`)
+                    .join(', ');
+                }
+                return '';
+              }
+              return safeString(d);
+            })
           : undefined,
       };
     });

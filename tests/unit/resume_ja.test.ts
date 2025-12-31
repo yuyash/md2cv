@@ -354,8 +354,9 @@ describe('generateCVJaHTML', () => {
     const htmlA4 = generateCVJaHTML(cv, { paperSize: 'a4' });
     expect(htmlA4).toContain('210mm 297mm');
 
+    // B4 is portrait orientation (width < height)
     const htmlB4 = generateCVJaHTML(cv, { paperSize: 'b4' });
-    expect(htmlB4).toContain('364mm 257mm');
+    expect(htmlB4).toContain('257mm 364mm');
   });
 
   it('should render skills list as grid for skills section', () => {

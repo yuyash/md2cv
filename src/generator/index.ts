@@ -37,21 +37,35 @@ interface CVInput {
 }
 
 /**
- * Page size dimensions in mm
+ * Page size dimensions in mm (portrait orientation for CV)
  */
 export const PAGE_SIZES: Record<PaperSize, { width: number; height: number }> =
   {
-    a3: { width: 420, height: 297 },
+    a3: { width: 297, height: 420 },
     a4: { width: 210, height: 297 },
-    b4: { width: 364, height: 257 },
-    b5: { width: 176, height: 250 },
+    b4: { width: 257, height: 364 },
+    b5: { width: 182, height: 257 },
     letter: { width: 215.9, height: 279.4 },
   };
 
 /**
+ * Page size dimensions in mm (landscape orientation for Rirekisho)
+ */
+export const PAGE_SIZES_LANDSCAPE: Record<
+  PaperSize,
+  { width: number; height: number }
+> = {
+  a3: { width: 420, height: 297 },
+  a4: { width: 297, height: 210 },
+  b4: { width: 364, height: 257 },
+  b5: { width: 257, height: 182 },
+  letter: { width: 279.4, height: 215.9 },
+};
+
+/**
  * MIME types for supported image formats
  */
-const IMAGE_MIME_TYPES: Record<string, string> = {
+export const IMAGE_MIME_TYPES: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -60,9 +74,16 @@ const IMAGE_MIME_TYPES: Record<string, string> = {
 };
 
 /**
+ * Supported image file extensions (without leading dot)
+ */
+export const SUPPORTED_IMAGE_EXTENSIONS: readonly string[] = Object.keys(
+  IMAGE_MIME_TYPES,
+).map((ext) => ext.slice(1));
+
+/**
  * Read image file and convert to base64 data URI
  */
-function readPhotoAsDataUri(photoPath: string): string {
+export function readPhotoAsDataUri(photoPath: string): string {
   const ext = path.extname(photoPath).toLowerCase();
   const mimeType = IMAGE_MIME_TYPES[ext];
 
@@ -96,15 +117,28 @@ export function escapeHtml(text: string): string {
 }
 
 /**
- * Detect language from CV content
+ * Input type for detectLanguage function
  */
-function detectLanguage(cv: CVInput): 'en' | 'ja' {
+export interface DetectLanguageInput {
+  readonly metadata: { name_ja?: string };
+  readonly sections: readonly { title: string }[];
+}
+
+/**
+ * Detect language from CV content
+ * Checks for Japanese name or Japanese section titles
+ */
+export function detectLanguage(cv: DetectLanguageInput): 'en' | 'ja' {
+  // Import isJapaneseText from sections to avoid duplication
+  const isJapanese = (text: string): boolean =>
+    /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text);
+
   // Check if name_ja exists or if sections have Japanese titles
   if (cv.metadata.name_ja) return 'ja';
 
   for (const section of cv.sections) {
     // Check for Japanese characters in title
-    if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(section.title)) {
+    if (isJapanese(section.title)) {
       return 'ja';
     }
   }
@@ -312,18 +346,7 @@ async function generatePDF(
 
     if (isRirekisho) {
       // Rirekisho uses landscape orientation with the specified paper size
-      // PAGE_SIZES for rirekisho are already in landscape (width > height)
-      const rirekishoSizes: Record<
-        PaperSize,
-        { width: number; height: number }
-      > = {
-        a3: { width: 420, height: 297 },
-        a4: { width: 297, height: 210 },
-        b4: { width: 364, height: 257 },
-        b5: { width: 257, height: 182 },
-        letter: { width: 279.4, height: 215.9 },
-      };
-      const rirekishoSize = rirekishoSizes[paperSize];
+      const rirekishoSize = PAGE_SIZES_LANDSCAPE[paperSize];
       await page.setViewport({
         width: Math.round(rirekishoSize.width * 3.78),
         height: Math.round(rirekishoSize.height * 3.78),

@@ -5,6 +5,44 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./parser": {
+      "types": "./dist/parser/index.d.ts",
+      "import": "./dist/parser/index.js"
+    },
+    "./parser/lsp": {
+      "types": "./dist/parser/lsp.d.ts",
+      "import": "./dist/parser/lsp.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    },
+    "./types/sections": {
+      "types": "./dist/types/sections.d.ts",
+      "import": "./dist/types/sections.js"
+    },
+    "./types/config": {
+      "types": "./dist/types/config.d.ts",
+      "import": "./dist/types/config.js"
+    },
+    "./validator": {
+      "types": "./dist/validator/index.d.ts",
+      "import": "./dist/validator/index.js"
+    },
+    "./generator": {
+      "types": "./dist/generator/index.d.ts",
+      "import": "./dist/generator/index.js"
+    },
+    "./template": {
+      "types": "./dist/template/index.d.ts",
+      "import": "./dist/template/index.js"
+    }
+  },
   "bin": {
     "md2cv": "./dist/bin.js"
   },
@@ -36,8 +74,6 @@
   "keywords": [
     "cv",
     "resume",
-    "rirekisho",
-    "shokumukeirekisho",
     "markdown",
     "pdf",
     "html",

@@ -155,6 +155,37 @@ export function isSectionValidForFormat(
 }
 
 /**
+ * CV language type
+ */
+export type CvLanguage = 'en' | 'ja';
+
+/**
+ * Check if text contains Japanese characters (Hiragana, Katakana, or Kanji)
+ */
+export function isJapaneseText(text: string): boolean {
+  return /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text);
+}
+
+/**
+ * Get tags for a section filtered by language
+ * @param sectionId The section ID
+ * @param language The language to filter by ('en' or 'ja')
+ * @returns Array of tags in the specified language
+ */
+export function getTagsForLanguage(
+  sectionId: string,
+  language: CvLanguage,
+): string[] {
+  const def = SECTION_DEFINITIONS.find((d) => d.id === sectionId);
+  if (!def) return [];
+
+  return def.tags.filter((tag) => {
+    const isJapanese = isJapaneseText(tag);
+    return language === 'ja' ? isJapanese : !isJapanese;
+  });
+}
+
+/**
  * Education entry structure (resume:education block)
  */
 export interface EducationEntry {
