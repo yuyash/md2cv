@@ -81,14 +81,14 @@ function validateSections(
 
   // Warn about unknown sections
   // Get all H1 headings from raw content to check for unknown sections
-  const h1Regex = /^#\s+(.+)$/gm;
-  for (const match of cv.rawContent.matchAll(h1Regex)) {
-    const title = match[1]?.trim();
-    if (title) {
-      const sectionDef = findSectionByTag(title);
-      if (!sectionDef) {
-        logger.warn(`Unknown section "${title}" will be ignored`);
-      }
+  for (const line of cv.rawContent.split(/\r?\n/)) {
+    if (!line.startsWith('#') || line.length < 2) continue;
+    if (!/\s/.test(line[1])) continue;
+    const title = line.slice(1).trim();
+    if (!title) continue;
+    const sectionDef = findSectionByTag(title);
+    if (!sectionDef) {
+      logger.warn(`Unknown section "${title}" will be ignored`);
     }
   }
 }
