@@ -72,18 +72,6 @@ export const JA_FRONTMATTER_FIELDS: readonly FrontmatterFieldTemplate[] = [
     description: 'LinkedIn プロフィール URL - 職務経歴書で使用',
     required: false,
   },
-  {
-    key: 'github',
-    example: 'https://github.com/taroyamada',
-    description: 'GitHub プロフィール URL - エンジニア向け',
-    required: false,
-  },
-  {
-    key: 'website',
-    example: 'https://taroyamada.dev',
-    description: '個人サイト・ポートフォリオ URL',
-    required: false,
-  },
 ] as const;
 
 /**

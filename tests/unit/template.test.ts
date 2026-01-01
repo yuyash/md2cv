@@ -388,10 +388,10 @@ describe('Template definitions', () => {
       }
     });
 
-    it('should have github and website fields', () => {
+    it('should not include github or website in frontmatter fields', () => {
       const fieldKeys = EN_TEMPLATE.frontmatterFields.map((f) => f.key);
-      expect(fieldKeys).toContain('github');
-      expect(fieldKeys).toContain('website');
+      expect(fieldKeys).not.toContain('github');
+      expect(fieldKeys).not.toContain('website');
     });
   });
 
@@ -402,10 +402,10 @@ describe('Template definitions', () => {
       }
     });
 
-    it('should have github and website fields', () => {
+    it('should not include github or website in frontmatter fields', () => {
       const fieldKeys = JA_TEMPLATE.frontmatterFields.map((f) => f.key);
-      expect(fieldKeys).toContain('github');
-      expect(fieldKeys).toContain('website');
+      expect(fieldKeys).not.toContain('github');
+      expect(fieldKeys).not.toContain('website');
     });
   });
 });
