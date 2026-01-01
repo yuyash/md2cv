@@ -116,40 +116,42 @@ md2cv -i input.md [options]  # 'generate' は省略可能
 md2cv init [options]
 ```
 
-| オプション          | 説明                                             | デフォルト |
-| ------------------- | ------------------------------------------------ | ---------- |
-| `-o, --output`      | 出力ファイルパス（デフォルト: 標準出力）         | 標準出力   |
-| `-l, --lang`        | テンプレート言語（`en`, `ja`）                   | `en`       |
-| `-f, --format`      | 出力フォーマット（`cv`, `rirekisho`, `both`）    | `cv`       |
-| `--no-comments`     | テンプレートから説明コメントを除外               | -          |
-| `--list-templates`  | 利用可能なテンプレートと詳細を表示               | -          |
-| `--list-sections`   | 指定フォーマットの利用可能なセクションを表示     | -          |
+| オプション         | 説明                                          | デフォルト |
+| ------------------ | --------------------------------------------- | ---------- |
+| `-o, --output`     | 出力ファイルパス（デフォルト: 標準出力）      | 標準出力   |
+| `-l, --lang`       | テンプレート言語（`en`, `ja`）                | `en`       |
+| `-f, --format`     | 出力フォーマット（`cv`, `rirekisho`, `both`） | `cv`       |
+| `--no-comments`    | テンプレートから説明コメントを除外            | -          |
+| `--list-templates` | 利用可能なテンプレートと詳細を表示            | -          |
+| `--list-sections`  | 指定フォーマットの利用可能なセクションを表示  | -          |
 
 ## generate オプション
 
 `generate` コマンドで使用できるオプション：
 
-| オプション                 | 説明                                                                                           | デフォルト      |
-| -------------------------- | ---------------------------------------------------------------------------------------------- | --------------- |
-| `-i, --input <file>`       | 入力 Markdown ファイル（必須）                                                                 | -               |
-| `-o, --output <path>`      | 出力ファイルパス（拡張子なし）                                                                 | 入力ファイルと同じディレクトリ |
-| `-f, --format <format>`    | 出力フォーマット: `cv`, `rirekisho`, `both`                                                    | `cv`            |
-| `-t, --output-type <type>` | 出力タイプ: `pdf`, `html`, `both`                                                              | `pdf`           |
-| `-p, --paper-size <size>`  | 用紙サイズ: `a3`, `a4`, `b4`, `b5`, `letter`                                                   | `a4`            |
-| `-c, --config <file>`      | 設定ファイル（JSON または YAML）                                                               | -               |
-| `--order <order>`          | CV の時系列順序: `asc`（古い順）, `desc`（新しい順）。履歴書は常に古い順。                      | `desc`          |
-| `--hide-motivation`        | 履歴書の志望動機欄を非表示（学歴・職歴・資格欄が拡大）                                         | `false`         |
-| `--photo <filepath>`       | 履歴書用の写真ファイル（png, jpg, tiff）                                                       | -               |
-| `--section-order <list>`   | CV に含めるセクション ID のカンマ区切りリスト（例: `summary,experience,education,skills`）     | 全セクション    |
-| `--stylesheet <filepath>`  | カスタム CSS スタイルシートファイル（フォント、色、余白などを上書き）。詳細は [STYLE.md](STYLE.md) を参照。 | -               |
-| `--log-format <format>`    | ログフォーマット: `json`, `text`                                                               | `text`          |
-| `--verbose`                | 詳細ログを有効化                                                                               | `false`         |
-| `--version`                | バージョンを表示                                                                               | -               |
-| `--help`                   | ヘルプを表示                                                                                   | -               |
+| オプション                 | 説明                                                                                                        | デフォルト                     |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `-i, --input <file>`       | 入力 Markdown ファイル（必須）                                                                              | -                              |
+| `-o, --output <path>`      | 出力ファイルパス（拡張子なし）                                                                              | 入力ファイルと同じディレクトリ |
+| `-f, --format <format>`    | 出力フォーマット: `cv`, `rirekisho`, `both`                                                                 | `cv`                           |
+| `-t, --output-type <type>` | 出力タイプ: `pdf`, `html`, `both`                                                                           | `pdf`                          |
+| `-p, --paper-size <size>`  | 用紙サイズ: `a3`, `a4`, `b4`, `b5`, `letter`                                                                | `a4`                           |
+| `-c, --config <file>`      | 設定ファイル（JSON または YAML）                                                                            | -                              |
+| `--order <order>`          | CV の時系列順序: `asc`（古い順）, `desc`（新しい順）。履歴書は常に古い順。                                  | `desc`                         |
+| `--hide-motivation`        | 履歴書の志望動機欄を非表示（学歴・職歴・資格欄が拡大）                                                      | `false`                        |
+| `--photo <filepath>`       | 履歴書用の写真ファイル（png, jpg, tiff）                                                                    | -                              |
+| `--section-order <list>`   | CV に含めるセクション ID のカンマ区切りリスト（例: `summary,experience,education,skills`）                  | 全セクション                   |
+| `--stylesheet <filepath>`  | カスタム CSS スタイルシートファイル（フォント、色、余白などを上書き）。詳細は [STYLE.md](STYLE.md) を参照。 | -                              |
+| `--log-format <format>`    | ログフォーマット: `json`, `text`                                                                            | `text`                         |
+| `--verbose`                | 詳細ログを有効化                                                                                            | `false`                        |
+| `--version`                | バージョンを表示                                                                                            | -                              |
+| `--help`                   | ヘルプを表示                                                                                                | -                              |
 
 ## Markdown フォーマット
 
 ### フロントマターと環境変数
+
+メタデータの指定方法は 2 つあります。Markdown ファイル内のフロントマターで指定する方法と、環境変数で指定する方法（`.env` ファイルからの読み込みを含む）です。フロントマターは簡単ですが個人情報がファイルに含まれます。環境変数を使えば個人情報を Markdown に含めずに済み、バージョン管理からも分離できます。
 
 ```yaml
 ---
@@ -165,26 +167,26 @@ dob: 1990-01-15
 ---
 ```
 
-フロントマターのフィールドは環境変数でも設定できます。個人情報をバージョン管理から除外したい場合に便利です。
+フロントマターのフィールドは環境変数でも設定できます。フロントマターなしで環境変数だけでも設定可能です。個人情報をバージョン管理から除外したい場合に便利です。`.env` ファイルに設定して読み込むこともできます。
 
-| フィールド               | 環境変数                                           | 必須     |
-| ------------------------ | -------------------------------------------------- | -------- |
-| `name`                   | `NAME`                                             | はい     |
-| `name_ja`                | `NAME_JA`                                          | いいえ   |
-| `name_furigana`          | `NAME_FURIGANA`, `NAME_HURIGANA`                   | いいえ   |
-| `email_address`          | `EMAIL_ADDRESS`, `EMAIL_ADDRESS1`                  | はい     |
-| `email_address2`         | `EMAIL_ADDRESS2`                                   | いいえ   |
-| `phone_number`           | `PHONE_NUMBER`, `PHONE_NUMBER1`                    | はい     |
-| `phone_number2`          | `PHONE_NUMBER2`                                    | いいえ   |
-| `post_code`              | `POST_CODE`, `POST_CODE1`                          | いいえ   |
-| `home_address`           | `HOME_ADDRESS`, `HOME_ADDRESS1`                    | いいえ   |
-| `home_address_furigana`  | `HOME_ADDRESS_FURIGANA`, `HOME_ADDRESS_HURIGANA`   | いいえ   |
-| `post_code2`             | `POST_CODE2`                                       | いいえ   |
-| `home_address2`          | `HOME_ADDRESS2`                                    | いいえ   |
-| `home_address2_furigana` | `HOME_ADDRESS2_FURIGANA`, `HOME_ADDRESS2_HURIGANA` | いいえ   |
-| `gender`                 | `GENDER`                                           | いいえ   |
-| `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | いいえ   |
-| `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | いいえ   |
+| フィールド               | 環境変数                                           | 必須   |
+| ------------------------ | -------------------------------------------------- | ------ |
+| `name`                   | `NAME`                                             | はい   |
+| `name_ja`                | `NAME_JA`                                          | いいえ |
+| `name_furigana`          | `NAME_FURIGANA`, `NAME_HURIGANA`                   | いいえ |
+| `email_address`          | `EMAIL_ADDRESS`, `EMAIL_ADDRESS1`                  | はい   |
+| `email_address2`         | `EMAIL_ADDRESS2`                                   | いいえ |
+| `phone_number`           | `PHONE_NUMBER`, `PHONE_NUMBER1`                    | はい   |
+| `phone_number2`          | `PHONE_NUMBER2`                                    | いいえ |
+| `post_code`              | `POST_CODE`, `POST_CODE1`                          | いいえ |
+| `home_address`           | `HOME_ADDRESS`, `HOME_ADDRESS1`                    | いいえ |
+| `home_address_furigana`  | `HOME_ADDRESS_FURIGANA`, `HOME_ADDRESS_HURIGANA`   | いいえ |
+| `post_code2`             | `POST_CODE2`                                       | いいえ |
+| `home_address2`          | `HOME_ADDRESS2`                                    | いいえ |
+| `home_address2_furigana` | `HOME_ADDRESS2_FURIGANA`, `HOME_ADDRESS2_HURIGANA` | いいえ |
+| `gender`                 | `GENDER`                                           | いいえ |
+| `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | いいえ |
+| `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | いいえ |
 
 優先順位: フロントマターの値が環境変数より優先されます。
 
@@ -333,17 +335,17 @@ items:
 
 #### セクション一覧
 
-| セクション ID    | 対応タグ                                                                          | フォーマット |
-| ---------------- | --------------------------------------------------------------------------------- | ------------ |
-| `summary`        | 概要, 職務要約, Summary, Professional Summary, Profile, Executive Summary         | CV           |
-| `experience`     | 職歴, 職務経歴, Experience, Work Experience, Professional Experience              | 両方         |
-| `education`      | 学歴, Education                                                                   | 両方         |
-| `skills`         | スキル, Skills, Technical Skills                                                  | 両方         |
-| `certifications` | 免許・資格, 資格, 免許, Certifications                                            | 両方         |
-| `languages`      | 語学, Languages, Language Skills                                                  | CV           |
-| `competencies`   | 自己PR, Core Competencies, Key Competencies, Superpowers                          | 両方         |
-| `motivation`     | 志望動機, 志望の動機, Motivation                                                  | 履歴書       |
-| `notes`          | 本人希望記入欄, Notes                                                             | 履歴書       |
+| セクション ID    | 対応タグ                                                                  | フォーマット |
+| ---------------- | ------------------------------------------------------------------------- | ------------ |
+| `summary`        | 概要, 職務要約, Summary, Professional Summary, Profile, Executive Summary | CV           |
+| `experience`     | 職歴, 職務経歴, Experience, Work Experience, Professional Experience      | 両方         |
+| `education`      | 学歴, Education                                                           | 両方         |
+| `skills`         | スキル, Skills, Technical Skills                                          | 両方         |
+| `certifications` | 免許・資格, 資格, 免許, Certifications                                    | 両方         |
+| `languages`      | 語学, Languages, Language Skills                                          | CV           |
+| `competencies`   | 自己PR, Core Competencies, Key Competencies, Superpowers                  | 両方         |
+| `motivation`     | 志望動機, 志望の動機, Motivation                                          | 履歴書       |
+| `notes`          | 本人希望記入欄, Notes                                                     | 履歴書       |
 
 ## 設定ファイル
 

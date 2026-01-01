@@ -116,40 +116,42 @@ Generate a markdown template to help you get started.
 md2cv init [options]
 ```
 
-| Option              | Description                                      | Default |
-| ------------------- | ------------------------------------------------ | ------- |
-| `-o, --output`      | Output file path (default: stdout)               | stdout  |
-| `-l, --lang`        | Template language (`en`, `ja`)                   | `en`    |
-| `-f, --format`      | Output format (`cv`, `rirekisho`, `both`)        | `cv`    |
-| `--no-comments`     | Exclude explanatory comments from template       | -       |
-| `--list-templates`  | List available templates and their details       | -       |
-| `--list-sections`   | List available sections for the specified format | -       |
+| Option             | Description                                      | Default |
+| ------------------ | ------------------------------------------------ | ------- |
+| `-o, --output`     | Output file path (default: stdout)               | stdout  |
+| `-l, --lang`       | Template language (`en`, `ja`)                   | `en`    |
+| `-f, --format`     | Output format (`cv`, `rirekisho`, `both`)        | `cv`    |
+| `--no-comments`    | Exclude explanatory comments from template       | -       |
+| `--list-templates` | List available templates and their details       | -       |
+| `--list-sections`  | List available sections for the specified format | -       |
 
 ## Generate Options
 
 The following options are available for the `generate` command:
 
-| Option                     | Description                                                                                                      | Default         |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------- |
-| `-i, --input <file>`       | Input markdown file (required)                                                                                   | -               |
-| `-o, --output <path>`      | Output file path (without extension)                                                                             | Input directory |
-| `-f, --format <format>`    | Output format: `cv`, `rirekisho`, `both`                                                                         | `cv`            |
-| `-t, --output-type <type>` | Output type: `pdf`, `html`, `both`                                                                               | `pdf`           |
-| `-p, --paper-size <size>`  | Paper size: `a3`, `a4`, `b4`, `b5`, `letter`                                                                     | `a4`            |
-| `-c, --config <file>`      | Configuration file (JSON or YAML)                                                                                | -               |
-| `--order <order>`          | Chronological order for CV format: `asc` (oldest first), `desc` (newest first). Rirekisho always uses asc.       | `desc`          |
-| `--hide-motivation`        | Hide motivation section in rirekisho format (increases history/license rows)                                     | `false`         |
-| `--photo <filepath>`       | Photo image file for rirekisho format (png, jpg, tiff)                                                           | -               |
-| `--section-order <list>`   | Comma-separated list of section IDs to include in CV output (e.g., `summary,experience,education,skills`)        | All sections    |
+| Option                     | Description                                                                                                                 | Default         |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `-i, --input <file>`       | Input markdown file (required)                                                                                              | -               |
+| `-o, --output <path>`      | Output file path (without extension)                                                                                        | Input directory |
+| `-f, --format <format>`    | Output format: `cv`, `rirekisho`, `both`                                                                                    | `cv`            |
+| `-t, --output-type <type>` | Output type: `pdf`, `html`, `both`                                                                                          | `pdf`           |
+| `-p, --paper-size <size>`  | Paper size: `a3`, `a4`, `b4`, `b5`, `letter`                                                                                | `a4`            |
+| `-c, --config <file>`      | Configuration file (JSON or YAML)                                                                                           | -               |
+| `--order <order>`          | Chronological order for CV format: `asc` (oldest first), `desc` (newest first). Rirekisho always uses asc.                  | `desc`          |
+| `--hide-motivation`        | Hide motivation section in rirekisho format (increases history/license rows)                                                | `false`         |
+| `--photo <filepath>`       | Photo image file for rirekisho format (png, jpg, tiff)                                                                      | -               |
+| `--section-order <list>`   | Comma-separated list of section IDs to include in CV output (e.g., `summary,experience,education,skills`)                   | All sections    |
 | `--stylesheet <filepath>`  | Custom CSS stylesheet file to override default styles (fonts, colors, spacing, etc.). See [STYLE.md](STYLE.md) for details. | -               |
-| `--log-format <format>`    | Log format: `json`, `text`                                                                                       | `text`          |
-| `--verbose`                | Enable verbose logging                                                                                           | `false`         |
-| `--version`                | Show version                                                                                                     | -               |
-| `--help`                   | Show help                                                                                                        | -               |
+| `--log-format <format>`    | Log format: `json`, `text`                                                                                                  | `text`          |
+| `--verbose`                | Enable verbose logging                                                                                                      | `false`         |
+| `--version`                | Show version                                                                                                                | -               |
+| `--help`                   | Show help                                                                                                                   | -               |
 
 ## Markdown Format
 
 ### Frontmatter and Environment Variables
+
+There are two ways to provide metadata: use frontmatter in the Markdown file, or use environment variables (including values loaded from a `.env` file). Frontmatter is the simplest, but it embeds personal information in the file. Environment variables keep personal details out of the Markdown and version control.
 
 ```yaml
 ---
@@ -160,7 +162,7 @@ home_address: San Francisco, CA
 ---
 ```
 
-Frontmatter fields can also be set via environment variables. This is useful for keeping personal information out of version control.
+Frontmatter fields can also be set via environment variables. You can provide all metadata via environment variables without frontmatter. This is useful for keeping personal information out of version control. You can also use a `.env` file to define these values.
 
 | Field                    | Environment Variable(s)                            | Required |
 | ------------------------ | -------------------------------------------------- | -------- |
@@ -328,17 +330,17 @@ Available to start immediately. Open to relocation.
 
 #### Section Reference
 
-| Section ID     | Supported Tags                                                                    | Format    |
-| -------------- | --------------------------------------------------------------------------------- | --------- |
-| `summary`      | Summary, Professional Summary, Profile, Executive Summary, 概要, 職務要約           | CV        |
-| `experience`   | Experience, Work Experience, Professional Experience, 職歴, 職務経歴                | Both      |
-| `education`    | Education, 学歴                                                                   | Both      |
-| `skills`       | Skills, Technical Skills, スキル                                                  | Both      |
-| `certifications` | Certifications, 免許・資格, 資格, 免許.                                           | Both      |
-| `languages`    | Languages, Language Skills語学                                                    | CV        |
-| `competencies` | Core Competencies, Key Competencies, Superpowers, 自己PR                          | Both      |
-| `motivation`   | Motivation, 志望動機, 志望の動機                                                    | Rirekisho |
-| `notes`        | Notes, 本人希望記入欄                                                               | Rirekisho |
+| Section ID       | Supported Tags                                                            | Format    |
+| ---------------- | ------------------------------------------------------------------------- | --------- |
+| `summary`        | Summary, Professional Summary, Profile, Executive Summary, 概要, 職務要約 | CV        |
+| `experience`     | Experience, Work Experience, Professional Experience, 職歴, 職務経歴      | Both      |
+| `education`      | Education, 学歴                                                           | Both      |
+| `skills`         | Skills, Technical Skills, スキル                                          | Both      |
+| `certifications` | Certifications, 免許・資格, 資格, 免許.                                   | Both      |
+| `languages`      | Languages, Language Skills語学                                            | CV        |
+| `competencies`   | Core Competencies, Key Competencies, Superpowers, 自己PR                  | Both      |
+| `motivation`     | Motivation, 志望動機, 志望の動機                                          | Rirekisho |
+| `notes`          | Notes, 本人希望記入欄                                                     | Rirekisho |
 
 ## Configuration File
 
