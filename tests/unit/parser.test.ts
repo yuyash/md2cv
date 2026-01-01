@@ -4,8 +4,26 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parseMarkdown } from '../../src/parser/index.js';
+import { METADATA_FIELDS } from '../../src/types/metadata.js';
+
+const METADATA_ENV_VARS = Array.from(
+  new Set(Object.values(METADATA_FIELDS).flatMap((def) => def.envVars)),
+);
 
 describe('parseMarkdown', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+    for (const envVar of METADATA_ENV_VARS) {
+      delete process.env[envVar];
+    }
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
   it('should parse valid frontmatter with --- delimiters', () => {
     const markdown = `---
 name: John Doe

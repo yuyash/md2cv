@@ -43,18 +43,6 @@ export const EN_FRONTMATTER_FIELDS: readonly FrontmatterFieldTemplate[] = [
     description: 'Your LinkedIn profile URL for professional networking',
     required: false,
   },
-  {
-    key: 'github',
-    example: 'https://github.com/johndoe',
-    description: 'Your GitHub profile URL to showcase your code',
-    required: false,
-  },
-  {
-    key: 'website',
-    example: 'https://johndoe.dev',
-    description: 'Your personal website or portfolio URL',
-    required: false,
-  },
 ] as const;
 
 /**
