@@ -1,6 +1,6 @@
 {
   "name": "md2cv",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Transform Markdown into professional CVs and Japanese rirekisho (履歴書) - supports PDF/HTML output with multiple paper sizes",
   "type": "module",
   "main": "dist/index.js",
