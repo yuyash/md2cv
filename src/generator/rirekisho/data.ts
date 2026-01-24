@@ -9,6 +9,7 @@ import type {
   EducationEntry,
   ExperienceEntry,
   ParsedSection,
+  RoleEntry,
   SectionContent,
   TableRow,
 } from '../../types/sections.js';
@@ -145,20 +146,46 @@ function experienceToTableRows(
 ): TableRow[] {
   const rows: TableRow[] = [];
   for (const entry of entries) {
-    for (const role of entry.roles) {
-      if (role.start) {
-        const formatted = formatYearMonth(role.start);
-        rows.push({
-          year: formatted.year,
-          month: formatted.month,
-          content: `${entry.company} 入社`,
-        });
+    if (entry.roles.length === 0) continue;
+
+    // Find the earliest start date across all roles
+    const earliestRole = entry.roles.reduce((earliest, role) => {
+      if (!earliest || role.start < earliest.start) {
+        return role;
       }
-      if (role.end && role.end !== 'present') {
-        const formatted = formatYearMonth(role.end);
+      return earliest;
+    });
+
+    // Add entry row (入社) with the earliest start date
+    const formattedStart = formatYearMonth(earliestRole.start);
+    rows.push({
+      year: formattedStart.year,
+      month: formattedStart.month,
+      content: `${entry.company} 入社`,
+    });
+
+    // Check if any role is still ongoing (present)
+    const hasOngoingRole = entry.roles.some((role) => role.end === 'present');
+
+    // Add exit row (退社) only if no role is ongoing
+    if (!hasOngoingRole) {
+      // Find the latest end date across all roles
+      const latestEndRole = entry.roles.reduce<RoleEntry | null>(
+        (latest, role) => {
+          if (role.end === 'present') return latest;
+          if (!latest || latest.end === 'present' || role.end > latest.end) {
+            return role;
+          }
+          return latest;
+        },
+        null,
+      );
+
+      if (latestEndRole && latestEndRole.end !== 'present') {
+        const formattedEnd = formatYearMonth(latestEndRole.end);
         rows.push({
-          year: formatted.year,
-          month: formatted.month,
+          year: formattedEnd.year,
+          month: formattedEnd.month,
           content: `${entry.company} 退社`,
         });
       }
@@ -260,14 +287,99 @@ export function buildLicenseData(
   return tableRows.map((row) => [row.year, row.month, row.content]);
 }
 
+/**
+ * Convert markdown text to HTML, handling lists and paragraphs
+ */
+function markdownToHtml(text: string): string {
+  const lines = text.split('\n');
+  const result: string[] = [];
+  let inList = false;
+  let currentParagraph: string[] = [];
+
+  const flushParagraph = () => {
+    if (currentParagraph.length > 0) {
+      const content = currentParagraph.join(' ').trim();
+      if (content) {
+        result.push(`<p>${escapeHtml(content)}</p>`);
+      }
+      currentParagraph = [];
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Check if line is a list item (starts with - or *)
+    const listMatch = trimmed.match(/^[-*]\s+(.+)$/);
+
+    if (listMatch) {
+      // Flush any pending paragraph before starting list
+      flushParagraph();
+
+      // Start list if not already in one
+      if (!inList) {
+        result.push('<ul>');
+        inList = true;
+      }
+
+      // Add list item
+      result.push(`<li>${escapeHtml(listMatch[1])}</li>`);
+    } else if (trimmed === '') {
+      // Empty line - flush paragraph and close list if needed
+      flushParagraph();
+      if (inList) {
+        result.push('</ul>');
+        inList = false;
+      }
+    } else {
+      // Regular text line
+      // Check if next line is a list item
+      const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : '';
+      const nextIsListItem = /^[-*]\s+/.test(nextLine);
+
+      if (nextIsListItem) {
+        // This line is a label/header before a list, keep it as paragraph
+        flushParagraph();
+        result.push(`<p>${escapeHtml(trimmed)}</p>`);
+      } else {
+        // Regular paragraph line
+        if (inList) {
+          // Close list before starting paragraph
+          result.push('</ul>');
+          inList = false;
+        }
+        currentParagraph.push(trimmed);
+      }
+    }
+  }
+
+  // Flush any remaining content
+  flushParagraph();
+  if (inList) {
+    result.push('</ul>');
+  }
+
+  return result.join('\n');
+}
+
 export function getSectionText(
   sections: readonly ParsedSection[],
   ids: string[],
 ): string {
   for (const id of ids) {
     const sec = sections.find((s) => s.id === id);
-    if (sec && sec.content.type === 'text') {
-      return escapeHtml(sec.content.text);
+    if (sec) {
+      if (sec.content.type === 'text') {
+        return markdownToHtml(sec.content.text);
+      }
+      // Handle list type sections (when markdown lists are parsed as list content)
+      if (sec.content.type === 'list') {
+        const listItems = sec.content.items
+          .map((item) => `<li>${escapeHtml(item)}</li>`)
+          .join('\n');
+        return `<ul>\n${listItems}\n</ul>`;
+      }
     }
   }
   return '';
@@ -317,13 +429,16 @@ export function countDataRows(sections: readonly ParsedSection[]): DataCounts {
   const work = sections.find((s) => s.id === 'experience');
   if (work) {
     if (work.content.type === 'experience') {
-      // Each role generates 1-2 rows (入社 + optional 退職)
+      // Each company generates 1-2 rows (入社 + optional 退社)
       for (const entry of work.content.entries) {
-        for (const role of entry.roles) {
-          historyDataRows += 1; // 入社
-          if (role.end && role.end !== 'present') {
-            historyDataRows += 1; // 退職
-          }
+        historyDataRows += 1; // 入社
+
+        // Check if any role is still ongoing (present)
+        const hasOngoingRole = entry.roles.some(
+          (role) => role.end === 'present',
+        );
+        if (!hasOngoingRole) {
+          historyDataRows += 1; // 退社
         }
       }
     } else if (work.content.type === 'table') {
