@@ -311,7 +311,7 @@ function markdownToHtml(text: string): string {
     const trimmed = line.trim();
 
     // Check if line is a list item (starts with - or *)
-    const listMatch = trimmed.match(/^[-*]\s+(.+)$/);
+    const listMatch = trimmed.match(/^[-*]\s+(.*)$/);
 
     if (listMatch) {
       // Flush any pending paragraph before starting list
