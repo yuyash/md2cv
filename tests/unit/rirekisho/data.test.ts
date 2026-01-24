@@ -509,7 +509,7 @@ describe('rirekisho/data', () => {
       expect(result).toBe('');
     });
 
-    it('should return text content from matching section', () => {
+    it('should return text content from matching section as HTML paragraph', () => {
       const sections: ParsedSection[] = [
         {
           id: 'motivation',
@@ -522,7 +522,44 @@ describe('rirekisho/data', () => {
       ];
       const result = getSectionText(sections, ['motivation']);
 
-      expect(result).toBe('テスト志望動機');
+      expect(result).toBe('<p>テスト志望動機</p>');
+    });
+
+    it('should convert markdown lists to HTML lists', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'notes',
+          title: '本人希望記入欄',
+          content: {
+            type: 'text',
+            text: '希望事項：\n- 希望勤務地：東京\n- 入社可能日：即日',
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['notes']);
+
+      expect(result).toContain('<p>希望事項：</p>');
+      expect(result).toContain('<ul>');
+      expect(result).toContain('<li>希望勤務地：東京</li>');
+      expect(result).toContain('<li>入社可能日：即日</li>');
+      expect(result).toContain('</ul>');
+    });
+
+    it('should handle multiple paragraphs', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'motivation',
+          title: '志望動機',
+          content: {
+            type: 'text',
+            text: '第一段落\n\n第二段落',
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['motivation']);
+
+      expect(result).toContain('<p>第一段落</p>');
+      expect(result).toContain('<p>第二段落</p>');
     });
 
     it('should try multiple section IDs', () => {
@@ -538,7 +575,7 @@ describe('rirekisho/data', () => {
       ];
       const result = getSectionText(sections, ['motivation', 'notes']);
 
-      expect(result).toBe('テスト備考');
+      expect(result).toBe('<p>テスト備考</p>');
     });
 
     it('should escape HTML in text content', () => {
@@ -555,7 +592,7 @@ describe('rirekisho/data', () => {
       const result = getSectionText(sections, ['motivation']);
 
       expect(result).toBe(
-        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+        '<p>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</p>',
       );
     });
 

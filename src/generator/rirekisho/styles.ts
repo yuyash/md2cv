@@ -333,6 +333,34 @@ td, th {
   flex: 1;
 }
 
+/* Text content styling */
+.section-box__content p {
+  margin: 0 0 ${mm(2 * scale)} 0;
+  line-height: 1.6;
+}
+
+.section-box__content p:last-child {
+  margin-bottom: 0;
+}
+
+.section-box__content ul {
+  margin: 0 0 ${mm(2 * scale)} 0;
+  padding-left: ${mm(5 * scale)};
+  line-height: 1.6;
+}
+
+.section-box__content ul:last-child {
+  margin-bottom: 0;
+}
+
+.section-box__content li {
+  margin-bottom: ${mm(1 * scale)};
+}
+
+.section-box__content li:last-child {
+  margin-bottom: 0;
+}
+
 /* Motivation container - 60% of flexible space */
 .motivation-container {
   flex: 6;

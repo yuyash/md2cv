@@ -200,7 +200,7 @@ export function buildAddressRow({
     scale,
     {
       maxFontPt: 8 * scale,
-      minFontPt: 5 * scale,
+      minFontPt: 6 * scale, // Increased from 5 to 6 for better readability
       paddingMm: 4 * scale,
     },
   );
@@ -210,7 +210,7 @@ export function buildAddressRow({
     scale,
     {
       maxFontPt: 12 * scale,
-      minFontPt: 7 * scale,
+      minFontPt: 9 * scale, // Increased from 7 to 9 for better readability
       paddingMm: 4 * scale,
     },
   );
