@@ -310,8 +310,8 @@ function markdownToHtml(text: string): string {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Check if line is a list item (starts with - or *)
-    const listMatch = trimmed.match(/^[-*]\s+(.*)$/);
+    // Check if line is a list item (starts with - or * followed by space)
+    const listMatch = trimmed.match(/^[-*] (.*)$/);
 
     if (listMatch) {
       // Flush any pending paragraph before starting list
@@ -336,7 +336,7 @@ function markdownToHtml(text: string): string {
       // Regular text line
       // Check if next line is a list item
       const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : '';
-      const nextIsListItem = /^[-*]\s+/.test(nextLine);
+      const nextIsListItem = /^[-*] /.test(nextLine);
 
       if (nextIsListItem) {
         // This line is a label/header before a list, keep it as paragraph
