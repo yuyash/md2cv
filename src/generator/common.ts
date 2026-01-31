@@ -11,6 +11,7 @@ import type {
   EducationEntry,
   ExperienceEntry,
   LanguageEntry,
+  MixedContentPart,
   ParsedSection,
   SectionContent,
   SkillEntry,
@@ -373,6 +374,20 @@ export function renderExperience(
 }
 
 /**
+ * Render mixed content part
+ */
+function renderMixedContentPart(part: MixedContentPart): string {
+  if (part.type === 'paragraph') {
+    return `<p>${escapeHtml(part.text)}</p>`;
+  }
+  return (
+    '<ul>' +
+    part.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') +
+    '</ul>'
+  );
+}
+
+/**
  * Render section content
  */
 export function renderSectionContent(
@@ -392,6 +407,8 @@ export function renderSectionContent(
         content.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') +
         '</ul>'
       );
+    case 'mixed':
+      return content.parts.map(renderMixedContentPart).join('\n');
     case 'education':
       return renderEducation(content.entries, formatter);
     case 'experience':
