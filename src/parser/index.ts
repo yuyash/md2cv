@@ -61,14 +61,28 @@ function createProcessor() {
 }
 
 /**
- * Extract text from mdast node
+ * Stringify processor for converting AST nodes back to markdown
+ * Includes remarkGfm to handle GFM elements like tables
+ */
+const stringifyProcessor = unified().use(remarkGfm).use(remarkStringify);
+
+/**
+ * Extract text from mdast node, preserving markdown formatting
+ * Converts the AST node back to markdown string
  */
 function extractText(node: RootContent): string {
+  // For nodes with children (like paragraph, emphasis, strong, link),
+  // serialize them back to markdown to preserve formatting
+  if ('children' in node && Array.isArray(node.children)) {
+    // Create a temporary root node to stringify
+    const tempRoot: Root = { type: 'root', children: [node] };
+    const result = stringifyProcessor.stringify(tempRoot);
+    // Remove trailing newlines added by stringify
+    return result.trim();
+  }
+  // For text nodes, return the value directly
   if ('value' in node && typeof node.value === 'string') {
     return node.value;
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    return (node.children as RootContent[]).map(extractText).join('');
   }
   return '';
 }
