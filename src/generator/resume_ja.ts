@@ -170,6 +170,56 @@ function generateStyles(paperSize: PaperSize): string {
     .skill-category-name {
       font-weight: bold;
     }
+    /* Markdown inline styles */
+    strong, b {
+      font-weight: bold;
+    }
+    em, i {
+      font-style: italic;
+    }
+    a {
+      color: var(--cv-color-text);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--cv-color-heading);
+    }
+    code {
+      font-family: "SF Mono", "Monaco", "Consolas", monospace;
+      font-size: 0.9em;
+      background: #f5f5f5;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    pre {
+      font-family: "SF Mono", "Monaco", "Consolas", monospace;
+      font-size: var(--cv-font-size-xs);
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 6px 0;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    blockquote {
+      border-left: 3px solid var(--cv-color-border);
+      padding-left: 12px;
+      margin: 6px 0;
+      color: var(--cv-color-muted);
+      font-style: italic;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid var(--cv-color-border);
+      margin: 12px 0;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
     @media print {
       html {
         background: none;

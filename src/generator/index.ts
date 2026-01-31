@@ -29,6 +29,9 @@ import { generateRirekishoHTML } from './rirekisho/index.js';
 // Re-export generators
 export { generateEnHtml, generateJaHtml, generateRirekishoHTML };
 
+// Re-export markdown utilities
+export { inlineMarkdownToHtml, markdownToHtml } from './markdown.js';
+
 /**
  * Page size dimensions in mm (portrait orientation for CV)
  */

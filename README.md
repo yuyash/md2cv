@@ -342,6 +342,53 @@ Available to start immediately. Open to relocation.
 | `motivation`     | Motivation, 志望動機, 志望の動機                                          | Rirekisho |
 | `notes`          | Notes, 本人希望記入欄                                                     | Rirekisho |
 
+### Markdown Formatting
+
+md2cv supports rich text formatting using standard markdown syntax within your CV content. This allows you to emphasize key achievements, add links to projects, and include inline code for technical terms.
+
+#### Supported Syntax
+
+| Syntax        | Example                        | Result                       |
+| ------------- | ------------------------------ | ---------------------------- |
+| Bold          | `**important**`                | **important**                |
+| Italic        | `*emphasis*`                   | _emphasis_                   |
+| Bold + Italic | `***critical***`               | **_critical_**               |
+| Links         | `[GitHub](https://github.com)` | [GitHub](https://github.com) |
+| Inline Code   | `` `TypeScript` ``             | `TypeScript`                 |
+| Strikethrough | `~~deprecated~~`               | ~~deprecated~~               |
+
+#### Usage Examples
+
+You can use markdown formatting in summaries, highlights, descriptions, and list items:
+
+````markdown
+# Summary
+
+Experienced **full-stack engineer** with expertise in _cloud-native_ development.
+Check out my [portfolio](https://example.com) for project examples.
+
+# Experience
+
+```resume:experience
+- company: TechCorp
+  role: Senior Engineer
+  start: 2020-01
+  end: present
+  summary: Led **critical** infrastructure projects using *cutting-edge* technology
+  highlights:
+    - Built **scalable** microservices with `Node.js` and `TypeScript`
+    - Improved *system reliability* to 99.9% uptime
+    - Collaborated with [design team](https://design.example.com) on UX improvements
+```
+
+# Core Competencies
+
+```resume:competencies
+- header: Technical Leadership
+  description: Led **cross-functional** teams using *agile* methodologies with `Jira` and `Confluence`
+```
+````
+
 ## Configuration File
 
 Configuration files are completely optional. All parameters can be specified via CLI arguments. However, you can use a JSON or YAML config file for convenience when you want to reuse the same settings across multiple runs.

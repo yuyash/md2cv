@@ -17,6 +17,7 @@ import type {
   SkillEntry,
   SkillsOptions,
 } from '../types/sections.js';
+import { inlineMarkdownToHtml, markdownToHtml } from './markdown.js';
 
 /**
  * Input for CV generation
@@ -161,7 +162,7 @@ export function renderEducation(
       if (nonEmptyDetails.length > 0) {
         html += '<ul>';
         for (const detail of nonEmptyDetails) {
-          html += `<li>${escapeHtml(detail)}</li>`;
+          html += `<li>${inlineMarkdownToHtml(detail)}</li>`;
         }
         html += '</ul>';
       }
@@ -287,7 +288,7 @@ export function renderCompetencies(
 ): string {
   return entries
     .map((entry) => {
-      return `<div class="competency-entry"><span class="competency-header">${escapeHtml(entry.header)}:</span> ${escapeHtml(entry.description)}</div>`;
+      return `<div class="competency-entry"><span class="competency-header">${escapeHtml(entry.header)}:</span> ${inlineMarkdownToHtml(entry.description)}</div>`;
     })
     .join('\n');
 }
@@ -331,14 +332,14 @@ export function renderExperience(
 
         if (role.summary && role.summary.length > 0) {
           html += '<div class="entry-summary">';
-          html += role.summary.map((s) => escapeHtml(s)).join(' ');
+          html += role.summary.map((s) => inlineMarkdownToHtml(s)).join(' ');
           html += '</div>';
         }
 
         if (role.highlights && role.highlights.length > 0) {
           html += '<ul>';
           for (const highlight of role.highlights) {
-            html += `<li>${escapeHtml(highlight)}</li>`;
+            html += `<li>${inlineMarkdownToHtml(highlight)}</li>`;
           }
           html += '</ul>';
         }
@@ -358,7 +359,7 @@ export function renderExperience(
             if (project.bullets && project.bullets.length > 0) {
               html += '<ul>';
               for (const bullet of project.bullets) {
-                html += `<li>${escapeHtml(bullet)}</li>`;
+                html += `<li>${inlineMarkdownToHtml(bullet)}</li>`;
               }
               html += '</ul>';
             }
@@ -378,11 +379,13 @@ export function renderExperience(
  */
 function renderMixedContentPart(part: MixedContentPart): string {
   if (part.type === 'paragraph') {
-    return `<p>${escapeHtml(part.text)}</p>`;
+    return markdownToHtml(part.text);
   }
   return (
     '<ul>' +
-    part.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') +
+    part.items
+      .map((item) => `<li>${inlineMarkdownToHtml(item)}</li>`)
+      .join('\n') +
     '</ul>'
   );
 }
@@ -397,14 +400,16 @@ export function renderSectionContent(
 ): string {
   switch (content.type) {
     case 'text':
-      return `<p>${escapeHtml(content.text)}</p>`;
+      return markdownToHtml(content.text);
     case 'list':
       if (sectionId === 'skills') {
         return renderSkillsList(content.items);
       }
       return (
         '<ul>' +
-        content.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('\n') +
+        content.items
+          .map((item) => `<li>${inlineMarkdownToHtml(item)}</li>`)
+          .join('\n') +
         '</ul>'
       );
     case 'mixed':
@@ -425,7 +430,7 @@ export function renderSectionContent(
       return (
         '<ul>' +
         content.rows
-          .map((row) => `<li>${escapeHtml(row.content)}</li>`)
+          .map((row) => `<li>${inlineMarkdownToHtml(row.content)}</li>`)
           .join('\n') +
         '</ul>'
       );
