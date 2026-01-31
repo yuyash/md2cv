@@ -85,8 +85,6 @@ function generateStyles(paperSize: PaperSize): string {
     }
     section {
       margin-bottom: var(--cv-spacing-section);
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     .entry {
       page-break-inside: avoid;
@@ -100,6 +98,8 @@ function generateStyles(paperSize: PaperSize): string {
       padding-bottom: 2px;
       margin-bottom: 8px;
       color: var(--cv-color-heading);
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .entry {
       margin-bottom: var(--cv-spacing-entry);

@@ -95,8 +95,6 @@ function generateStyles(paperSize: PaperSize): string {
     }
     section {
       margin-bottom: var(--cv-spacing-section);
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     h2 {
       font-size: var(--cv-font-size-section);
@@ -105,6 +103,8 @@ function generateStyles(paperSize: PaperSize): string {
       padding-bottom: 3px;
       margin-bottom: 10px;
       color: var(--cv-color-heading);
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .entry {
       margin-bottom: var(--cv-spacing-entry);

@@ -296,7 +296,7 @@ function markdownToHtml(text: string): string {
   let inList = false;
   let currentParagraph: string[] = [];
 
-  const flushParagraph = () => {
+  const flushParagraph = (): void => {
     if (currentParagraph.length > 0) {
       const content = currentParagraph.join(' ').trim();
       if (content) {
