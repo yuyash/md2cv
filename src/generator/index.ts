@@ -13,6 +13,7 @@ import type {
   CVOptions,
   OutputFormat,
   OutputType,
+  PageMargins,
   PaperSize,
   ResolvedConfig,
 } from '../types/config.js';
@@ -302,6 +303,7 @@ function generateHtml(
   sectionOrder?: string[],
   logger?: Logger,
   customStylesheet?: string,
+  marginMm?: PageMargins,
 ): string {
   const language = detectLanguage(cv);
 
@@ -313,9 +315,11 @@ function generateHtml(
 
   const filteredCv: CVInput = { ...cv, sections };
 
-  const options: CVOptions = customStylesheet
-    ? { paperSize, customStylesheet }
-    : { paperSize };
+  const options: CVOptions = {
+    paperSize,
+    ...(customStylesheet && { customStylesheet }),
+    ...(marginMm && { marginMm }),
+  };
 
   if (language === 'ja') {
     return generateJaHtml(filteredCv, options);
@@ -330,6 +334,7 @@ async function generatePDF(
   html: string,
   paperSize: PaperSize,
   isRirekisho: boolean,
+  marginMm?: PageMargins,
 ): Promise<Buffer> {
   const browser = await puppeteer.launch({
     headless: true,
@@ -345,7 +350,7 @@ async function generatePDF(
     let pdfOptions: Parameters<typeof page.pdf>[0];
 
     if (isRirekisho) {
-      // Rirekisho uses landscape orientation with the specified paper size
+      // Rirekisho uses landscape orientation with fixed 0mm margins
       const rirekishoSize = PAGE_SIZES_LANDSCAPE[paperSize];
       await page.setViewport({
         width: Math.round(rirekishoSize.width * 3.78),
@@ -362,11 +367,19 @@ async function generatePDF(
         scale: 1,
       };
     } else {
+      // CV defaults to 30mm margins, but can be overridden
+      const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+
       pdfOptions = {
         width: `${size.width}mm`,
         height: `${size.height}mm`,
         printBackground: true,
-        margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
+        margin: {
+          top: `${margins.top}mm`,
+          right: `${margins.right}mm`,
+          bottom: `${margins.bottom}mm`,
+          left: `${margins.left}mm`,
+        },
         preferCSSPageSize: true,
       };
     }
@@ -444,6 +457,7 @@ export async function generateOutput(
         config.sectionOrder,
         logger,
         customStylesheet,
+        config.marginMm,
       );
     }
 
@@ -461,6 +475,7 @@ export async function generateOutput(
           html,
           config.paperSize,
           format === 'rirekisho',
+          config.marginMm,
         );
         fs.writeFileSync(outputPath, pdfBuffer);
       }

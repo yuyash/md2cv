@@ -3,7 +3,7 @@
  * Generates HTML for Japanese CV format with Mincho font
  */
 
-import type { CVOptions, PaperSize } from '../types/config.js';
+import type { CVOptions, PageMargins, PaperSize } from '../types/config.js';
 import type { ParsedSection } from '../types/sections.js';
 import { isSectionValidForFormat } from '../types/sections.js';
 import type { CVInput } from './common.js';
@@ -27,9 +27,10 @@ function getCurrentDateJa(): string {
 /**
  * Generate base CSS styles for Japanese CV
  */
-function generateStyles(paperSize: PaperSize): string {
+function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
   const size = PAGE_SIZES[paperSize];
-  const pageMargin = 15; // mm
+  // Default to 30mm margins if not specified
+  const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
 
   return `
     :root {
@@ -48,7 +49,7 @@ function generateStyles(paperSize: PaperSize): string {
     }
     @page {
       size: ${size.width}mm ${size.height}mm;
-      margin: ${pageMargin}mm;
+      margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
     }
     * {
       margin: 0;
@@ -67,7 +68,7 @@ function generateStyles(paperSize: PaperSize): string {
       width: ${size.width}mm;
       min-height: ${size.height}mm;
       margin: 0 auto;
-      padding: ${pageMargin}mm;
+      padding: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
     }
     header {
       margin-bottom: 20px;
@@ -247,7 +248,7 @@ function filterSections(sections: readonly ParsedSection[]): ParsedSection[] {
  * Generate Japanese HTML CV
  */
 export function generateJaHtml(cv: CVInput, options: CVOptions): string {
-  const styles = generateStyles(options.paperSize);
+  const styles = generateStyles(options.paperSize, options.marginMm);
   const name = cv.metadata.name_ja ?? cv.metadata.name;
   const currentDate = getCurrentDateJa();
 

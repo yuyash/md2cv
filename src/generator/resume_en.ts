@@ -3,7 +3,7 @@
  * Generates HTML for English CV format with Times font family
  */
 
-import type { CVOptions, PaperSize } from '../types/config.js';
+import type { CVOptions, PageMargins, PaperSize } from '../types/config.js';
 import type { CVInput } from './common.js';
 import {
   PAGE_SIZES,
@@ -17,9 +17,10 @@ export type { CVInput };
 /**
  * Generate base CSS styles for English CV
  */
-function generateStyles(paperSize: PaperSize): string {
+function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
   const size = PAGE_SIZES[paperSize];
-  const pageMargin = 15; // mm
+  // Default to 30mm margins if not specified
+  const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
 
   return `
     :root {
@@ -40,7 +41,7 @@ function generateStyles(paperSize: PaperSize): string {
     }
     @page {
       size: ${size.width}mm ${size.height}mm;
-      margin: ${pageMargin}mm;
+      margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
     }
     * {
       margin: 0;
@@ -59,7 +60,7 @@ function generateStyles(paperSize: PaperSize): string {
       width: ${size.width}mm;
       min-height: ${size.height}mm;
       margin: 0 auto;
-      padding: ${pageMargin}mm;
+      padding: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
     }
     header {
       text-align: center;
@@ -288,7 +289,7 @@ function renderContactInfo(cv: CVInput): string {
  * Generate English HTML CV
  */
 export function generateEnHtml(cv: CVInput, options: CVOptions): string {
-  const styles = generateStyles(options.paperSize);
+  const styles = generateStyles(options.paperSize, options.marginMm);
   const name = cv.metadata.name;
   const contactHtml = renderContactInfo(cv);
 

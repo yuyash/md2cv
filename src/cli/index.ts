@@ -27,6 +27,7 @@ import type {
   LogFormat,
   OutputFormat,
   OutputType,
+  PageMargins,
   PaperSize,
   ResolvedConfig,
 } from '../types/config.js';
@@ -249,6 +250,47 @@ function validateStylesheetPath(stylesheetPath: string): void {
 }
 
 /**
+ * Parse margin string into PageMargins object
+ * Accepts formats: "10" (all sides), "10,15,10,15" (top,right,bottom,left)
+ */
+export function parseMargins(marginStr: string): PageMargins {
+  const parts = marginStr.split(',').map((s) => s.trim());
+
+  if (parts.length === 1) {
+    const value = parseFloat(parts[0]);
+    if (isNaN(value) || value < 0) {
+      throw new Error(
+        `Invalid margin value: "${parts[0]}". Must be a non-negative number.`,
+      );
+    }
+    return { top: value, right: value, bottom: value, left: value };
+  }
+
+  if (parts.length === 4) {
+    const values = parts.map((p, i) => {
+      const value = parseFloat(p);
+      if (isNaN(value) || value < 0) {
+        const positions = ['top', 'right', 'bottom', 'left'];
+        throw new Error(
+          `Invalid ${positions[i]} margin value: "${p}". Must be a non-negative number.`,
+        );
+      }
+      return value;
+    });
+    return {
+      top: values[0],
+      right: values[1],
+      bottom: values[2],
+      left: values[3],
+    };
+  }
+
+  throw new Error(
+    `Invalid margin format: "${marginStr}". Use single value (e.g., "10") or four values (e.g., "10,15,10,15").`,
+  );
+}
+
+/**
  * Resolve configuration from CLI options and config file
  */
 export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
@@ -282,6 +324,14 @@ export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
     validateStylesheetPath(stylesheetPath);
   }
 
+  // Resolve margins (CLI takes precedence over config file)
+  let marginMm: PageMargins | undefined;
+  if (cliOptions.marginMm) {
+    marginMm = parseMargins(cliOptions.marginMm);
+  } else if (configFile.marginMm) {
+    marginMm = configFile.marginMm;
+  }
+
   return {
     input: cliOptions.input,
     output: cliOptions.output ?? configFile.output ?? defaultOutput,
@@ -306,6 +356,7 @@ export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
         ? { sectionOrder: configFile.sectionOrder }
         : {}),
     ...(stylesheetPath !== undefined && { stylesheet: stylesheetPath }),
+    ...(marginMm !== undefined && { marginMm }),
   };
 }
 
@@ -466,6 +517,10 @@ export function createCLIProgram(): Command {
       GENERATE_OPTIONS.stylesheet.description,
     )
     .option(
+      GENERATE_OPTIONS.marginMm.flags,
+      GENERATE_OPTIONS.marginMm.description,
+    )
+    .option(
       GENERATE_OPTIONS.logFormat.flags,
       GENERATE_OPTIONS.logFormat.description,
       GENERATE_OPTIONS.logFormat.defaultValue,
@@ -504,6 +559,9 @@ export function createCLIProgram(): Command {
           }),
           ...(typeof opts.stylesheet === 'string' && {
             stylesheet: opts.stylesheet,
+          }),
+          ...(typeof opts.marginMm === 'string' && {
+            marginMm: opts.marginMm,
           }),
         };
 
