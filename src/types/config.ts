@@ -11,6 +11,16 @@ export type PaperSize = 'a3' | 'a4' | 'b4' | 'b5' | 'letter';
 export type LogFormat = 'json' | 'text';
 
 /**
+ * Page margins in mm
+ */
+export interface PageMargins {
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+  readonly left: number;
+}
+
+/**
  * Chronological order for history entries
  * - asc: oldest first (default for rirekisho)
  * - desc: newest first (default for CV)
@@ -84,6 +94,11 @@ export const GENERATE_OPTIONS = {
     description:
       'Custom CSS stylesheet file to apply additional styles. The stylesheet is appended after default styles, allowing you to override fonts, colors, spacing, etc.',
   },
+  marginMm: {
+    flags: '--margin-mm <margins>',
+    description:
+      'Page margins in mm for CV format. Format: "top,right,bottom,left" (e.g., "10,15,10,15") or single value for all sides (e.g., "10"). Default: 30mm. Not applicable to rirekisho format.',
+  },
   logFormat: {
     flags: '--log-format <format>',
     description: 'Log format (json or text)',
@@ -147,6 +162,7 @@ export interface CLIOptions {
   readonly photo?: string;
   readonly sectionOrder?: string;
   readonly stylesheet?: string;
+  readonly marginMm?: string;
 }
 
 /**
@@ -163,6 +179,7 @@ export interface ConfigFile {
   readonly photo?: string;
   readonly sectionOrder?: string[];
   readonly stylesheet?: string;
+  readonly marginMm?: PageMargins;
 }
 
 /**
@@ -181,6 +198,7 @@ export interface ResolvedConfig {
   readonly photo?: string;
   readonly sectionOrder?: string[];
   readonly stylesheet?: string;
+  readonly marginMm?: PageMargins;
 }
 
 /**
@@ -189,4 +207,5 @@ export interface ResolvedConfig {
 export interface CVOptions {
   readonly paperSize: PaperSize;
   readonly customStylesheet?: string;
+  readonly marginMm?: PageMargins;
 }
