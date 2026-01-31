@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4](https://github.com/yuyash/md2cv/compare/v1.4.3...v1.4.4) (2026-01-31)
+
+
+### Bug Fixes
+
+* add mixed content type for sections with paragraphs and lists ([#37](https://github.com/yuyash/md2cv/issues/37)) ([00c96ca](https://github.com/yuyash/md2cv/commit/00c96ca06aee5a788c7074edde9e39e842d4fe91))
+
 ## [1.4.3](https://github.com/yuyash/md2cv/compare/v1.4.2...v1.4.3) (2026-01-31)
 
 
