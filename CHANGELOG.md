@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/yuyash/md2cv/compare/v1.4.4...v1.5.0) (2026-01-31)
+
+
+### Features
+
+* add markdown-to-HTML conversion for CV content ([#39](https://github.com/yuyash/md2cv/issues/39)) ([c361e79](https://github.com/yuyash/md2cv/commit/c361e79fcbb954943dfcc1adaa1ad891d522bd18))
+
 ## [1.4.4](https://github.com/yuyash/md2cv/compare/v1.4.3...v1.4.4) (2026-01-31)
 
 
