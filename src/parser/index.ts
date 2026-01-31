@@ -812,21 +812,26 @@ function parseSectionContent(nodes: RootContent[]): SectionContent {
   const hasLists = nodes.some((n) => n.type === 'list');
   const hasParagraphs = nodes.some((n) => n.type === 'paragraph');
 
-  // If we have both paragraphs and lists, treat as mixed text content
+  // If we have both paragraphs and lists, return as mixed content type
   if (hasLists && hasParagraphs) {
-    // Extract all text including list items as markdown
-    let text = '';
+    const parts: Array<
+      | { type: 'paragraph'; text: string }
+      | { type: 'list'; items: readonly string[] }
+    > = [];
     for (const node of nodes) {
       if (node.type === 'paragraph') {
-        text += extractText(node) + '\n';
+        const text = extractText(node);
+        if (text.trim()) {
+          parts.push({ type: 'paragraph', text });
+        }
       } else if (node.type === 'list') {
         const items = parseListItems(node);
-        for (const item of items) {
-          text += '- ' + item + '\n';
+        if (items.length > 0) {
+          parts.push({ type: 'list', items });
         }
       }
     }
-    return { type: 'text', text: text.trim() };
+    return { type: 'mixed', parts };
   }
 
   // If only lists (no paragraphs), return as list type

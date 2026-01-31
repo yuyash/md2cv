@@ -277,11 +277,19 @@ export interface LanguageEntry {
 }
 
 /**
+ * Mixed content part for sections containing both paragraphs and lists
+ */
+export type MixedContentPart =
+  | { readonly type: 'paragraph'; readonly text: string }
+  | { readonly type: 'list'; readonly items: readonly string[] };
+
+/**
  * Parsed section content
  */
 export type SectionContent =
   | { readonly type: 'text'; readonly text: string }
   | { readonly type: 'list'; readonly items: readonly string[] }
+  | { readonly type: 'mixed'; readonly parts: readonly MixedContentPart[] }
   | { readonly type: 'education'; readonly entries: readonly EducationEntry[] }
   | {
       readonly type: 'experience';
