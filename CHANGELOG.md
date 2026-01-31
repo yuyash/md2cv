@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3](https://github.com/yuyash/md2cv/compare/v1.4.2...v1.4.3) (2026-01-31)
+
+
+### Bug Fixes
+
+* page break cv sections ([#35](https://github.com/yuyash/md2cv/issues/35)) ([3899a8a](https://github.com/yuyash/md2cv/commit/3899a8a74a70fe0a2d3762130ced197037d4c95c))
+
 ## [1.4.2](https://github.com/yuyash/md2cv/compare/v1.4.1...v1.4.2) (2026-01-24)
 
 
