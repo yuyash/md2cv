@@ -8,6 +8,7 @@ import type { CVMetadata } from '../types/metadata.js';
 import type {
   CertificationEntry,
   CompetencyEntry,
+  ContentBlock,
   EducationEntry,
   ExperienceEntry,
   LanguageEntry,
@@ -375,7 +376,7 @@ export function renderExperience(
 }
 
 /**
- * Render mixed content part
+ * Render mixed content part (legacy)
  */
 function renderMixedContentPart(part: MixedContentPart): string {
   if (part.type === 'paragraph') {
@@ -391,13 +392,57 @@ function renderMixedContentPart(part: MixedContentPart): string {
 }
 
 /**
- * Render section content
+ * Render a single content block
+ */
+export function renderContentBlock(
+  block: ContentBlock,
+  _sectionId: string,
+  formatter: DateFormatter,
+): string {
+  switch (block.type) {
+    case 'markdown':
+      return markdownToHtml(block.content);
+    case 'education':
+      return renderEducation(block.entries, formatter);
+    case 'experience':
+      return renderExperience(block.entries, formatter);
+    case 'certifications':
+      return renderCertifications(block.entries, formatter);
+    case 'skills':
+      return renderSkills(block.entries, block.options, formatter);
+    case 'competencies':
+      return renderCompetencies(block.entries);
+    case 'languages':
+      return renderLanguages(block.entries);
+    case 'table':
+      return (
+        '<ul>' +
+        block.rows
+          .map((row) => `<li>${inlineMarkdownToHtml(row.content)}</li>`)
+          .join('\n') +
+        '</ul>'
+      );
+    default:
+      return '';
+  }
+}
+
+/**
+ * Render section content - supports both legacy and composite formats
  */
 export function renderSectionContent(
   content: SectionContent,
   sectionId: string,
   formatter: DateFormatter,
 ): string {
+  // Handle composite content (new format)
+  if (content.type === 'composite') {
+    return content.blocks
+      .map((block) => renderContentBlock(block, sectionId, formatter))
+      .join('\n');
+  }
+
+  // Handle legacy content types
   switch (content.type) {
     case 'text':
       return markdownToHtml(content.text);

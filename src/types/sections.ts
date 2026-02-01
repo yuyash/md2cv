@@ -277,16 +277,114 @@ export interface LanguageEntry {
 }
 
 /**
+ * Table row for rirekisho format
+ */
+export interface TableRow {
+  readonly year: string;
+  readonly month: string;
+  readonly content: string;
+}
+
+// ============================================================================
+// Content Block Types - Building blocks for composite content
+// ============================================================================
+
+/**
+ * Markdown content block - paragraphs, lists, or mixed markdown content
+ */
+export interface MarkdownBlock {
+  readonly type: 'markdown';
+  readonly content: string; // Raw markdown text
+}
+
+/**
+ * Education structured block
+ */
+export interface EducationBlock {
+  readonly type: 'education';
+  readonly entries: readonly EducationEntry[];
+}
+
+/**
+ * Experience structured block
+ */
+export interface ExperienceBlock {
+  readonly type: 'experience';
+  readonly entries: readonly ExperienceEntry[];
+}
+
+/**
+ * Certifications structured block
+ */
+export interface CertificationsBlock {
+  readonly type: 'certifications';
+  readonly entries: readonly CertificationEntry[];
+}
+
+/**
+ * Skills structured block
+ */
+export interface SkillsBlock {
+  readonly type: 'skills';
+  readonly entries: readonly SkillEntry[];
+  readonly options: SkillsOptions;
+}
+
+/**
+ * Competencies structured block
+ */
+export interface CompetenciesBlock {
+  readonly type: 'competencies';
+  readonly entries: readonly CompetencyEntry[];
+}
+
+/**
+ * Languages structured block
+ */
+export interface LanguagesBlock {
+  readonly type: 'languages';
+  readonly entries: readonly LanguageEntry[];
+}
+
+/**
+ * Table block for rirekisho format
+ */
+export interface TableBlock {
+  readonly type: 'table';
+  readonly rows: readonly TableRow[];
+}
+
+/**
+ * Content block - a single piece of content within a section
+ * Can be either markdown text or a structured data block
+ */
+export type ContentBlock =
+  | MarkdownBlock
+  | EducationBlock
+  | ExperienceBlock
+  | CertificationsBlock
+  | SkillsBlock
+  | CompetenciesBlock
+  | LanguagesBlock
+  | TableBlock;
+
+// ============================================================================
+// Section Content Types
+// ============================================================================
+
+/**
  * Mixed content part for sections containing both paragraphs and lists
+ * @deprecated Use ContentBlock[] instead for new code
  */
 export type MixedContentPart =
   | { readonly type: 'paragraph'; readonly text: string }
   | { readonly type: 'list'; readonly items: readonly string[] };
 
 /**
- * Parsed section content
+ * Legacy section content types (for backward compatibility during transition)
+ * @deprecated Use CompositeContent for new code
  */
-export type SectionContent =
+export type LegacySectionContent =
   | { readonly type: 'text'; readonly text: string }
   | { readonly type: 'list'; readonly items: readonly string[] }
   | { readonly type: 'mixed'; readonly parts: readonly MixedContentPart[] }
@@ -312,13 +410,18 @@ export type SectionContent =
   | { readonly type: 'table'; readonly rows: readonly TableRow[] };
 
 /**
- * Table row for rirekisho format
+ * Composite content - an ordered sequence of content blocks
+ * Allows mixing markdown text with structured data blocks
  */
-export interface TableRow {
-  readonly year: string;
-  readonly month: string;
-  readonly content: string;
+export interface CompositeContent {
+  readonly type: 'composite';
+  readonly blocks: readonly ContentBlock[];
 }
+
+/**
+ * Parsed section content - supports both legacy and composite formats
+ */
+export type SectionContent = LegacySectionContent | CompositeContent;
 
 /**
  * Parsed section
@@ -327,4 +430,54 @@ export interface ParsedSection {
   readonly id: string;
   readonly title: string;
   readonly content: SectionContent;
+}
+
+// ============================================================================
+// Helper functions for content blocks
+// ============================================================================
+
+/**
+ * Check if content is composite (new format)
+ */
+export function isCompositeContent(
+  content: SectionContent,
+): content is CompositeContent {
+  return content.type === 'composite';
+}
+
+/**
+ * Check if a content block is a markdown block
+ */
+export function isMarkdownBlock(block: ContentBlock): block is MarkdownBlock {
+  return block.type === 'markdown';
+}
+
+/**
+ * Check if a content block is a structured block (not markdown)
+ */
+export function isStructuredBlock(
+  block: ContentBlock,
+): block is Exclude<ContentBlock, MarkdownBlock> {
+  return block.type !== 'markdown';
+}
+
+/**
+ * Get all markdown blocks from composite content
+ */
+export function getMarkdownBlocks(
+  content: CompositeContent,
+): readonly MarkdownBlock[] {
+  return content.blocks.filter(isMarkdownBlock);
+}
+
+/**
+ * Get all structured blocks of a specific type from composite content
+ */
+export function getBlocksOfType<T extends ContentBlock['type']>(
+  content: CompositeContent,
+  type: T,
+): readonly Extract<ContentBlock, { type: T }>[] {
+  return content.blocks.filter(
+    (block): block is Extract<ContentBlock, { type: T }> => block.type === type,
+  );
 }

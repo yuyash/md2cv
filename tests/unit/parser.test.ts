@@ -145,11 +145,18 @@ phone_number: 03-1234-5678
         (s) => s.id === 'education',
       );
       expect(eduSection).toBeDefined();
-      expect(eduSection?.content.type).toBe('table');
-      if (eduSection?.content.type === 'table') {
-        expect(eduSection.content.rows.length).toBe(2);
-        expect(eduSection.content.rows[0]?.year).toBe('2020');
-        expect(eduSection.content.rows[0]?.month).toBe('4');
+      // Now returns composite content
+      expect(eduSection?.content.type).toBe('composite');
+      if (eduSection?.content.type === 'composite') {
+        const tableBlock = eduSection.content.blocks.find(
+          (b) => b.type === 'table',
+        );
+        expect(tableBlock).toBeDefined();
+        if (tableBlock?.type === 'table') {
+          expect(tableBlock.rows.length).toBe(2);
+          expect(tableBlock.rows[0]?.year).toBe('2020');
+          expect(tableBlock.rows[0]?.month).toBe('4');
+        }
       }
     }
   });

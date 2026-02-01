@@ -109,8 +109,81 @@ export function extractPersonalInfo(
 // Table Row Extraction
 // ============================================================================
 
+/**
+ * Extract table rows from section content
+ * For rirekisho: only extracts from structured table blocks, ignores markdown
+ */
 function extractTableRows(content: SectionContent): TableRow[] {
   if (content.type === 'table') return [...content.rows];
+  if (content.type === 'composite') {
+    // For rirekisho, only use structured table blocks
+    const tableBlock = content.blocks.find((b) => b.type === 'table');
+    if (tableBlock?.type === 'table') return [...tableBlock.rows];
+  }
+  return [];
+}
+
+/**
+ * Extract education entries from section content
+ * For rirekisho: only extracts from structured blocks, ignores markdown
+ */
+function extractEducationEntries(
+  content: SectionContent,
+): readonly EducationEntry[] {
+  if (content.type === 'education') return content.entries;
+  if (content.type === 'composite') {
+    // For rirekisho, only use structured education blocks
+    const eduBlock = content.blocks.find((b) => b.type === 'education');
+    if (eduBlock?.type === 'education') return eduBlock.entries;
+  }
+  return [];
+}
+
+/**
+ * Extract experience entries from section content
+ * For rirekisho: only extracts from structured blocks, ignores markdown
+ */
+function extractExperienceEntries(
+  content: SectionContent,
+): readonly ExperienceEntry[] {
+  if (content.type === 'experience') return content.entries;
+  if (content.type === 'composite') {
+    // For rirekisho, only use structured experience blocks
+    const expBlock = content.blocks.find((b) => b.type === 'experience');
+    if (expBlock?.type === 'experience') return expBlock.entries;
+  }
+  return [];
+}
+
+/**
+ * Extract certification entries from section content
+ * For rirekisho: only extracts from structured blocks, ignores markdown
+ */
+function extractCertificationEntries(
+  content: SectionContent,
+): readonly CertificationEntry[] {
+  if (content.type === 'certifications') return content.entries;
+  if (content.type === 'composite') {
+    // For rirekisho, only use structured certification blocks
+    const certBlock = content.blocks.find((b) => b.type === 'certifications');
+    if (certBlock?.type === 'certifications') return certBlock.entries;
+  }
+  return [];
+}
+
+/**
+/**
+ * Extract competency entries from section content
+ * For rirekisho: only extracts from structured blocks
+ */
+function extractCompetencyEntries(
+  content: SectionContent,
+): readonly { header: string; description: string }[] {
+  if (content.type === 'competencies') return content.entries;
+  if (content.type === 'composite') {
+    const compBlock = content.blocks.find((b) => b.type === 'competencies');
+    if (compBlock?.type === 'competencies') return compBlock.entries;
+  }
   return [];
 }
 
@@ -240,27 +313,33 @@ export function buildHistoryData(
 
   const edu = sections.find((s) => s.id === 'education');
   if (edu) {
-    rows.push(['', '', '学歴']);
-    let tableRows =
-      edu.content.type === 'education'
-        ? educationToTableRows(edu.content.entries)
-        : extractTableRows(edu.content);
-    tableRows = sortTableRows(tableRows, order);
-    for (const row of tableRows) {
-      rows.push([row.year, row.month, row.content]);
+    const eduEntries = extractEducationEntries(edu.content);
+    const tableRows = extractTableRows(edu.content);
+
+    if (eduEntries.length > 0 || tableRows.length > 0) {
+      rows.push(['', '', '学歴']);
+      let dataRows =
+        eduEntries.length > 0 ? educationToTableRows(eduEntries) : tableRows;
+      dataRows = sortTableRows(dataRows, order);
+      for (const row of dataRows) {
+        rows.push([row.year, row.month, row.content]);
+      }
     }
   }
 
   const work = sections.find((s) => s.id === 'experience');
   if (work) {
-    rows.push(['', '', '職歴']);
-    let tableRows =
-      work.content.type === 'experience'
-        ? experienceToTableRows(work.content.entries)
-        : extractTableRows(work.content);
-    tableRows = sortTableRows(tableRows, order);
-    for (const row of tableRows) {
-      rows.push([row.year, row.month, row.content]);
+    const expEntries = extractExperienceEntries(work.content);
+    const tableRows = extractTableRows(work.content);
+
+    if (expEntries.length > 0 || tableRows.length > 0) {
+      rows.push(['', '', '職歴']);
+      let dataRows =
+        expEntries.length > 0 ? experienceToTableRows(expEntries) : tableRows;
+      dataRows = sortTableRows(dataRows, order);
+      for (const row of dataRows) {
+        rows.push([row.year, row.month, row.content]);
+      }
     }
   }
 
@@ -278,13 +357,14 @@ export function buildLicenseData(
   const sec = sections.find((s) => s.id === 'certifications');
   if (!sec) return [];
 
-  let tableRows =
-    sec.content.type === 'certifications'
-      ? certificationsToTableRows(sec.content.entries)
-      : extractTableRows(sec.content);
-  tableRows = sortTableRows(tableRows, order);
+  const certEntries = extractCertificationEntries(sec.content);
+  const tableRows = extractTableRows(sec.content);
 
-  return tableRows.map((row) => [row.year, row.month, row.content]);
+  let dataRows =
+    certEntries.length > 0 ? certificationsToTableRows(certEntries) : tableRows;
+  dataRows = sortTableRows(dataRows, order);
+
+  return dataRows.map((row) => [row.year, row.month, row.content]);
 }
 
 /**
@@ -380,6 +460,30 @@ export function getSectionText(
           .join('\n');
         return `<ul>\n${listItems}\n</ul>`;
       }
+      // For composite content in rirekisho:
+      // - Text-only sections (motivation, notes) should render markdown content
+      // - Sections with structured blocks should only use structured data
+      if (sec.content.type === 'composite') {
+        // Check if there are any structured blocks (non-markdown)
+        const hasStructuredBlocks = sec.content.blocks.some(
+          (b) => b.type !== 'markdown',
+        );
+
+        // If no structured blocks, this is a text-only section - render markdown
+        if (!hasStructuredBlocks) {
+          const markdownBlocks = sec.content.blocks.filter(
+            (b) => b.type === 'markdown',
+          );
+          if (markdownBlocks.length > 0) {
+            const combinedText = markdownBlocks
+              .map((b) => (b.type === 'markdown' ? b.content : ''))
+              .join('\n\n');
+            return markdownToHtml(combinedText);
+          }
+        }
+        // If there are structured blocks, return empty (rirekisho uses structured data only)
+        return '';
+      }
     }
   }
   return '';
@@ -387,6 +491,7 @@ export function getSectionText(
 
 /**
  * Get list items from a section (for competencies)
+ * For rirekisho: only extracts from structured blocks
  */
 export function getSectionList(
   sections: readonly ParsedSection[],
@@ -403,6 +508,15 @@ export function getSectionList(
           escapeHtml(`${entry.header}: ${entry.description}`),
         );
       }
+      // For composite content, extract from structured competencies block only
+      if (sec.content.type === 'composite') {
+        const compEntries = extractCompetencyEntries(sec.content);
+        if (compEntries.length > 0) {
+          return compEntries.map((entry) =>
+            escapeHtml(`${entry.header}: ${entry.description}`),
+          );
+        }
+      }
     }
   }
   return [];
@@ -418,19 +532,25 @@ export function countDataRows(sections: readonly ParsedSection[]): DataCounts {
 
   const edu = sections.find((s) => s.id === 'education');
   if (edu) {
-    if (edu.content.type === 'education') {
+    const eduEntries = extractEducationEntries(edu.content);
+    const tableRows = extractTableRows(edu.content);
+
+    if (eduEntries.length > 0) {
       // Each education entry generates 2 rows (入学 + 卒業/修了)
-      historyDataRows += edu.content.entries.length * 2;
-    } else if (edu.content.type === 'table') {
-      historyDataRows += edu.content.rows.length;
+      historyDataRows += eduEntries.length * 2;
+    } else if (tableRows.length > 0) {
+      historyDataRows += tableRows.length;
     }
   }
 
   const work = sections.find((s) => s.id === 'experience');
   if (work) {
-    if (work.content.type === 'experience') {
+    const expEntries = extractExperienceEntries(work.content);
+    const tableRows = extractTableRows(work.content);
+
+    if (expEntries.length > 0) {
       // Each company generates 1-2 rows (入社 + optional 退社)
-      for (const entry of work.content.entries) {
+      for (const entry of expEntries) {
         historyDataRows += 1; // 入社
 
         // Check if any role is still ongoing (present)
@@ -441,8 +561,8 @@ export function countDataRows(sections: readonly ParsedSection[]): DataCounts {
           historyDataRows += 1; // 退社
         }
       }
-    } else if (work.content.type === 'table') {
-      historyDataRows += work.content.rows.length;
+    } else if (tableRows.length > 0) {
+      historyDataRows += tableRows.length;
     }
   }
 
@@ -450,10 +570,13 @@ export function countDataRows(sections: readonly ParsedSection[]): DataCounts {
   let licenseDataRows = 0;
   const cert = sections.find((s) => s.id === 'certifications');
   if (cert) {
-    if (cert.content.type === 'certifications') {
-      licenseDataRows = cert.content.entries.length;
-    } else if (cert.content.type === 'table') {
-      licenseDataRows = cert.content.rows.length;
+    const certEntries = extractCertificationEntries(cert.content);
+    const tableRows = extractTableRows(cert.content);
+
+    if (certEntries.length > 0) {
+      licenseDataRows = certEntries.length;
+    } else if (tableRows.length > 0) {
+      licenseDataRows = tableRows.length;
     }
   }
 
