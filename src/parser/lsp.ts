@@ -8,7 +8,7 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { YAMLParseError, parseDocument } from 'yaml';
+import { parseDocument } from 'yaml';
 
 import {
   createParseError,
@@ -148,6 +148,23 @@ function parseFrontmatterWithPositions(
   try {
     const doc = parseDocument(yamlContent, { keepSourceTokens: true });
 
+    // Check for YAML parse errors
+    if (doc.errors.length > 0) {
+      for (const error of doc.errors) {
+        const line = error.linePos?.[0]?.line ?? 1;
+        const col = error.linePos?.[0]?.col ?? 1;
+        errors.push(
+          createParseError(
+            `Invalid YAML frontmatter: ${error.message}`,
+            yamlStartLine + line - 1,
+            col,
+            'frontmatter',
+          ),
+        );
+      }
+      return null;
+    }
+
     if (doc.contents && 'items' in doc.contents) {
       for (const item of doc.contents.items) {
         // Check if item is a Pair (has key and value properties)
@@ -190,28 +207,15 @@ function parseFrontmatterWithPositions(
       }
     }
   } catch (e) {
-    if (e instanceof YAMLParseError) {
-      const line = e.linePos?.[0]?.line ?? 1;
-      const col = e.linePos?.[0]?.col ?? 1;
-      errors.push(
-        createParseError(
-          `Invalid YAML frontmatter: ${e.message}`,
-          yamlStartLine + line - 1,
-          col,
-          'frontmatter',
-        ),
-      );
-    } else {
-      const msg = e instanceof Error ? e.message : 'Unknown error';
-      errors.push(
-        createParseError(
-          `Invalid YAML frontmatter: ${msg}`,
-          nodeRange.start.line,
-          nodeRange.start.character,
-          'frontmatter',
-        ),
-      );
-    }
+    // Handle unexpected errors (defensive code - YAML library normally doesn't throw)
+    errors.push(
+      createParseError(
+        `Invalid YAML frontmatter: ${String(e)}`,
+        yamlStartLine,
+        1,
+        'frontmatter',
+      ),
+    );
     return null;
   }
 
@@ -416,12 +420,26 @@ export function parseMarkdownWithPositions(
       rawContent: markdown,
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Unknown error';
+    // Handle unexpected errors (defensive code - remark parser normally doesn't throw)
     errors.push(
-      createParseError(`Failed to parse markdown: ${msg}`, 1, 1, 'markdown'),
+      createParseError(
+        `Failed to parse markdown: ${String(e)}`,
+        1,
+        1,
+        'markdown',
+      ),
     );
     return failure(errors);
   }
 }
 
 export default parseMarkdownWithPositions;
+
+// Export internal functions for testing
+export const __test__ = {
+  toPosition,
+  toRange,
+  extractText,
+  calculateYamlNodeRange,
+  offsetToPosition,
+};

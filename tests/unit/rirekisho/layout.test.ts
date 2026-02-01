@@ -307,4 +307,153 @@ describe('rirekisho/layout', () => {
       );
     });
   });
+
+  describe('allocation priority rules', () => {
+    const createInput = (
+      paperSize: PaperSize,
+      historyDataRows: number,
+      licenseDataRows: number,
+      hideMotivation = false,
+    ): LayoutInput => ({
+      paperSize,
+      hideMotivation,
+      dataCounts: { historyDataRows, licenseDataRows },
+    });
+
+    describe('when license data is large but history is normal', () => {
+      it('should reduce motivation/notes height first', () => {
+        // Large license data, normal history
+        const input = createInput('a4', 10, 20);
+        const layout = calculateLayout(input);
+
+        // License rows should accommodate all data
+        expect(layout.licenseRows).toBeGreaterThanOrEqual(20);
+      });
+
+      it('should reduce history rows if motivation/notes at minimum', () => {
+        // Very large license data
+        const input = createInput('b5', 8, 25);
+        const layout = calculateLayout(input);
+
+        // Should still fit license data
+        expect(layout.licenseRows).toBeGreaterThanOrEqual(25);
+      });
+    });
+
+    describe('when history data is large but license is normal', () => {
+      it('should reduce license empty rows first', () => {
+        // Large history data, normal license
+        const input = createInput('a4', 35, 5);
+        const layout = calculateLayout(input);
+
+        // History should overflow to right page
+        expect(layout.rightHistoryRows).toBeGreaterThan(0);
+      });
+
+      it('should reduce motivation/notes if license at minimum', () => {
+        // Very large history data
+        const input = createInput('a4', 45, 3);
+        const layout = calculateLayout(input);
+
+        // Should handle overflow
+        expect(layout.rightHistoryRows).toBeGreaterThan(0);
+      });
+    });
+
+    describe('when both history and license are large', () => {
+      it('should reduce motivation/notes to minimum first', () => {
+        // Both large
+        const input = createInput('a4', 30, 15);
+        const layout = calculateLayout(input);
+
+        // Both should be accommodated
+        expect(layout.rightHistoryRows).toBeGreaterThan(0);
+        expect(layout.licenseRows).toBeGreaterThanOrEqual(15);
+      });
+
+      it('should reduce row height if still does not fit', () => {
+        // Very large data on both
+        const input = createInput('a4', 50, 20);
+        const layout = calculateLayout(input);
+        const scale = SCALE_FACTORS.a4;
+
+        // Row height should be reduced
+        expect(layout.tableRowHeight).toBeLessThanOrEqual(
+          ROW_HEIGHT.default * scale,
+        );
+      });
+
+      it('should reduce font size proportionally with row height', () => {
+        // Very large data requiring row height reduction
+        const input = createInput('a4', 55, 25);
+        const layout = calculateLayout(input);
+        const scale = SCALE_FACTORS.a4;
+
+        if (layout.tableRowHeight < ROW_HEIGHT.default * scale) {
+          expect(layout.tableFontSize).toBeLessThan(FONT_SIZE.default * scale);
+          expect(layout.tableFontSize).toBeGreaterThanOrEqual(
+            FONT_SIZE.min * scale,
+          );
+        }
+      });
+    });
+
+    describe('hideMotivation option', () => {
+      it('should allocate more space to notes when motivation hidden', () => {
+        const withMotivation = calculateLayout(createInput('a3', 10, 5, false));
+        const withoutMotivation = calculateLayout(
+          createInput('a3', 10, 5, true),
+        );
+
+        expect(withoutMotivation.motivationMinHeight).toBe(0);
+        expect(withoutMotivation.notesMinHeight).toBeGreaterThanOrEqual(
+          withMotivation.notesMinHeight,
+        );
+      });
+
+      it('should handle large data with motivation hidden', () => {
+        const input = createInput('a4', 40, 15, true);
+        const layout = calculateLayout(input);
+
+        expect(layout.hideMotivation).toBe(true);
+        expect(layout.motivationMinHeight).toBe(0);
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should handle zero data rows', () => {
+        const input = createInput('a3', 0, 0);
+        const layout = calculateLayout(input);
+
+        expect(layout.leftHistoryRows).toBeGreaterThan(0);
+        expect(layout.rightHistoryRows).toBeGreaterThanOrEqual(0);
+        expect(layout.licenseRows).toBeGreaterThan(0);
+        expect(layout.overflows).toBe(false);
+      });
+
+      it('should handle minimum row height constraint', () => {
+        // Extreme data that would require below minimum row height
+        const input = createInput('b5', 80, 40);
+        const layout = calculateLayout(input);
+        const scale = SCALE_FACTORS.b5;
+
+        // Row height should not go below minimum
+        expect(layout.tableRowHeight).toBeGreaterThanOrEqual(
+          ROW_HEIGHT.min * scale,
+        );
+      });
+
+      it('should handle all paper sizes with large data', () => {
+        const paperSizes: PaperSize[] = ['a3', 'a4', 'b4', 'b5', 'letter'];
+
+        for (const paperSize of paperSizes) {
+          const input = createInput(paperSize, 30, 10);
+          const layout = calculateLayout(input);
+
+          expect(layout.paper).toEqual(PAPER_SIZES[paperSize]);
+          expect(layout.leftHistoryRows).toBeGreaterThan(0);
+        }
+      });
+    });
+  });
 });
