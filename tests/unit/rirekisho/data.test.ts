@@ -8,6 +8,7 @@ import {
   buildLicenseData,
   countDataRows,
   extractPersonalInfo,
+  getSectionList,
   getSectionText,
   getTodayDate,
 } from '../../../src/generator/rirekisho/data.js';
@@ -753,6 +754,563 @@ describe('rirekisho/data', () => {
       const result = countDataRows(sections);
 
       expect(result.historyDataRows).toBe(2);
+    });
+
+    it('should count composite education entries', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'education',
+          title: '学歴',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'education',
+                entries: [
+                  {
+                    school: '大学A',
+                    degree: undefined,
+                    location: undefined,
+                    start: new Date(),
+                    end: new Date(),
+                    details: undefined,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = countDataRows(sections);
+
+      expect(result.historyDataRows).toBe(2); // 1 entry * 2 rows
+    });
+
+    it('should count composite experience entries', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'experience',
+          title: '職歴',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'experience',
+                entries: [
+                  {
+                    company: '会社A',
+                    location: undefined,
+                    roles: [
+                      {
+                        title: '役職',
+                        team: undefined,
+                        start: new Date(),
+                        end: new Date(),
+                        summary: undefined,
+                        highlights: undefined,
+                        projects: undefined,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = countDataRows(sections);
+
+      expect(result.historyDataRows).toBe(2); // 入社 + 退社
+    });
+
+    it('should count composite certification entries', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'certifications',
+          title: '資格',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'certifications',
+                entries: [
+                  {
+                    name: '資格A',
+                    issuer: undefined,
+                    date: new Date(),
+                    url: undefined,
+                  },
+                  {
+                    name: '資格B',
+                    issuer: undefined,
+                    date: new Date(),
+                    url: undefined,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = countDataRows(sections);
+
+      expect(result.licenseDataRows).toBe(2);
+    });
+
+    it('should count table rows from composite content', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'certifications',
+          title: '資格',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'table',
+                rows: [
+                  { year: '2020', month: '4', content: '資格A' },
+                  { year: '2021', month: '6', content: '資格B' },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = countDataRows(sections);
+
+      expect(result.licenseDataRows).toBe(2);
+    });
+  });
+
+  describe('buildHistoryData with composite content', () => {
+    it('should build education history from composite content', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'education',
+          title: '学歴',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'education',
+                entries: [
+                  {
+                    school: '東京大学',
+                    degree: '工学部',
+                    location: undefined,
+                    start: new Date(Date.UTC(2015, 3, 1)),
+                    end: new Date(Date.UTC(2019, 2, 31)),
+                    details: undefined,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildHistoryData(sections, 'asc');
+
+      expect(result[0]).toEqual(['', '', '学歴']);
+      expect(result[1][2]).toContain('東京大学 工学部 入学');
+      expect(result[2][2]).toContain('東京大学 工学部 卒業');
+    });
+
+    it('should build work history from composite content', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'experience',
+          title: '職歴',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'experience',
+                entries: [
+                  {
+                    company: '株式会社テスト',
+                    location: undefined,
+                    roles: [
+                      {
+                        title: 'エンジニア',
+                        team: undefined,
+                        start: new Date(Date.UTC(2019, 3, 1)),
+                        end: new Date(Date.UTC(2021, 2, 31)),
+                        summary: undefined,
+                        highlights: undefined,
+                        projects: undefined,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildHistoryData(sections, 'asc');
+
+      expect(result[0]).toEqual(['', '', '職歴']);
+      expect(result[1][2]).toContain('株式会社テスト 入社');
+      expect(result[2][2]).toContain('株式会社テスト 退社');
+    });
+
+    it('should use table rows from composite content when no structured entries', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'education',
+          title: '学歴',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'table',
+                rows: [
+                  { year: '2015', month: '4', content: '大学 入学' },
+                  { year: '2019', month: '3', content: '大学 卒業' },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildHistoryData(sections, 'asc');
+
+      expect(result[0]).toEqual(['', '', '学歴']);
+      expect(result[1]).toEqual(['2015', '4', '大学 入学']);
+      expect(result[2]).toEqual(['2019', '3', '大学 卒業']);
+    });
+
+    it('should handle experience with multiple roles finding earliest start', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'experience',
+          title: '職歴',
+          content: {
+            type: 'experience',
+            entries: [
+              {
+                company: '株式会社テスト',
+                location: undefined,
+                roles: [
+                  {
+                    title: 'シニアエンジニア',
+                    team: undefined,
+                    start: new Date(Date.UTC(2021, 5, 15)), // June 15, 2021
+                    end: new Date(Date.UTC(2023, 5, 15)), // June 15, 2023
+                    summary: undefined,
+                    highlights: undefined,
+                    projects: undefined,
+                  },
+                  {
+                    title: 'エンジニア',
+                    team: undefined,
+                    start: new Date(Date.UTC(2019, 5, 15)), // June 15, 2019
+                    end: new Date(Date.UTC(2021, 5, 14)), // June 14, 2021
+                    summary: undefined,
+                    highlights: undefined,
+                    projects: undefined,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildHistoryData(sections, 'asc');
+
+      // Should use earliest start date (2019-06)
+      expect(result[1][0]).toBe('2019');
+      expect(result[1][2]).toContain('株式会社テスト 入社');
+      // Should use latest end date (2023-06)
+      expect(result[2][0]).toBe('2023');
+      expect(result[2][2]).toContain('株式会社テスト 退社');
+    });
+
+    it('should skip experience entries with no roles', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'experience',
+          title: '職歴',
+          content: {
+            type: 'experience',
+            entries: [
+              {
+                company: '株式会社テスト',
+                location: undefined,
+                roles: [],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildHistoryData(sections, 'asc');
+
+      // 職歴 label is added because entries exist, but no data rows since roles are empty
+      expect(result).toHaveLength(3);
+      expect(result[0]).toEqual(['', '', '職歴']);
+      expect(result[1]).toEqual(['', '', '現在に至る']);
+      expect(result[2]).toEqual(['', '', '以上']);
+    });
+  });
+
+  describe('buildLicenseData with composite content', () => {
+    it('should build license data from composite certifications', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'certifications',
+          title: '資格',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'certifications',
+                entries: [
+                  {
+                    name: '基本情報技術者',
+                    issuer: undefined,
+                    date: new Date(Date.UTC(2020, 3, 1)),
+                    url: undefined,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildLicenseData(sections, 'asc');
+
+      expect(result).toHaveLength(1);
+      expect(result[0][0]).toBe('2020');
+      expect(result[0][2]).toBe('基本情報技術者');
+    });
+
+    it('should use table rows from composite content when no certifications', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'certifications',
+          title: '資格',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'table',
+                rows: [{ year: '2020', month: '4', content: '資格A' }],
+              },
+            ],
+          },
+        },
+      ];
+      const result = buildLicenseData(sections, 'asc');
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual(['2020', '4', '資格A']);
+    });
+  });
+
+  describe('getSectionText with composite content', () => {
+    it('should return markdown content from composite text-only section', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'motivation',
+          title: '志望動機',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'markdown',
+                content: 'テスト志望動機',
+              },
+            ],
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['motivation']);
+
+      expect(result).toBe('<p>テスト志望動機</p>');
+    });
+
+    it('should combine multiple markdown blocks', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'motivation',
+          title: '志望動機',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'markdown',
+                content: '第一段落',
+              },
+              {
+                type: 'markdown',
+                content: '第二段落',
+              },
+            ],
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['motivation']);
+
+      expect(result).toContain('<p>第一段落</p>');
+      expect(result).toContain('<p>第二段落</p>');
+    });
+
+    it('should return empty for composite with structured blocks', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'education',
+          title: '学歴',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'education',
+                entries: [],
+              },
+            ],
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['education']);
+
+      expect(result).toBe('');
+    });
+
+    it('should handle list content type', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'notes',
+          title: '本人希望記入欄',
+          content: {
+            type: 'list',
+            items: ['希望1', '希望2'],
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['notes']);
+
+      expect(result).toContain('<ul>');
+      expect(result).toContain('<li>希望1</li>');
+      expect(result).toContain('<li>希望2</li>');
+      expect(result).toContain('</ul>');
+    });
+
+    it('should handle markdown with asterisk list markers', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'notes',
+          title: '本人希望記入欄',
+          content: {
+            type: 'text',
+            text: '希望事項：\n* 希望勤務地：東京\n* 入社可能日：即日',
+          },
+        },
+      ];
+      const result = getSectionText(sections, ['notes']);
+
+      expect(result).toContain('<ul>');
+      expect(result).toContain('<li>希望勤務地：東京</li>');
+      expect(result).toContain('<li>入社可能日：即日</li>');
+    });
+  });
+
+  describe('getSectionList', () => {
+    it('should return empty array for no matching section', () => {
+      const result = getSectionList([], ['competencies']);
+      expect(result).toEqual([]);
+    });
+
+    it('should return list items from list content', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'competencies',
+          title: '自己PR',
+          content: {
+            type: 'list',
+            items: ['スキル1', 'スキル2'],
+          },
+        },
+      ];
+      const result = getSectionList(sections, ['competencies']);
+
+      expect(result).toEqual(['スキル1', 'スキル2']);
+    });
+
+    it('should return competency entries formatted', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'competencies',
+          title: '自己PR',
+          content: {
+            type: 'competencies',
+            entries: [
+              { header: 'リーダーシップ', description: 'チームを率いた経験' },
+              { header: '問題解決', description: '複雑な問題を解決' },
+            ],
+          },
+        },
+      ];
+      const result = getSectionList(sections, ['competencies']);
+
+      expect(result).toEqual([
+        'リーダーシップ: チームを率いた経験',
+        '問題解決: 複雑な問題を解決',
+      ]);
+    });
+
+    it('should return competency entries from composite content', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'competencies',
+          title: '自己PR',
+          content: {
+            type: 'composite',
+            blocks: [
+              {
+                type: 'competencies',
+                entries: [{ header: 'スキル', description: '説明' }],
+              },
+            ],
+          },
+        },
+      ];
+      const result = getSectionList(sections, ['competencies']);
+
+      expect(result).toEqual(['スキル: 説明']);
+    });
+
+    it('should escape HTML in list items', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'competencies',
+          title: '自己PR',
+          content: {
+            type: 'list',
+            items: ['<script>alert("xss")</script>'],
+          },
+        },
+      ];
+      const result = getSectionList(sections, ['competencies']);
+
+      expect(result[0]).toBe(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+      );
+    });
+
+    it('should try multiple section IDs', () => {
+      const sections: ParsedSection[] = [
+        {
+          id: 'notes',
+          title: '備考',
+          content: {
+            type: 'list',
+            items: ['備考1'],
+          },
+        },
+      ];
+      const result = getSectionList(sections, ['competencies', 'notes']);
+
+      expect(result).toEqual(['備考1']);
     });
   });
 });
