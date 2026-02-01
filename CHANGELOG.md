@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0](https://github.com/yuyash/md2cv/compare/v1.6.0...v2.0.0) (2026-02-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Parser now returns CompositeContent instead of legacy content types
+
+### Features
+
+* add composite content model for mixing markdown with structured blocks ([64f561c](https://github.com/yuyash/md2cv/commit/64f561ca66e0076d685bafbc2a2df615c5c1129a))
+* add composite content model for mixing markdown with structured… ([#43](https://github.com/yuyash/md2cv/issues/43)) ([64f561c](https://github.com/yuyash/md2cv/commit/64f561ca66e0076d685bafbc2a2df615c5c1129a))
+
 ## [1.6.0](https://github.com/yuyash/md2cv/compare/v1.5.0...v1.6.0) (2026-01-31)
 
 
