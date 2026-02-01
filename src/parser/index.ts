@@ -3,7 +3,7 @@
  * Parses Markdown CV files into structured data
  */
 
-import type { List, Root, RootContent, Table } from 'mdast';
+import type { Root, RootContent, Table } from 'mdast';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -28,6 +28,7 @@ import {
   findSectionByTag,
   type CertificationEntry,
   type CompetencyEntry,
+  type ContentBlock,
   type EducationEntry,
   type ExperienceEntry,
   type LanguageEntry,
@@ -36,6 +37,7 @@ import {
   type RoleEntry,
   type SectionContent,
   type SkillEntry,
+  type SkillsOptions,
   type TableRow,
 } from '../types/sections.js';
 
@@ -229,22 +231,6 @@ function extractMetadata(tree: Root, errors: ParseError[]): CVMetadata | null {
   }
 
   return metadata as unknown as CVMetadata;
-}
-
-/**
- * Parse list items
- */
-function parseListItems(listNode: List): string[] {
-  const items: string[] = [];
-  for (const item of listNode.children) {
-    if (item.type === 'listItem' && item.children) {
-      const text = item.children
-        .map((child) => extractText(child as RootContent))
-        .join('');
-      items.push(text.trim());
-    }
-  }
-  return items;
 }
 
 /**
@@ -628,8 +614,7 @@ function parseCertificationsBlock(code: string): CertificationEntry[] {
  */
 interface ParsedSkillsResult {
   entries: SkillEntry[];
-  columns: number;
-  format: 'grid' | 'categorized';
+  options: SkillsOptions;
 }
 
 function parseSkillEntry(catObj: Record<string, unknown>): SkillEntry {
@@ -651,8 +636,7 @@ function parseSkillEntry(catObj: Record<string, unknown>): SkillEntry {
 function parseSkillsBlock(code: string): ParsedSkillsResult {
   const defaultResult: ParsedSkillsResult = {
     entries: [],
-    columns: 3,
-    format: 'grid',
+    options: { columns: 3, format: 'grid' },
   };
 
   try {
@@ -672,8 +656,7 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
         // Convert to single SkillEntry with empty category
         return {
           entries: [{ category: '', items }],
-          columns,
-          format: 'grid',
+          options: { columns, format: 'grid' },
         };
       }
 
@@ -682,7 +665,7 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
         const entries = obj.categories.map((cat: unknown) =>
           parseSkillEntry(cat as Record<string, unknown>),
         );
-        return { entries, columns, format: 'categorized' };
+        return { entries, options: { columns, format: 'categorized' } };
       }
     }
 
@@ -692,7 +675,7 @@ function parseSkillsBlock(code: string): ParsedSkillsResult {
       parseSkillEntry(item as Record<string, unknown>),
     );
 
-    return { entries, columns: 3, format: 'categorized' };
+    return { entries, options: { columns: 3, format: 'categorized' } };
   } catch {
     return defaultResult;
   }
@@ -748,21 +731,94 @@ function parseLanguagesBlock(code: string): LanguageEntry[] {
 }
 
 /**
- * Parse section content from nodes
+ * Convert AST nodes to markdown string
+ */
+function nodesToMarkdown(nodes: RootContent[]): string {
+  if (nodes.length === 0) return '';
+  const tempRoot: Root = { type: 'root', children: nodes };
+  return stringifyProcessor.stringify(tempRoot).trim();
+}
+
+/**
+ * Check if a code block is a resume structured block
+ */
+function isResumeCodeBlock(node: RootContent): boolean {
+  return (
+    node.type === 'code' &&
+    typeof node.lang === 'string' &&
+    node.lang.startsWith('resume:')
+  );
+}
+
+/**
+ * Parse section content from nodes using composite content model
+ * This preserves the order of markdown and structured blocks
  */
 function parseSectionContent(nodes: RootContent[]): SectionContent {
-  // Collect all code blocks and merge entries by type
+  const blocks: ContentBlock[] = [];
+  let markdownNodes: RootContent[] = [];
+
+  // Helper to flush accumulated markdown nodes as a markdown block
+  const flushMarkdown = (): void => {
+    if (markdownNodes.length > 0) {
+      const markdown = nodesToMarkdown(markdownNodes);
+      if (markdown.trim()) {
+        blocks.push({ type: 'markdown', content: markdown });
+      }
+      markdownNodes = [];
+    }
+  };
+
+  // Temporary storage for merging multiple blocks of same type
   const educationEntries: EducationEntry[] = [];
   const experienceEntries: ExperienceEntry[] = [];
   const certificationEntries: CertificationEntry[] = [];
   const skillEntries: SkillEntry[] = [];
+  let skillsOptions: SkillsOptions = { columns: 3, format: 'grid' };
   const competencyEntries: CompetencyEntry[] = [];
   const languageEntries: LanguageEntry[] = [];
-  let skillsColumns: number | undefined = undefined;
-  let skillsFormat: 'grid' | 'categorized' | undefined = undefined;
+
+  // Helper to flush accumulated structured entries
+  const flushStructured = (): void => {
+    if (educationEntries.length > 0) {
+      blocks.push({ type: 'education', entries: [...educationEntries] });
+      educationEntries.length = 0;
+    }
+    if (experienceEntries.length > 0) {
+      blocks.push({ type: 'experience', entries: [...experienceEntries] });
+      experienceEntries.length = 0;
+    }
+    if (certificationEntries.length > 0) {
+      blocks.push({
+        type: 'certifications',
+        entries: [...certificationEntries],
+      });
+      certificationEntries.length = 0;
+    }
+    if (skillEntries.length > 0) {
+      blocks.push({
+        type: 'skills',
+        entries: [...skillEntries],
+        options: skillsOptions,
+      });
+      skillEntries.length = 0;
+      skillsOptions = { columns: 3, format: 'grid' };
+    }
+    if (competencyEntries.length > 0) {
+      blocks.push({ type: 'competencies', entries: [...competencyEntries] });
+      competencyEntries.length = 0;
+    }
+    if (languageEntries.length > 0) {
+      blocks.push({ type: 'languages', entries: [...languageEntries] });
+      languageEntries.length = 0;
+    }
+  };
 
   for (const node of nodes) {
-    if (node.type === 'code') {
+    if (node.type === 'code' && isResumeCodeBlock(node)) {
+      // Flush any accumulated markdown before processing structured block
+      flushMarkdown();
+
       const codeNode = node;
       if (codeNode.lang === 'resume:education') {
         educationEntries.push(...parseEducationBlock(codeNode.value));
@@ -773,96 +829,37 @@ function parseSectionContent(nodes: RootContent[]): SectionContent {
       } else if (codeNode.lang === 'resume:skills') {
         const result = parseSkillsBlock(codeNode.value);
         skillEntries.push(...result.entries);
-        if (result.columns !== undefined) {
-          skillsColumns = result.columns;
-        }
-        if (result.format !== undefined) {
-          skillsFormat = result.format;
-        }
+        skillsOptions = result.options;
       } else if (codeNode.lang === 'resume:competencies') {
         competencyEntries.push(...parseCompetenciesBlock(codeNode.value));
       } else if (codeNode.lang === 'resume:languages') {
         languageEntries.push(...parseLanguagesBlock(codeNode.value));
       }
-    }
-  }
-
-  // Return merged entries if any structured blocks found
-  if (educationEntries.length > 0) {
-    return { type: 'education', entries: educationEntries };
-  }
-  if (experienceEntries.length > 0) {
-    return { type: 'experience', entries: experienceEntries };
-  }
-  if (certificationEntries.length > 0) {
-    return { type: 'certifications', entries: certificationEntries };
-  }
-  if (skillEntries.length > 0) {
-    return {
-      type: 'skills',
-      entries: skillEntries,
-      options: {
-        columns: skillsColumns ?? 3,
-        format: skillsFormat ?? 'grid',
-      },
-    };
-  }
-  if (competencyEntries.length > 0) {
-    return { type: 'competencies', entries: competencyEntries };
-  }
-  if (languageEntries.length > 0) {
-    return { type: 'languages', entries: languageEntries };
-  }
-
-  // Check for tables
-  for (const node of nodes) {
-    if (node.type === 'table') {
+    } else if (node.type === 'table') {
+      // Flush markdown and structured before table
+      flushMarkdown();
+      flushStructured();
       const rows = parseTable(node);
-      return { type: 'table', rows };
+      blocks.push({ type: 'table', rows });
+    } else {
+      // Flush any accumulated structured entries before markdown
+      flushStructured();
+      // Accumulate markdown nodes
+      markdownNodes.push(node);
     }
   }
 
-  // Check for lists
-  const hasLists = nodes.some((n) => n.type === 'list');
-  const hasParagraphs = nodes.some((n) => n.type === 'paragraph');
+  // Flush any remaining content
+  flushMarkdown();
+  flushStructured();
 
-  // If we have both paragraphs and lists, return as mixed content type
-  if (hasLists && hasParagraphs) {
-    const parts: Array<
-      | { type: 'paragraph'; text: string }
-      | { type: 'list'; items: readonly string[] }
-    > = [];
-    for (const node of nodes) {
-      if (node.type === 'paragraph') {
-        const text = extractText(node);
-        if (text.trim()) {
-          parts.push({ type: 'paragraph', text });
-        }
-      } else if (node.type === 'list') {
-        const items = parseListItems(node);
-        if (items.length > 0) {
-          parts.push({ type: 'list', items });
-        }
-      }
-    }
-    return { type: 'mixed', parts };
+  // If we have blocks, return composite content
+  if (blocks.length > 0) {
+    return { type: 'composite', blocks };
   }
 
-  // If only lists (no paragraphs), return as list type
-  for (const node of nodes) {
-    if (node.type === 'list') {
-      const items = parseListItems(node);
-      return { type: 'list', items };
-    }
-  }
-
-  // Default to text
-  const text = nodes
-    .filter((n) => n.type === 'paragraph')
-    .map((n) => extractText(n))
-    .join('\n\n');
-
-  return { type: 'text', text };
+  // Empty section - return empty text
+  return { type: 'text', text: '' };
 }
 
 /**

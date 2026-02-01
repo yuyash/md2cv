@@ -159,10 +159,17 @@ describe('Template Integration', () => {
           (s) => s.id === 'experience',
         );
         expect(expSection).toBeDefined();
-        expect(expSection?.content.type).toBe('experience');
-        if (expSection?.content.type === 'experience') {
-          expect(expSection.content.entries.length).toBeGreaterThan(0);
-          expect(expSection.content.entries[0]?.company).toBe('Company Name');
+        // Now returns composite content
+        expect(expSection?.content.type).toBe('composite');
+        if (expSection?.content.type === 'composite') {
+          const expBlock = expSection.content.blocks.find(
+            (b) => b.type === 'experience',
+          );
+          expect(expBlock).toBeDefined();
+          if (expBlock?.type === 'experience') {
+            expect(expBlock.entries.length).toBeGreaterThan(0);
+            expect(expBlock.entries[0]?.company).toBe('Company Name');
+          }
         }
       }
     });
@@ -184,10 +191,17 @@ describe('Template Integration', () => {
           (s) => s.id === 'education',
         );
         expect(eduSection).toBeDefined();
-        expect(eduSection?.content.type).toBe('education');
-        if (eduSection?.content.type === 'education') {
-          expect(eduSection.content.entries.length).toBeGreaterThan(0);
-          expect(eduSection.content.entries[0]?.school).toBe('University Name');
+        // Now returns composite content
+        expect(eduSection?.content.type).toBe('composite');
+        if (eduSection?.content.type === 'composite') {
+          const eduBlock = eduSection.content.blocks.find(
+            (b) => b.type === 'education',
+          );
+          expect(eduBlock).toBeDefined();
+          if (eduBlock?.type === 'education') {
+            expect(eduBlock.entries.length).toBeGreaterThan(0);
+            expect(eduBlock.entries[0]?.school).toBe('University Name');
+          }
         }
       }
     });
@@ -209,12 +223,19 @@ describe('Template Integration', () => {
           (s) => s.id === 'skills',
         );
         expect(skillsSection).toBeDefined();
-        expect(skillsSection?.content.type).toBe('skills');
-        if (skillsSection?.content.type === 'skills') {
-          expect(skillsSection.content.entries.length).toBeGreaterThan(0);
-          expect(skillsSection.content.entries[0]?.category).toBe(
-            'Programming Languages',
+        // Now returns composite content
+        expect(skillsSection?.content.type).toBe('composite');
+        if (skillsSection?.content.type === 'composite') {
+          const skillsBlock = skillsSection.content.blocks.find(
+            (b) => b.type === 'skills',
           );
+          expect(skillsBlock).toBeDefined();
+          if (skillsBlock?.type === 'skills') {
+            expect(skillsBlock.entries.length).toBeGreaterThan(0);
+            expect(skillsBlock.entries[0]?.category).toBe(
+              'Programming Languages',
+            );
+          }
         }
       }
     });
