@@ -296,8 +296,13 @@ export function generateEnHtml(cv: CVInput, options: CVOptions): string {
   // Use sections in the order provided (already filtered and ordered by generator/index.ts)
   const sectionsHtml = cv.sections
     .map((section) => {
+      // Add data-source-line attribute if sourceLines is available
+      const sourceLineAttr = section.sourceLines
+        ? ` data-source-line="${section.sourceLines.startLine}" data-source-end-line="${section.sourceLines.endLine}"`
+        : '';
+
       return `
-<section class="cv-section cv-section--${section.id}">
+<section class="cv-section cv-section--${section.id}"${sourceLineAttr}>
   <h2>${escapeHtml(section.title)}</h2>
   ${renderSectionContent(section.content, section.id, enLocale)}
 </section>`;
