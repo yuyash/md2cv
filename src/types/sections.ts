@@ -195,6 +195,8 @@ export interface EducationEntry {
   readonly end: Date;
   readonly location?: string;
   readonly details?: readonly string[];
+  /** Source line info for sync scroll */
+  readonly sourceLines?: SourceLineInfo;
 }
 
 /**
@@ -218,6 +220,8 @@ export interface RoleEntry {
   readonly summary?: readonly string[];
   readonly highlights?: readonly string[];
   readonly projects?: readonly ProjectEntry[];
+  /** Source line info for sync scroll */
+  readonly sourceLines?: SourceLineInfo;
 }
 
 /**
@@ -227,6 +231,8 @@ export interface ExperienceEntry {
   readonly company: string;
   readonly roles: readonly RoleEntry[];
   readonly location?: string;
+  /** Source line info for sync scroll */
+  readonly sourceLines?: SourceLineInfo;
 }
 
 /**
@@ -237,6 +243,8 @@ export interface CertificationEntry {
   readonly date: Date;
   readonly issuer?: string;
   readonly url?: string;
+  /** Source line info for sync scroll */
+  readonly sourceLines?: SourceLineInfo;
 }
 
 /**

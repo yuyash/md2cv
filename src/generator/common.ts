@@ -160,7 +160,10 @@ export function renderEducation(
   return entries
     .map((entry) => {
       const dateRange = formatDateRange(entry.start, entry.end, formatter);
-      let html = '<div class="entry">';
+      const sourceLineAttr = entry.sourceLines
+        ? ` data-source-line="${entry.sourceLines.startLine}" data-source-end-line="${entry.sourceLines.endLine}"`
+        : '';
+      let html = `<div class="entry"${sourceLineAttr}>`;
 
       html += '<div class="entry-header">';
       html += `<span class="entry-title">${escapeHtml(entry.school)}</span>`;
@@ -203,7 +206,10 @@ export function renderCertifications(
 ): string {
   return entries
     .map((entry) => {
-      let html = `<div class="cert-item">• ${escapeHtml(entry.name)}`;
+      const sourceLineAttr = entry.sourceLines
+        ? ` data-source-line="${entry.sourceLines.startLine}" data-source-end-line="${entry.sourceLines.endLine}"`
+        : '';
+      let html = `<div class="cert-item"${sourceLineAttr}>• ${escapeHtml(entry.name)}`;
       if (entry.date) {
         html += ` (${escapeHtml(formatter.formatDate(entry.date))})`;
       }
@@ -329,7 +335,12 @@ export function renderExperience(
     .flatMap((entry) => {
       return entry.roles.map((role) => {
         const dateRange = formatDateRange(role.start, role.end, formatter);
-        let html = '<div class="entry">';
+        // Use role's sourceLines if available, otherwise fall back to entry's sourceLines
+        const sourceLines = role.sourceLines ?? entry.sourceLines;
+        const sourceLineAttr = sourceLines
+          ? ` data-source-line="${sourceLines.startLine}" data-source-end-line="${sourceLines.endLine}"`
+          : '';
+        let html = `<div class="entry"${sourceLineAttr}>`;
 
         html += '<div class="entry-header">';
         html += `<span class="entry-title">${escapeHtml(entry.company)} —— ${escapeHtml(role.title)}</span>`;

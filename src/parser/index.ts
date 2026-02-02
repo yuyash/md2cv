@@ -9,7 +9,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
-import { parse as parseYaml } from 'yaml';
+import { YAMLMap, isMap, isSeq, parseDocument, parse as parseYaml } from 'yaml';
 
 import {
   createParseError,
@@ -274,6 +274,33 @@ function safeOptionalString(value: unknown): string | undefined {
 }
 
 /**
+ * Convert character offset to line number (0-based)
+ */
+function offsetToLine(content: string, offset: number): number {
+  let line = 0;
+  for (let i = 0; i < offset && i < content.length; i++) {
+    if (content[i] === '\n') line++;
+  }
+  return line;
+}
+
+/**
+ * Get source line info from a YAML node's range
+ */
+function getSourceLinesFromRange(
+  content: string,
+  range: [number, number, number] | undefined,
+  baseLineOffset: number,
+): { startLine: number; endLine: number } | undefined {
+  if (!range) return undefined;
+  const [start, end] = range;
+  return {
+    startLine: baseLineOffset + offsetToLine(content, start),
+    endLine: baseLineOffset + offsetToLine(content, end),
+  };
+}
+
+/**
  * Parse date of birth string to Date object
  * Supports formats: YYYY-MM-DD, YYYY/MM/DD, YYYY年MM月DD日, MM/DD/YYYY
  */
@@ -389,15 +416,29 @@ function parseSummary(value: unknown): readonly string[] | undefined {
 /**
  * Parse resume:education code block
  */
-function parseEducationBlock(code: string): EducationEntry[] {
+function parseEducationBlock(
+  code: string,
+  baseLineOffset: number = 0,
+): EducationEntry[] {
   try {
-    const parsed: unknown = parseYaml(code);
+    const doc = parseDocument(code);
+    const contents = doc.contents;
+
     // Handle both single object and array
-    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const items: { node: YAMLMap; index: number }[] = [];
+    if (isSeq(contents)) {
+      contents.items.forEach((item, index) => {
+        if (isMap(item)) {
+          items.push({ node: item, index });
+        }
+      });
+    } else if (isMap(contents)) {
+      items.push({ node: contents, index: 0 });
+    }
 
     return items
-      .map((item: unknown) => {
-        const obj = item as Record<string, unknown>;
+      .map(({ node }) => {
+        const obj = node.toJSON() as Record<string, unknown>;
         const school = safeString(obj.school);
         const degree = safeOptionalString(obj.degree);
         const start = parseYearMonth(safeOptionalString(obj.start));
@@ -425,6 +466,12 @@ function parseEducationBlock(code: string): EducationEntry[] {
             })
           : undefined;
 
+        const sourceLines = getSourceLinesFromRange(
+          code,
+          node.range as [number, number, number] | undefined,
+          baseLineOffset,
+        );
+
         return {
           school,
           degree,
@@ -434,6 +481,7 @@ function parseEducationBlock(code: string): EducationEntry[] {
           ...(details !== undefined && {
             details: details as readonly string[],
           }),
+          ...(sourceLines !== undefined && { sourceLines }),
         } as EducationEntry;
       })
       .filter((entry): entry is EducationEntry => entry !== null);
@@ -470,7 +518,10 @@ function parseProjectEntry(proj: Record<string, unknown>): ProjectEntry | null {
 /**
  * Parse a role entry from YAML
  */
-function parseRoleEntry(role: Record<string, unknown>): RoleEntry | null {
+function parseRoleEntry(
+  role: Record<string, unknown>,
+  sourceLines?: { startLine: number; endLine: number },
+): RoleEntry | null {
   const title = safeString(role.title || role.role);
   const start = parseYearMonth(safeOptionalString(role.start));
   const end = parseEndDate(safeOptionalString(role.end));
@@ -505,36 +556,80 @@ function parseRoleEntry(role: Record<string, unknown>): RoleEntry | null {
     ...(summary !== undefined && { summary }),
     ...(highlights !== undefined && { highlights }),
     ...(projects.length > 0 && { projects }),
+    ...(sourceLines !== undefined && { sourceLines }),
   };
 }
 
 /**
  * Parse resume:experience code block
  */
-function parseExperienceBlock(code: string): ExperienceEntry[] {
+function parseExperienceBlock(
+  code: string,
+  baseLineOffset: number = 0,
+): ExperienceEntry[] {
   try {
-    const parsed: unknown = parseYaml(code);
+    const doc = parseDocument(code);
+    const contents = doc.contents;
+
     // Handle both single object and array
-    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const items: { node: YAMLMap; index: number }[] = [];
+    if (isSeq(contents)) {
+      contents.items.forEach((item, index) => {
+        if (isMap(item)) {
+          items.push({ node: item, index });
+        }
+      });
+    } else if (isMap(contents)) {
+      items.push({ node: contents, index: 0 });
+    }
 
     const entries: ExperienceEntry[] = [];
-    for (const item of items) {
-      const obj = item as Record<string, unknown>;
+    for (const { node } of items) {
+      const obj = node.toJSON() as Record<string, unknown>;
       const company = safeString(obj.company);
       const roles: RoleEntry[] = [];
 
+      const entrySourceLines = getSourceLinesFromRange(
+        code,
+        node.range as [number, number, number] | undefined,
+        baseLineOffset,
+      );
+
       // Support both nested roles array and flat role definition
       if (Array.isArray(obj.roles)) {
-        for (const roleItem of obj.roles) {
-          const role = roleItem as Record<string, unknown>;
-          const roleEntry = parseRoleEntry(role);
+        // Try to get line info for each role from the YAML node
+        const rolesNode = node.get('roles', true);
+        const rolesSeq = isSeq(rolesNode) ? rolesNode : null;
+
+        for (let i = 0; i < obj.roles.length; i++) {
+          const roleItem = obj.roles[i] as Record<string, unknown>;
+          let roleSourceLines:
+            | { startLine: number; endLine: number }
+            | undefined;
+
+          if (rolesSeq?.items[i]) {
+            const roleNode = rolesSeq.items[i];
+            if (
+              roleNode &&
+              typeof roleNode === 'object' &&
+              'range' in roleNode
+            ) {
+              roleSourceLines = getSourceLinesFromRange(
+                code,
+                roleNode.range as [number, number, number] | undefined,
+                baseLineOffset,
+              );
+            }
+          }
+
+          const roleEntry = parseRoleEntry(roleItem, roleSourceLines);
           if (roleEntry) {
             roles.push(roleEntry);
           }
         }
       } else if (obj.role || obj.title) {
         // Flat role definition (role/title, team, start, end at top level)
-        const roleEntry = parseRoleEntry(obj);
+        const roleEntry = parseRoleEntry(obj, entrySourceLines);
         if (roleEntry) {
           roles.push(roleEntry);
         }
@@ -551,6 +646,9 @@ function parseExperienceBlock(code: string): ExperienceEntry[] {
         company,
         roles: roles as readonly RoleEntry[],
         ...(location !== undefined && { location }),
+        ...(entrySourceLines !== undefined && {
+          sourceLines: entrySourceLines,
+        }),
       });
     }
     return entries;
@@ -562,15 +660,29 @@ function parseExperienceBlock(code: string): ExperienceEntry[] {
 /**
  * Parse resume:certifications code block
  */
-function parseCertificationsBlock(code: string): CertificationEntry[] {
+function parseCertificationsBlock(
+  code: string,
+  baseLineOffset: number = 0,
+): CertificationEntry[] {
   try {
-    const parsed: unknown = parseYaml(code);
+    const doc = parseDocument(code);
+    const contents = doc.contents;
+
     // Handle both single object and array
-    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const items: { node: YAMLMap; index: number }[] = [];
+    if (isSeq(contents)) {
+      contents.items.forEach((item, index) => {
+        if (isMap(item)) {
+          items.push({ node: item, index });
+        }
+      });
+    } else if (isMap(contents)) {
+      items.push({ node: contents, index: 0 });
+    }
 
     return items
-      .map((item: unknown) => {
-        const obj = item as Record<string, unknown>;
+      .map(({ node }) => {
+        const obj = node.toJSON() as Record<string, unknown>;
         const name = safeString(obj.name);
         const date = parseYearMonth(safeOptionalString(obj.date));
 
@@ -581,12 +693,18 @@ function parseCertificationsBlock(code: string): CertificationEntry[] {
 
         const issuer = safeOptionalString(obj.issuer);
         const url = safeOptionalString(obj.url);
+        const sourceLines = getSourceLinesFromRange(
+          code,
+          node.range as [number, number, number] | undefined,
+          baseLineOffset,
+        );
 
         return {
           name,
           date,
           ...(issuer !== undefined && { issuer }),
           ...(url !== undefined && { url }),
+          ...(sourceLines !== undefined && { sourceLines }),
         };
       })
       .filter((entry): entry is CertificationEntry => entry !== null);
@@ -820,12 +938,27 @@ function parseSectionContent(nodes: RootContent[]): SectionContent {
       flushMarkdown();
 
       const codeNode = node;
+      // Get the base line offset for the code block content
+      // The code block content starts after the opening ``` line
+      // mdast position is 1-based, we convert to 0-based
+      const codeBlockStartLine = codeNode.position?.start.line
+        ? codeNode.position.start.line - 1
+        : 0;
+      // Add 1 to skip the opening ``` line
+      const baseLineOffset = codeBlockStartLine + 1;
+
       if (codeNode.lang === 'resume:education') {
-        educationEntries.push(...parseEducationBlock(codeNode.value));
+        educationEntries.push(
+          ...parseEducationBlock(codeNode.value, baseLineOffset),
+        );
       } else if (codeNode.lang === 'resume:experience') {
-        experienceEntries.push(...parseExperienceBlock(codeNode.value));
+        experienceEntries.push(
+          ...parseExperienceBlock(codeNode.value, baseLineOffset),
+        );
       } else if (codeNode.lang === 'resume:certifications') {
-        certificationEntries.push(...parseCertificationsBlock(codeNode.value));
+        certificationEntries.push(
+          ...parseCertificationsBlock(codeNode.value, baseLineOffset),
+        );
       } else if (codeNode.lang === 'resume:skills') {
         const result = parseSkillsBlock(codeNode.value);
         skillEntries.push(...result.entries);
