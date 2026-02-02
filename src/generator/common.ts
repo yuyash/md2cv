@@ -65,6 +65,13 @@ export function escapeHtml(text: string): string {
 export interface DateFormatter {
   formatDate(date: Date | undefined): string;
   formatEndDate(end: Date | 'present' | undefined): string;
+}
+
+/**
+ * Locale options for language-specific formatting
+ */
+export interface LocaleOptions {
+  dateFormatter: DateFormatter;
   itemSeparator: string;
 }
 
@@ -95,7 +102,6 @@ export const enDateFormatter: DateFormatter = {
     if (end === 'present') return 'Present';
     return this.formatDate(end);
   },
-  itemSeparator: ', ',
 };
 
 /**
@@ -111,7 +117,22 @@ export const jaDateFormatter: DateFormatter = {
     if (end === 'present') return '現在';
     return this.formatDate(end);
   },
-  itemSeparator: '、',
+};
+
+/**
+ * English locale options
+ */
+export const enLocale: LocaleOptions = {
+  dateFormatter: enDateFormatter,
+  itemSeparator: ', ',
+};
+
+/**
+ * Japanese locale options
+ */
+export const jaLocale: LocaleOptions = {
+  dateFormatter: jaDateFormatter,
+  itemSeparator: ', ',
 };
 
 /**
@@ -198,7 +219,7 @@ export function renderCertifications(
 export function renderSkills(
   entries: readonly SkillEntry[],
   options: SkillsOptions,
-  formatter: DateFormatter,
+  locale: LocaleOptions,
 ): string {
   const isCategorized =
     options.format === 'categorized' ||
@@ -211,8 +232,7 @@ export function renderSkills(
       .filter((e) => e.category)
       .map((entry) => {
         const content =
-          entry.description ||
-          (entry.items?.join(formatter.itemSeparator) ?? '');
+          entry.description || (entry.items?.join(locale.itemSeparator) ?? '');
         return `<div class="skill-category">• <span class="skill-category-name">${escapeHtml(entry.category)}:</span> ${escapeHtml(content)}</div>`;
       })
       .join('\n');
@@ -397,19 +417,19 @@ function renderMixedContentPart(part: MixedContentPart): string {
 export function renderContentBlock(
   block: ContentBlock,
   _sectionId: string,
-  formatter: DateFormatter,
+  locale: LocaleOptions,
 ): string {
   switch (block.type) {
     case 'markdown':
       return markdownToHtml(block.content);
     case 'education':
-      return renderEducation(block.entries, formatter);
+      return renderEducation(block.entries, locale.dateFormatter);
     case 'experience':
-      return renderExperience(block.entries, formatter);
+      return renderExperience(block.entries, locale.dateFormatter);
     case 'certifications':
-      return renderCertifications(block.entries, formatter);
+      return renderCertifications(block.entries, locale.dateFormatter);
     case 'skills':
-      return renderSkills(block.entries, block.options, formatter);
+      return renderSkills(block.entries, block.options, locale);
     case 'competencies':
       return renderCompetencies(block.entries);
     case 'languages':
@@ -433,12 +453,12 @@ export function renderContentBlock(
 export function renderSectionContent(
   content: SectionContent,
   sectionId: string,
-  formatter: DateFormatter,
+  locale: LocaleOptions,
 ): string {
   // Handle composite content (new format)
   if (content.type === 'composite') {
     return content.blocks
-      .map((block) => renderContentBlock(block, sectionId, formatter))
+      .map((block) => renderContentBlock(block, sectionId, locale))
       .join('\n');
   }
 
@@ -460,13 +480,13 @@ export function renderSectionContent(
     case 'mixed':
       return content.parts.map(renderMixedContentPart).join('\n');
     case 'education':
-      return renderEducation(content.entries, formatter);
+      return renderEducation(content.entries, locale.dateFormatter);
     case 'experience':
-      return renderExperience(content.entries, formatter);
+      return renderExperience(content.entries, locale.dateFormatter);
     case 'certifications':
-      return renderCertifications(content.entries, formatter);
+      return renderCertifications(content.entries, locale.dateFormatter);
     case 'skills':
-      return renderSkills(content.entries, content.options, formatter);
+      return renderSkills(content.entries, content.options, locale);
     case 'competencies':
       return renderCompetencies(content.entries);
     case 'languages':
