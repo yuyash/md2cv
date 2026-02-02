@@ -424,12 +424,25 @@ export interface CompositeContent {
 export type SectionContent = LegacySectionContent | CompositeContent;
 
 /**
+ * Source line information for sync scroll
+ * Used to map HTML elements back to their source markdown lines
+ */
+export interface SourceLineInfo {
+  /** Start line in the source markdown (0-based) */
+  readonly startLine: number;
+  /** End line in the source markdown (0-based) */
+  readonly endLine: number;
+}
+
+/**
  * Parsed section
  */
 export interface ParsedSection {
   readonly id: string;
   readonly title: string;
   readonly content: SectionContent;
+  /** Source line information for sync scroll (optional for backward compatibility) */
+  readonly sourceLines?: SourceLineInfo;
 }
 
 // ============================================================================

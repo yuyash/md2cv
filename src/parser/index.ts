@@ -870,18 +870,28 @@ function parseSections(tree: Root): ParsedSection[] {
   const contentNodes = tree.children.filter((node) => node.type !== 'yaml');
 
   let currentTitle: string | null = null;
+  let currentTitleStartLine: number | null = null;
   let currentNodes: RootContent[] = [];
 
   for (const node of contentNodes) {
     if (node.type === 'heading' && node.depth === 1) {
       // Save previous section
-      if (currentTitle !== null) {
+      if (currentTitle !== null && currentTitleStartLine !== null) {
         const sectionDef = findSectionByTag(currentTitle);
         if (sectionDef) {
+          // Calculate end line from the last node in the section or the current heading
+          const endLine = node.position?.start.line
+            ? node.position.start.line - 2 // Line before current heading (0-based)
+            : currentTitleStartLine;
+
           sections.push({
             id: sectionDef.id,
             title: currentTitle,
             content: parseSectionContent(currentNodes),
+            sourceLines: {
+              startLine: currentTitleStartLine,
+              endLine: Math.max(currentTitleStartLine, endLine),
+            },
           });
         }
       }
@@ -890,6 +900,10 @@ function parseSections(tree: Root): ParsedSection[] {
       currentTitle = node.children
         .map((c) => extractText(c as RootContent))
         .join('');
+      // mdast uses 1-based lines, convert to 0-based
+      currentTitleStartLine = node.position?.start.line
+        ? node.position.start.line - 1
+        : 0;
       currentNodes = [];
     } else if (currentTitle !== null) {
       currentNodes.push(node);
@@ -897,13 +911,23 @@ function parseSections(tree: Root): ParsedSection[] {
   }
 
   // Don't forget last section
-  if (currentTitle !== null) {
+  if (currentTitle !== null && currentTitleStartLine !== null) {
     const sectionDef = findSectionByTag(currentTitle);
     if (sectionDef) {
+      // Find the last line of content
+      const lastNode = currentNodes[currentNodes.length - 1];
+      const endLine = lastNode?.position?.end.line
+        ? lastNode.position.end.line - 1 // Convert to 0-based
+        : currentTitleStartLine;
+
       sections.push({
         id: sectionDef.id,
         title: currentTitle,
         content: parseSectionContent(currentNodes),
+        sourceLines: {
+          startLine: currentTitleStartLine,
+          endLine: Math.max(currentTitleStartLine, endLine),
+        },
       });
     }
   }
