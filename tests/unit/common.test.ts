@@ -6,9 +6,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   enDateFormatter,
+  enLocale,
   escapeHtml,
   formatDateRange,
   jaDateFormatter,
+  jaLocale,
   renderCertifications,
   renderCompetencies,
   renderContentBlock,
@@ -62,9 +64,11 @@ describe('generator/common', () => {
     it('should return empty string for undefined end date', () => {
       expect(enDateFormatter.formatEndDate(undefined)).toBe('');
     });
+  });
 
+  describe('enLocale', () => {
     it('should have comma separator', () => {
-      expect(enDateFormatter.itemSeparator).toBe(', ');
+      expect(enLocale.itemSeparator).toBe(', ');
     });
   });
 
@@ -90,9 +94,11 @@ describe('generator/common', () => {
     it('should return empty string for undefined end date', () => {
       expect(jaDateFormatter.formatEndDate(undefined)).toBe('');
     });
+  });
 
-    it('should have Japanese separator', () => {
-      expect(jaDateFormatter.itemSeparator).toBe('、');
+  describe('jaLocale', () => {
+    it('should have comma separator', () => {
+      expect(jaLocale.itemSeparator).toBe(', ');
     });
   });
 
@@ -237,7 +243,7 @@ describe('generator/common', () => {
         },
       ];
       const options: SkillsOptions = { columns: 3, format: 'categorized' };
-      const html = renderSkills(entries, options, enDateFormatter);
+      const html = renderSkills(entries, options, enLocale);
 
       expect(html).toContain('Languages');
       expect(html).toContain('JavaScript, TypeScript');
@@ -253,7 +259,7 @@ describe('generator/common', () => {
         },
       ];
       const options: SkillsOptions = { columns: 3, format: 'grid' };
-      const html = renderSkills(entries, options, enDateFormatter);
+      const html = renderSkills(entries, options, enLocale);
 
       expect(html).toContain('skills-grid');
       expect(html).toContain('JavaScript');
@@ -264,7 +270,7 @@ describe('generator/common', () => {
     it('should return empty string for no items', () => {
       const entries: SkillEntry[] = [{ category: '', items: [] }];
       const options: SkillsOptions = { columns: 3, format: 'grid' };
-      const html = renderSkills(entries, options, enDateFormatter);
+      const html = renderSkills(entries, options, enLocale);
 
       expect(html).toBe('');
     });
@@ -274,7 +280,7 @@ describe('generator/common', () => {
         { category: '', items: ['A', 'B', 'C', 'D'] },
       ];
       const options: SkillsOptions = { columns: 4, format: 'grid' };
-      const html = renderSkills(entries, options, enDateFormatter);
+      const html = renderSkills(entries, options, enLocale);
 
       expect(html).toContain('grid-template-columns: repeat(4, 1fr)');
     });
@@ -282,7 +288,7 @@ describe('generator/common', () => {
     it('should use default 3 columns class', () => {
       const entries: SkillEntry[] = [{ category: '', items: ['A', 'B', 'C'] }];
       const options: SkillsOptions = { columns: 3, format: 'grid' };
-      const html = renderSkills(entries, options, enDateFormatter);
+      const html = renderSkills(entries, options, enLocale);
 
       expect(html).toContain('skills-grid--cols-3');
     });
@@ -295,7 +301,7 @@ describe('generator/common', () => {
         },
       ];
       const options: SkillsOptions = { columns: 3, format: 'grid' };
-      const html = renderSkills(entries, options, enDateFormatter);
+      const html = renderSkills(entries, options, enLocale);
 
       expect(html).toContain('skill-category');
       expect(html).toContain('Programming');
@@ -512,7 +518,7 @@ describe('generator/common', () => {
       const html = renderContentBlock(
         { type: 'markdown', content: '**Bold** text' },
         'test',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('<strong>Bold</strong>');
@@ -531,7 +537,7 @@ describe('generator/common', () => {
           ],
         },
         'education',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('MIT');
@@ -555,7 +561,7 @@ describe('generator/common', () => {
           ],
         },
         'experience',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('Tech Corp');
@@ -568,7 +574,7 @@ describe('generator/common', () => {
           entries: [{ name: 'AWS', date: new Date(2023, 0, 1) }],
         },
         'certifications',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('AWS');
@@ -582,7 +588,7 @@ describe('generator/common', () => {
           options: { columns: 3, format: 'grid' },
         },
         'skills',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('JS');
@@ -595,7 +601,7 @@ describe('generator/common', () => {
           entries: [{ header: 'Leadership', description: 'Led teams' }],
         },
         'competencies',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('Leadership');
@@ -608,7 +614,7 @@ describe('generator/common', () => {
           entries: [{ language: 'English', level: 'Native' }],
         },
         'languages',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('English');
@@ -621,7 +627,7 @@ describe('generator/common', () => {
           rows: [{ year: '2020', month: '1', content: 'Event' }],
         },
         'table',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toContain('Event');
@@ -632,7 +638,7 @@ describe('generator/common', () => {
         // @ts-expect-error testing unknown type
         { type: 'unknown' },
         'test',
-        enDateFormatter,
+        enLocale,
       );
 
       expect(html).toBe('');
@@ -648,7 +654,7 @@ describe('generator/common', () => {
           { type: 'markdown', content: 'World' },
         ],
       };
-      const html = renderSectionContent(content, 'test', enDateFormatter);
+      const html = renderSectionContent(content, 'test', enLocale);
 
       expect(html).toContain('Hello');
       expect(html).toContain('World');
@@ -659,7 +665,7 @@ describe('generator/common', () => {
         type: 'text',
         text: '**Bold** text',
       };
-      const html = renderSectionContent(content, 'test', enDateFormatter);
+      const html = renderSectionContent(content, 'test', enLocale);
 
       expect(html).toContain('<strong>Bold</strong>');
     });
@@ -669,7 +675,7 @@ describe('generator/common', () => {
         type: 'list',
         items: ['Item 1', 'Item 2'],
       };
-      const html = renderSectionContent(content, 'test', enDateFormatter);
+      const html = renderSectionContent(content, 'test', enLocale);
 
       expect(html).toContain('<ul>');
       expect(html).toContain('Item 1');
@@ -681,7 +687,7 @@ describe('generator/common', () => {
         type: 'list',
         items: ['JavaScript', 'TypeScript'],
       };
-      const html = renderSectionContent(content, 'skills', enDateFormatter);
+      const html = renderSectionContent(content, 'skills', enLocale);
 
       expect(html).toContain('skills-grid');
       expect(html).toContain('JavaScript');
@@ -695,7 +701,7 @@ describe('generator/common', () => {
           { type: 'list', items: ['Item 1', 'Item 2'] },
         ],
       };
-      const html = renderSectionContent(content, 'test', enDateFormatter);
+      const html = renderSectionContent(content, 'test', enLocale);
 
       expect(html).toContain('Intro paragraph');
       expect(html).toContain('Item 1');
@@ -712,7 +718,7 @@ describe('generator/common', () => {
           },
         ],
       };
-      const html = renderSectionContent(content, 'education', enDateFormatter);
+      const html = renderSectionContent(content, 'education', enLocale);
 
       expect(html).toContain('MIT');
     });
@@ -733,7 +739,7 @@ describe('generator/common', () => {
           },
         ],
       };
-      const html = renderSectionContent(content, 'experience', enDateFormatter);
+      const html = renderSectionContent(content, 'experience', enLocale);
 
       expect(html).toContain('Tech Corp');
     });
@@ -743,11 +749,7 @@ describe('generator/common', () => {
         type: 'certifications',
         entries: [{ name: 'AWS', date: new Date(2023, 0, 1) }],
       };
-      const html = renderSectionContent(
-        content,
-        'certifications',
-        enDateFormatter,
-      );
+      const html = renderSectionContent(content, 'certifications', enLocale);
 
       expect(html).toContain('AWS');
     });
@@ -758,7 +760,7 @@ describe('generator/common', () => {
         entries: [{ category: '', items: ['JS'] }],
         options: { columns: 3, format: 'grid' },
       };
-      const html = renderSectionContent(content, 'skills', enDateFormatter);
+      const html = renderSectionContent(content, 'skills', enLocale);
 
       expect(html).toContain('JS');
     });
@@ -768,11 +770,7 @@ describe('generator/common', () => {
         type: 'competencies',
         entries: [{ header: 'Leadership', description: 'Led teams' }],
       };
-      const html = renderSectionContent(
-        content,
-        'competencies',
-        enDateFormatter,
-      );
+      const html = renderSectionContent(content, 'competencies', enLocale);
 
       expect(html).toContain('Leadership');
     });
@@ -782,7 +780,7 @@ describe('generator/common', () => {
         type: 'languages',
         entries: [{ language: 'English', level: 'Native' }],
       };
-      const html = renderSectionContent(content, 'languages', enDateFormatter);
+      const html = renderSectionContent(content, 'languages', enLocale);
 
       expect(html).toContain('English');
     });
@@ -792,7 +790,7 @@ describe('generator/common', () => {
         type: 'table',
         rows: [{ year: '2020', month: '1', content: 'Event' }],
       };
-      const html = renderSectionContent(content, 'table', enDateFormatter);
+      const html = renderSectionContent(content, 'table', enLocale);
 
       expect(html).toContain('Event');
     });
@@ -801,7 +799,7 @@ describe('generator/common', () => {
       const content = {
         type: 'unknown',
       } as unknown as SectionContent;
-      const html = renderSectionContent(content, 'test', enDateFormatter);
+      const html = renderSectionContent(content, 'test', enLocale);
 
       expect(html).toBe('');
     });

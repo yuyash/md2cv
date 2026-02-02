@@ -7,7 +7,7 @@ import type { CVOptions, PageMargins, PaperSize } from '../types/config.js';
 import type { CVInput } from './common.js';
 import {
   PAGE_SIZES,
-  enDateFormatter,
+  enLocale,
   escapeHtml,
   renderSectionContent,
 } from './common.js';
@@ -299,7 +299,7 @@ export function generateEnHtml(cv: CVInput, options: CVOptions): string {
       return `
 <section class="cv-section cv-section--${section.id}">
   <h2>${escapeHtml(section.title)}</h2>
-  ${renderSectionContent(section.content, section.id, enDateFormatter)}
+  ${renderSectionContent(section.content, section.id, enLocale)}
 </section>`;
     })
     .join('\n');

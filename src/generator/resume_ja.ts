@@ -10,7 +10,7 @@ import type { CVInput } from './common.js';
 import {
   PAGE_SIZES,
   escapeHtml,
-  jaDateFormatter,
+  jaLocale,
   renderSectionContent,
 } from './common.js';
 
@@ -152,7 +152,7 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
     }
     p {
       margin-bottom: 8px;
-      font-size: var(--cv-font-size-base);
+      font-size: var(--cv-font-size-small);
     }
     .skills-grid {
       display: grid;
@@ -169,6 +169,13 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
       font-size: var(--cv-font-size-small);
     }
     .skill-category-name {
+      font-weight: bold;
+    }
+    .competency-entry {
+      margin-bottom: 4px;
+      font-size: var(--cv-font-size-small);
+    }
+    .competency-header {
       font-weight: bold;
     }
     /* Markdown inline styles */
@@ -260,7 +267,7 @@ export function generateJaHtml(cv: CVInput, options: CVOptions): string {
       return `
 <section class="cv-section cv-section--${section.id}">
   <h2>${escapeHtml(section.title)}</h2>
-  ${renderSectionContent(section.content, section.id, jaDateFormatter)}
+  ${renderSectionContent(section.content, section.id, jaLocale)}
 </section>`;
     })
     .join('\n');
