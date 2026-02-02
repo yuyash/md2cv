@@ -458,9 +458,8 @@ name: John Doe
 
 `;
       const html = generateHtmlFromMarkdown(markdown);
-      expect(html).toContain(
-        '<section class="cv-section cv-section--summary">',
-      );
+      // Section should be present (may include data-source-line attributes)
+      expect(html).toContain('class="cv-section cv-section--summary"');
     });
 
     it('should handle markdown with special HTML characters', () => {
