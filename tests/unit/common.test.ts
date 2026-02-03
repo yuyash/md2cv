@@ -191,8 +191,8 @@ describe('generator/common', () => {
       ];
       // Create a formatter that returns empty strings
       const noDateFormatter = {
-        formatDate: () => '',
-        formatEndDate: () => '',
+        formatDate: (): string => '',
+        formatEndDate: (): string => '',
         itemSeparator: ', ',
       };
       const html = renderEducation(entries, noDateFormatter);
@@ -503,8 +503,8 @@ describe('generator/common', () => {
       ];
       // Create a formatter that returns empty strings for project dates
       const noDateFormatter = {
-        formatDate: () => '',
-        formatEndDate: () => '',
+        formatDate: (): string => '',
+        formatEndDate: (): string => '',
         itemSeparator: ', ',
       };
       const html = renderExperience(entries, noDateFormatter);

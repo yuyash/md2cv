@@ -76,9 +76,6 @@ md2cv -i examples/example-cv-ja.md -f rirekisho -p a3
 # CV と履歴書の両方を生成
 md2cv -i examples/example-cv-ja.md -f both -p a3
 
-# 写真付きの履歴書を生成
-md2cv -i examples/example-cv-ja.md -f rirekisho --photo photo.png
-
 # 志望動機欄なしの履歴書を生成
 md2cv -i examples/example-cv-ja.md -f rirekisho --hide-motivation
 
@@ -139,7 +136,6 @@ md2cv init [options]
 | `-c, --config <file>`      | 設定ファイル（JSON または YAML）                                                                            | -                              |
 | `--order <order>`          | CV の時系列順序: `asc`（古い順）, `desc`（新しい順）。履歴書は常に古い順。                                  | `desc`                         |
 | `--hide-motivation`        | 履歴書の志望動機欄を非表示（学歴・職歴・資格欄が拡大）                                                      | `false`                        |
-| `--photo <filepath>`       | 履歴書用の写真ファイル（png, jpg, tiff）                                                                    | -                              |
 | `--section-order <list>`   | CV に含めるセクション ID のカンマ区切りリスト（例: `summary,experience,education,skills`）                  | 全セクション                   |
 | `--stylesheet <filepath>`  | カスタム CSS スタイルシートファイル（フォント、色、余白などを上書き）。詳細は [STYLE.md](STYLE.md) を参照。 | -                              |
 | `--log-format <format>`    | ログフォーマット: `json`, `text`                                                                            | `text`                         |
@@ -187,6 +183,7 @@ dob: 1990-01-15
 | `gender`                 | `GENDER`                                           | いいえ |
 | `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | いいえ |
 | `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | いいえ |
+| `photo`                  | `PHOTO`, `PHOTO_PATH`                              | いいえ |
 
 優先順位: フロントマターの値が環境変数より優先されます。
 
@@ -408,7 +405,6 @@ md2cv は CV コンテンツ内で標準的な Markdown 記法によるリッチ
   "logFormat": "text",
   "chronologicalOrder": "desc",
   "hideMotivation": false,
-  "photo": "photo.png",
   "sectionOrder": ["summary", "experience", "education", "skills"]
 }
 ```
@@ -420,7 +416,6 @@ paperSize: a4
 logFormat: text
 chronologicalOrder: desc
 hideMotivation: false
-photo: photo.png
 sectionOrder:
   - summary
   - experience

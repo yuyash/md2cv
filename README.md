@@ -76,9 +76,6 @@ md2cv -i examples/example-cv-ja.md -f rirekisho -p a3
 # Generate both CV and rirekisho formats
 md2cv -i examples/example-cv-ja.md -f both -p a3
 
-# Generate rirekisho with photo
-md2cv -i examples/example-cv-ja.md -f rirekisho --photo photo.png
-
 # Generate rirekisho without motivation section
 md2cv -i examples/example-cv-ja.md -f rirekisho --hide-motivation
 
@@ -139,7 +136,6 @@ The following options are available for the `generate` command:
 | `-c, --config <file>`      | Configuration file (JSON or YAML)                                                                                           | -               |
 | `--order <order>`          | Chronological order for CV format: `asc` (oldest first), `desc` (newest first). Rirekisho always uses asc.                  | `desc`          |
 | `--hide-motivation`        | Hide motivation section in rirekisho format (increases history/license rows)                                                | `false`         |
-| `--photo <filepath>`       | Photo image file for rirekisho format (png, jpg, tiff)                                                                      | -               |
 | `--section-order <list>`   | Comma-separated list of section IDs to include in CV output (e.g., `summary,experience,education,skills`)                   | All sections    |
 | `--stylesheet <filepath>`  | Custom CSS stylesheet file to override default styles (fonts, colors, spacing, etc.). See [STYLE.md](STYLE.md) for details. | -               |
 | `--log-format <format>`    | Log format: `json`, `text`                                                                                                  | `text`          |
@@ -182,6 +178,7 @@ Frontmatter fields can also be set via environment variables. You can provide al
 | `gender`                 | `GENDER`                                           | No       |
 | `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | No       |
 | `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | No       |
+| `photo`                  | `PHOTO`, `PHOTO_PATH`                              | No       |
 
 Priority: Frontmatter values override environment variables.
 
@@ -403,7 +400,6 @@ Create a `config.json` or `config.yaml`:
   "logFormat": "text",
   "chronologicalOrder": "desc",
   "hideMotivation": false,
-  "photo": "photo.png",
   "sectionOrder": ["summary", "experience", "education", "skills"]
 }
 ```
@@ -415,7 +411,6 @@ paperSize: a4
 logFormat: text
 chronologicalOrder: desc
 hideMotivation: false
-photo: photo.png
 sectionOrder:
   - summary
   - experience

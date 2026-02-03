@@ -79,11 +79,6 @@ export const GENERATE_OPTIONS = {
       'Hide motivation section in rirekisho format (increases history/license rows)',
     defaultValue: false,
   },
-  photo: {
-    flags: '--photo <filepath>',
-    description:
-      'Photo image file for rirekisho format (png, jpg, tiff). Only used with rirekisho format.',
-  },
   sectionOrder: {
     flags: '--section-order <sections>',
     description:
@@ -159,7 +154,6 @@ export interface CLIOptions {
   readonly logFormat?: LogFormat;
   readonly chronologicalOrder?: ChronologicalOrder;
   readonly hideMotivation?: boolean;
-  readonly photo?: string;
   readonly sectionOrder?: string;
   readonly stylesheet?: string;
   readonly marginMm?: string;
@@ -176,7 +170,6 @@ export interface ConfigFile {
   readonly logFormat?: LogFormat;
   readonly chronologicalOrder?: ChronologicalOrder;
   readonly hideMotivation?: boolean;
-  readonly photo?: string;
   readonly sectionOrder?: string[];
   readonly stylesheet?: string;
   readonly marginMm?: PageMargins;
@@ -195,7 +188,6 @@ export interface ResolvedConfig {
   readonly logFormat: LogFormat;
   readonly chronologicalOrder?: ChronologicalOrder;
   readonly hideMotivation: boolean;
-  readonly photo?: string;
   readonly sectionOrder?: string[];
   readonly stylesheet?: string;
   readonly marginMm?: PageMargins;

@@ -843,38 +843,17 @@ describe('CLI E2E Tests', () => {
     });
   });
 
-  describe('Rirekisho Photo Option', () => {
+  describe('Rirekisho Photo from Frontmatter', () => {
     beforeAll(() => cleanOutput());
 
-    it('should fail with non-existent photo file', () => {
-      const output = path.join(OUTPUT_DIR, 'rirekisho-photo-notfound');
-      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-      const result = runCLI(
-        `-i ${input} -o ${output} -f rirekisho -t html --photo /nonexistent/photo.png`,
+    it('should embed photo in rirekisho HTML output when photo is specified in frontmatter', () => {
+      const output = path.join(OUTPUT_DIR, 'rirekisho-photo-frontmatter');
+      const input = path.join(
+        FIXTURES_DIR,
+        'resume-rirekisho-with-photo-ja.md',
       );
-
-      expect(result.exitCode).not.toBe(0);
-      expect(result.stderr).toContain('Photo file not found');
-    });
-
-    it('should fail with unsupported photo format', () => {
-      const output = path.join(OUTPUT_DIR, 'rirekisho-photo-unsupported');
-      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-      // Use the markdown file itself as an invalid photo format
       const result = runCLI(
-        `-i ${input} -o ${output} -f rirekisho -t html --photo ${input}`,
-      );
-
-      expect(result.exitCode).not.toBe(0);
-      expect(result.stderr).toContain('Unsupported photo format');
-    });
-
-    it('should embed photo in rirekisho HTML output', () => {
-      const output = path.join(OUTPUT_DIR, 'rirekisho-photo');
-      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-      const photo = path.join(FIXTURES_DIR, 'test-photo.png');
-      const result = runCLI(
-        `-i ${input} -o ${output} -f rirekisho -t html -p a4 --photo ${photo}`,
+        `-i ${input} -o ${output} -f rirekisho -t html -p a4`,
       );
 
       expect(result.exitCode).toBe(0);
@@ -892,16 +871,38 @@ describe('CLI E2E Tests', () => {
       expect(html).not.toContain('写真をはる位置');
     });
 
-    it('should generate PDF with photo', () => {
-      const output = path.join(OUTPUT_DIR, 'rirekisho-photo-pdf');
-      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
-      const photo = path.join(FIXTURES_DIR, 'test-photo.png');
+    it('should generate PDF with photo from frontmatter', () => {
+      const output = path.join(OUTPUT_DIR, 'rirekisho-photo-frontmatter-pdf');
+      const input = path.join(
+        FIXTURES_DIR,
+        'resume-rirekisho-with-photo-ja.md',
+      );
       const result = runCLI(
-        `-i ${input} -o ${output} -f rirekisho -t pdf -p a4 --photo ${photo}`,
+        `-i ${input} -o ${output} -f rirekisho -t pdf -p a4`,
       );
 
       expect(result.exitCode).toBe(0);
       expect(fileExists(`${output}_rirekisho.pdf`)).toBe(true);
+    });
+
+    it('should not show photo when photo is not specified in frontmatter', () => {
+      const output = path.join(OUTPUT_DIR, 'rirekisho-no-photo');
+      const input = path.join(FIXTURES_DIR, 'resume-rirekisho-ja.md');
+      const result = runCLI(
+        `-i ${input} -o ${output} -f rirekisho -t html -p a4`,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(fileExists(`${output}_rirekisho.html`)).toBe(true);
+
+      const html = fs.readFileSync(`${output}_rirekisho.html`, 'utf-8');
+
+      // Should NOT contain base64 encoded image
+      expect(html).not.toContain('data:image/png;base64,');
+      // Should NOT have photo-box--with-image class applied to an element (class= attribute)
+      expect(html).not.toContain('class="photo-box photo-box--with-image"');
+      // Should contain photo instructions
+      expect(html).toContain('写真をはる位置');
     });
   });
 

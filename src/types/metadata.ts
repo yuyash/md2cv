@@ -106,6 +106,11 @@ export const METADATA_FIELDS: Record<string, MetadataFieldDef> = {
     frontmatterKeys: ['linkedin', 'linkedin_url'],
     required: false,
   },
+  photo: {
+    envVars: ['PHOTO', 'PHOTO_PATH'],
+    frontmatterKeys: ['photo', 'photo_path'],
+    required: false,
+  },
 } as const;
 
 /**
@@ -139,6 +144,9 @@ export interface CVMetadata {
 
   // Optional social/professional links
   readonly linkedin?: string;
+
+  // Optional photo for rirekisho format
+  readonly photo?: string;
 }
 
 // Alias for backward compatibility
