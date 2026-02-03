@@ -208,30 +208,9 @@ export function loadEnvFile(
 }
 
 /**
- * Supported photo image extensions
- */
-const SUPPORTED_PHOTO_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.tiff', '.tif'];
-
-/**
  * Supported stylesheet extensions
  */
 const SUPPORTED_STYLESHEET_EXTENSIONS = ['.css'];
-
-/**
- * Validate photo file path
- */
-function validatePhotoPath(photoPath: string): void {
-  if (!fs.existsSync(photoPath)) {
-    throw new Error(`Photo file not found: ${photoPath}`);
-  }
-
-  const ext = path.extname(photoPath).toLowerCase();
-  if (!SUPPORTED_PHOTO_EXTENSIONS.includes(ext)) {
-    throw new Error(
-      `Unsupported photo format: ${ext}. Supported formats: ${SUPPORTED_PHOTO_EXTENSIONS.join(', ')}`,
-    );
-  }
-}
 
 /**
  * Validate stylesheet file path
@@ -308,14 +287,6 @@ export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
   );
   const defaultOutput = path.join(inputDir, inputBasename);
 
-  // Resolve photo path (CLI takes precedence over config file)
-  const photoPath = cliOptions.photo ?? configFile.photo;
-
-  // Validate photo path if provided
-  if (photoPath) {
-    validatePhotoPath(photoPath);
-  }
-
   // Resolve stylesheet path (CLI takes precedence over config file)
   const stylesheetPath = cliOptions.stylesheet ?? configFile.stylesheet;
 
@@ -347,7 +318,6 @@ export function resolveConfig(cliOptions: CLIOptions): ResolvedConfig {
       : configFile.chronologicalOrder !== undefined
         ? { chronologicalOrder: configFile.chronologicalOrder }
         : {}),
-    ...(photoPath !== undefined && { photo: photoPath }),
     ...(cliOptions.sectionOrder
       ? {
           sectionOrder: cliOptions.sectionOrder.split(',').map((s) => s.trim()),
@@ -507,7 +477,6 @@ export function createCLIProgram(): Command {
       GENERATE_OPTIONS.hideMotivation.description,
       GENERATE_OPTIONS.hideMotivation.defaultValue,
     )
-    .option(GENERATE_OPTIONS.photo.flags, GENERATE_OPTIONS.photo.description)
     .option(
       GENERATE_OPTIONS.sectionOrder.flags,
       GENERATE_OPTIONS.sectionOrder.description,
@@ -553,7 +522,6 @@ export function createCLIProgram(): Command {
             chronologicalOrder: opts.order as ChronologicalOrder,
           }),
           ...(opts.hideMotivation === true && { hideMotivation: true }),
-          ...(typeof opts.photo === 'string' && { photo: opts.photo }),
           ...(typeof opts.sectionOrder === 'string' && {
             sectionOrder: opts.sectionOrder,
           }),

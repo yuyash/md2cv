@@ -436,11 +436,16 @@ export async function generateOutput(
       const sections = filterAndOrderSections(cv.sections, 'rirekisho', logger);
       const filteredCv = { ...cv, sections };
 
-      // Read photo file if provided (only for rirekisho)
+      // Read photo file if provided in metadata (only for rirekisho)
       let photoDataUri: string | undefined;
-      if (config.photo) {
-        photoDataUri = readPhotoAsDataUri(config.photo);
-        logger.debug({ photo: config.photo }, 'Photo loaded for rirekisho');
+      if (filteredCv.metadata.photo) {
+        // Resolve photo path relative to input file directory
+        const inputDir = path.dirname(config.input);
+        const photoPath = path.isAbsolute(filteredCv.metadata.photo)
+          ? filteredCv.metadata.photo
+          : path.resolve(inputDir, filteredCv.metadata.photo);
+        photoDataUri = readPhotoAsDataUri(photoPath);
+        logger.debug({ photo: photoPath }, 'Photo loaded for rirekisho');
       }
 
       html = generateRirekishoHTML(filteredCv, {

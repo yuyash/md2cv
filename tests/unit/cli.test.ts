@@ -255,51 +255,6 @@ describe('resolveConfig', () => {
     expect(config.sectionOrder).toEqual(['experience', 'education', 'skills']);
   });
 
-  it('should throw error for invalid photo path', () => {
-    const inputPath = path.join(tempDir, 'input.md');
-    fs.writeFileSync(inputPath, '# Test');
-
-    const cliOptions: CLIOptions = {
-      input: inputPath,
-      photo: '/non/existent/photo.png',
-      debug: false,
-    };
-
-    expect(() => resolveConfig(cliOptions)).toThrow('Photo file not found');
-  });
-
-  it('should throw error for unsupported photo format', () => {
-    const inputPath = path.join(tempDir, 'input.md');
-    const photoPath = path.join(tempDir, 'photo.gif');
-    fs.writeFileSync(inputPath, '# Test');
-    fs.writeFileSync(photoPath, 'fake image');
-
-    const cliOptions: CLIOptions = {
-      input: inputPath,
-      photo: photoPath,
-      debug: false,
-    };
-
-    expect(() => resolveConfig(cliOptions)).toThrow('Unsupported photo format');
-  });
-
-  it('should accept valid photo path', () => {
-    const inputPath = path.join(tempDir, 'input.md');
-    const photoPath = path.join(tempDir, 'photo.png');
-    fs.writeFileSync(inputPath, '# Test');
-    fs.writeFileSync(photoPath, 'fake image');
-
-    const cliOptions: CLIOptions = {
-      input: inputPath,
-      photo: photoPath,
-      debug: false,
-    };
-
-    const config = resolveConfig(cliOptions);
-
-    expect(config.photo).toBe(photoPath);
-  });
-
   it('should throw error for invalid stylesheet path', () => {
     const inputPath = path.join(tempDir, 'input.md');
     fs.writeFileSync(inputPath, '# Test');
