@@ -135,6 +135,21 @@ describe('rirekisho/data', () => {
       expect(result.phone).toBe('090-1234-5678');
     });
 
+    it('should prefer home_address_ja over home_address', () => {
+      const metadata: CVMetadata = {
+        ...baseMetadata,
+        home_address: '123 Main Street, Tokyo',
+        home_address_ja: '東京都渋谷区テスト町1-2-3',
+        home_address_furigana: 'とうきょうと しぶやく てすとちょう',
+        post_code: '1500001',
+      };
+      const result = extractPersonalInfo(metadata, new Date());
+
+      expect(result.address).toBe('東京都渋谷区テスト町1-2-3');
+      expect(result.addressFurigana).toBe('とうきょうと しぶやく てすとちょう');
+      expect(result.postCode).toBe('1500001');
+    });
+
     it('should extract secondary contact information', () => {
       const metadata: CVMetadata = {
         ...baseMetadata,

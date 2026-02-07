@@ -61,6 +61,11 @@ export const METADATA_FIELDS: Record<string, MetadataFieldDef> = {
     frontmatterKeys: ['home_address', 'home_address1'],
     required: false,
   },
+  home_address_ja: {
+    envVars: ['HOME_ADDRESS_JA', 'HOME_ADDRESS1_JA'],
+    frontmatterKeys: ['home_address_ja', 'home_address1_ja'],
+    required: false,
+  },
   home_address_furigana: {
     envVars: [
       'HOME_ADDRESS_FURIGANA',
@@ -129,6 +134,7 @@ export interface CVMetadata {
   // Optional contact info (primary)
   readonly post_code?: string;
   readonly home_address?: string;
+  readonly home_address_ja?: string;
   readonly home_address_furigana?: string;
 
   // Optional contact info (secondary)

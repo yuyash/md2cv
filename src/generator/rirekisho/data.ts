@@ -91,7 +91,11 @@ export function extractPersonalInfo(
     furigana: escapeHtml(metadata.name_furigana ?? ''),
     phone: metadata.phone_number ? escapeHtml(metadata.phone_number) : '',
     phone2: metadata.phone_number2 ? escapeHtml(metadata.phone_number2) : '',
-    address: metadata.home_address ? escapeHtml(metadata.home_address) : '',
+    address: metadata.home_address_ja
+      ? escapeHtml(metadata.home_address_ja)
+      : metadata.home_address
+        ? escapeHtml(metadata.home_address)
+        : '',
     addressFurigana: escapeHtml(metadata.home_address_furigana ?? ''),
     postCode: escapeHtml(metadata.post_code ?? ''),
     address2: escapeHtml(metadata.home_address2 ?? ''),

@@ -176,6 +176,7 @@ dob: 1990-01-15
 | `phone_number2`          | `PHONE_NUMBER2`                                    | いいえ |
 | `post_code`              | `POST_CODE`, `POST_CODE1`                          | いいえ |
 | `home_address`           | `HOME_ADDRESS`, `HOME_ADDRESS1`                    | いいえ |
+| `home_address_ja`        | `HOME_ADDRESS_JA`, `HOME_ADDRESS1_JA`              | いいえ |
 | `home_address_furigana`  | `HOME_ADDRESS_FURIGANA`, `HOME_ADDRESS_HURIGANA`   | いいえ |
 | `post_code2`             | `POST_CODE2`                                       | いいえ |
 | `home_address2`          | `HOME_ADDRESS2`                                    | いいえ |
