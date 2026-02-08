@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0](https://github.com/yuyash/md2cv/compare/v2.1.0...v2.2.0) (2026-02-08)
+
+
+### Features
+
+* add home_address_ja field for Japanese address in rirekisho ([#54](https://github.com/yuyash/md2cv/issues/54)) ([0d5885f](https://github.com/yuyash/md2cv/commit/0d5885f2bc3432bd02f0fa89ba3a17b39693090a))
+
 ## [2.1.0](https://github.com/yuyash/md2cv/compare/v2.0.2...v2.1.0) (2026-02-03)
 
 
