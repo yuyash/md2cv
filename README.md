@@ -171,6 +171,7 @@ Frontmatter fields can also be set via environment variables. You can provide al
 | `phone_number2`          | `PHONE_NUMBER2`                                    | No       |
 | `post_code`              | `POST_CODE`, `POST_CODE1`                          | No       |
 | `home_address`           | `HOME_ADDRESS`, `HOME_ADDRESS1`                    | No       |
+| `home_address_ja`        | `HOME_ADDRESS_JA`, `HOME_ADDRESS1_JA`              | No       |
 | `home_address_furigana`  | `HOME_ADDRESS_FURIGANA`, `HOME_ADDRESS_HURIGANA`   | No       |
 | `post_code2`             | `POST_CODE2`                                       | No       |
 | `home_address2`          | `HOME_ADDRESS2`                                    | No       |

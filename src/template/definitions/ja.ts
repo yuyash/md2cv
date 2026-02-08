@@ -39,13 +39,19 @@ export const JA_FRONTMATTER_FIELDS: readonly FrontmatterFieldTemplate[] = [
   {
     key: 'post_code',
     example: '100-0001',
-    description: '郵便番号 - ハイフン付きで記載',
+    description: '郵便番号',
     required: false,
   },
   {
     key: 'home_address',
     example: '東京都千代田区千代田1-1-1',
     description: '現住所 - 都道府県から番地まで記載',
+    required: false,
+  },
+  {
+    key: 'home_address_ja',
+    example: '東京都千代田区千代田1-1-1',
+    description: '現住所（日本語）- 履歴書形式で優先的に使用される',
     required: false,
   },
   {
