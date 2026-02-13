@@ -178,6 +178,31 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
     .competency-header {
       font-weight: bold;
     }
+    .role {
+      margin-bottom: 8px;
+    }
+    .role-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .role-title {
+      font-weight: 500;
+      color: var(--cv-color-heading);
+      font-size: var(--cv-font-size-small);
+    }
+    .entry-location {
+      color: var(--cv-color-text);
+      font-size: var(--cv-font-size-small);
+    }
+    .project {
+      margin-left: 15px;
+      margin-top: 4px;
+    }
+    .project-name {
+      font-weight: 500;
+      font-size: var(--cv-font-size-small);
+    }
     /* Markdown inline styles */
     strong, b {
       font-weight: bold;

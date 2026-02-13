@@ -152,6 +152,11 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
       justify-content: space-between;
       align-items: baseline;
     }
+    .role-title {
+      font-weight: 500;
+      color: var(--cv-color-heading);
+      font-size: var(--cv-font-size-small);
+    }
     .project {
       margin-left: 15px;
       margin-top: 4px;

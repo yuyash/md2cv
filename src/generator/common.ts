@@ -332,34 +332,36 @@ export function renderExperience(
   const includeProjects = options?.includeProjects ?? true;
 
   return entries
-    .flatMap((entry) => {
-      return entry.roles.map((role) => {
-        const dateRange = formatDateRange(role.start, role.end, formatter);
-        // Use role's sourceLines if available, otherwise fall back to entry's sourceLines
-        const sourceLines = role.sourceLines ?? entry.sourceLines;
-        const sourceLineAttr = sourceLines
-          ? ` data-source-line="${sourceLines.startLine}" data-source-end-line="${sourceLines.endLine}"`
-          : '';
-        let html = `<div class="entry"${sourceLineAttr}>`;
+    .map((entry) => {
+      const sourceLineAttr = entry.sourceLines
+        ? ` data-source-line="${entry.sourceLines.startLine}" data-source-end-line="${entry.sourceLines.endLine}"`
+        : '';
+      let html = `<div class="entry"${sourceLineAttr}>`;
 
-        html += '<div class="entry-header">';
-        html += `<span class="entry-title">${escapeHtml(entry.company)} —— ${escapeHtml(role.title)}</span>`;
+      // Company header
+      html += '<div class="entry-header">';
+      html += `<span class="entry-title">${escapeHtml(entry.company)}</span>`;
+      html += '</div>';
+
+      // Location
+      if (entry.location) {
+        html += `<div class="entry-location">${escapeHtml(entry.location)}</div>`;
+      }
+
+      // Roles
+      for (const role of entry.roles) {
+        const dateRange = formatDateRange(role.start, role.end, formatter);
+        html += '<div class="role">';
+
+        html += '<div class="role-header">';
+        html += `<span class="role-title">${escapeHtml(role.title)}</span>`;
         if (dateRange) {
           html += `<span class="entry-date">${escapeHtml(dateRange)}</span>`;
         }
         html += '</div>';
 
-        if (includeTeam) {
-          const subtitleParts: string[] = [];
-          if (role.team) {
-            subtitleParts.push(escapeHtml(role.team));
-          }
-          if (entry.location) {
-            subtitleParts.push(escapeHtml(entry.location));
-          }
-          if (subtitleParts.length > 0) {
-            html += `<div class="entry-subtitle">${subtitleParts.join(' — ')}</div>`;
-          }
+        if (includeTeam && role.team) {
+          html += `<div class="entry-subtitle">${escapeHtml(role.team)}</div>`;
         }
 
         if (role.summary && role.summary.length > 0) {
@@ -400,8 +402,10 @@ export function renderExperience(
         }
 
         html += '</div>';
-        return html;
-      });
+      }
+
+      html += '</div>';
+      return html;
     })
     .join('\n');
 }
