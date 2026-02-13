@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0](https://github.com/yuyash/md2cv/compare/v2.2.0...v2.3.0) (2026-02-13)
+
+
+### Features
+
+* group experience roles by company ([#56](https://github.com/yuyash/md2cv/issues/56)) ([4f3b704](https://github.com/yuyash/md2cv/commit/4f3b7047df9df8317f9115bbc220e15066d61df3))
+
 ## [2.2.0](https://github.com/yuyash/md2cv/compare/v2.1.0...v2.2.0) (2026-02-08)
 
 
