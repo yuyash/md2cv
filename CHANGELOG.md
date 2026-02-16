@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0](https://github.com/yuyash/md2cv/compare/v2.4.0...v2.5.0) (2026-02-16)
+
+
+### Features
+
+* add cover letter format support ([#62](https://github.com/yuyash/md2cv/issues/62)) ([4d191ff](https://github.com/yuyash/md2cv/commit/4d191ff9f0b68ee55c2119a6de0a6e546de2e19c))
+
 ## [2.4.0](https://github.com/yuyash/md2cv/compare/v2.3.0...v2.4.0) (2026-02-16)
 
 
