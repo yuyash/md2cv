@@ -23,12 +23,18 @@ import {
   isSectionValidForFormat,
 } from '../types/sections.js';
 import type { CVInput } from './common.js';
+import { generateCoverLetterHtml } from './cover_letter.js';
 import { generateEnHtml } from './resume_en.js';
 import { generateJaHtml } from './resume_ja.js';
 import { generateRirekishoHTML } from './rirekisho/index.js';
 
 // Re-export generators
-export { generateEnHtml, generateJaHtml, generateRirekishoHTML };
+export {
+  generateCoverLetterHtml,
+  generateEnHtml,
+  generateJaHtml,
+  generateRirekishoHTML,
+};
 
 // Re-export markdown utilities
 export { inlineMarkdownToHtml, markdownToHtml } from './markdown.js';
@@ -304,6 +310,7 @@ function generateHtml(
   logger?: Logger,
   customStylesheet?: string,
   marginMm?: PageMargins,
+  lineHeight?: number,
 ): string {
   const language = detectLanguage(cv);
 
@@ -319,6 +326,7 @@ function generateHtml(
     paperSize,
     ...(customStylesheet && { customStylesheet }),
     ...(marginMm && { marginMm }),
+    ...(lineHeight && { lineHeight }),
   };
 
   if (language === 'ja') {
@@ -414,6 +422,12 @@ export async function generateOutput(
   for (const format of formats) {
     logger.debug(`Generating ${format}...`);
 
+    // Parse line_height from metadata
+    const lineHeight = cv.metadata.line_height
+      ? parseFloat(cv.metadata.line_height)
+      : undefined;
+    const validLineHeight =
+      lineHeight && !isNaN(lineHeight) ? lineHeight : undefined;
     // Determine chronological order
     // rirekisho always uses 'asc' (oldest first), cv uses config value or defaults to 'desc'
     const chronologicalOrder: ChronologicalOrder =
@@ -455,6 +469,13 @@ export async function generateOutput(
         ...(photoDataUri !== undefined && { photoDataUri }),
         ...(customStylesheet !== undefined && { customStylesheet }),
       });
+    } else if (format === 'cover_letter') {
+      html = generateCoverLetterHtml(cv, {
+        paperSize: config.paperSize,
+        ...(customStylesheet && { customStylesheet }),
+        ...(config.marginMm && { marginMm: config.marginMm }),
+        ...(validLineHeight && { lineHeight: validLineHeight }),
+      });
     } else {
       html = generateHtml(
         cv,
@@ -463,11 +484,16 @@ export async function generateOutput(
         logger,
         customStylesheet,
         config.marginMm,
+        validLineHeight,
       );
     }
 
     const baseName = path.basename(config.output);
-    const suffix = format === 'rirekisho' ? '_rirekisho' : '_cv';
+    const suffixMap: Record<string, string> = {
+      rirekisho: '_rirekisho',
+      cover_letter: '_cover_letter',
+    };
+    const suffix = suffixMap[format] ?? '_cv';
 
     for (const outputType of outputTypes) {
       const ext = outputType === 'pdf' ? '.pdf' : '.html';
@@ -480,7 +506,7 @@ export async function generateOutput(
           html,
           config.paperSize,
           format === 'rirekisho',
-          config.marginMm,
+          format !== 'rirekisho' ? config.marginMm : undefined,
         );
         fs.writeFileSync(outputPath, pdfBuffer);
       }

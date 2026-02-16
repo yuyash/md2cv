@@ -136,7 +136,11 @@ describe('formatTemplateList', () => {
 describe('filterSectionsForFormat', () => {
   it('should return all sections for "both" format', () => {
     const sections = filterSectionsForFormat(EN_TEMPLATE.sections, 'both');
-    expect(sections.length).toBe(EN_TEMPLATE.sections.length);
+    // "both" returns all sections except cover_letter-only sections
+    const nonCoverLetterSections = EN_TEMPLATE.sections.filter(
+      (s) => s.usage !== 'cover_letter',
+    );
+    expect(sections.length).toBe(nonCoverLetterSections.length);
   });
 
   it('should filter CV-only sections for "cv" format', () => {

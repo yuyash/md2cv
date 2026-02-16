@@ -7,7 +7,7 @@ import type { OutputFormat } from './config.js';
 /**
  * Section usage context
  */
-export type SectionUsage = 'cv' | 'rirekisho' | 'both';
+export type SectionUsage = 'cv' | 'rirekisho' | 'both' | 'cover_letter' | 'all';
 
 /**
  * Section definition
@@ -102,6 +102,12 @@ export const SECTION_DEFINITIONS: readonly SectionDef[] = [
     usage: 'cv',
     requiredFor: [],
   },
+  {
+    id: 'cover_letter_body',
+    tags: ['Cover Letter', 'Body', 'Letter'],
+    usage: 'cover_letter',
+    requiredFor: ['cover_letter'],
+  },
 ] as const;
 
 /**
@@ -120,7 +126,13 @@ export function findSectionByTag(tag: string): SectionDef | undefined {
 export function getValidTagsForFormat(format: OutputFormat): string[] {
   const tags: string[] = [];
   for (const def of SECTION_DEFINITIONS) {
-    if (format === 'both' || def.usage === 'both' || def.usage === format) {
+    if (def.usage === 'all') {
+      tags.push(...def.tags);
+    } else if (format === 'both') {
+      if (def.usage !== 'cover_letter') {
+        tags.push(...def.tags);
+      }
+    } else if (def.usage === 'both' || def.usage === format) {
       tags.push(...def.tags);
     }
   }
@@ -132,6 +144,9 @@ export function getValidTagsForFormat(format: OutputFormat): string[] {
  */
 export function getRequiredSectionsForFormat(format: OutputFormat): string[] {
   return SECTION_DEFINITIONS.filter((def) => {
+    if (format === 'cover_letter') {
+      return def.requiredFor.includes('cover_letter');
+    }
     if (format === 'both') {
       return (
         def.requiredFor.includes('cv') || def.requiredFor.includes('rirekisho')
@@ -150,7 +165,8 @@ export function isSectionValidForFormat(
 ): boolean {
   const def = SECTION_DEFINITIONS.find((d) => d.id === sectionId);
   if (!def) return false;
-  if (format === 'both') return true;
+  if (format === 'both') return def.usage !== 'cover_letter';
+  if (def.usage === 'all') return true;
   return def.usage === 'both' || def.usage === format;
 }
 

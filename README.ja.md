@@ -2,13 +2,13 @@
 
 [English](README.md) | [日本語](README.ja.md)
 
-md2cv は Markdown で書かれた履歴書・職務経歴書を PDF や HTML に変換するコマンドラインツールです。Markdown で内容を書くだけで、フォーマットやレイアウトは md2cv が自動で処理します。欧米式の CV と日本式の履歴書の両方に対応しています。
+md2cv は Markdown で書かれた履歴書・職務経歴書・カバーレターを PDF や HTML に変換するコマンドラインツールです。Markdown で内容を書くだけで、フォーマットやレイアウトは md2cv が自動で処理します。欧米式の CV、日本式の履歴書、カバーレターに対応しています。
 
 ## 主な機能
 
 - Markdown で履歴書を作成
 - PDF と HTML の出力に対応
-- 複数フォーマット対応：欧米式 CV、日本式履歴書
+- 複数フォーマット対応：欧米式 CV、日本式履歴書、カバーレター
 
 ## インストール
 
@@ -39,6 +39,9 @@ md2cv init -l ja -f rirekisho -o my-rirekisho.md
 
 # 両方のフォーマット用テンプレートを生成
 md2cv init -l ja -f both -o my-resume.md
+
+# カバーレターのテンプレートを生成
+md2cv init -l en -f cover_letter -o my-cover-letter.md
 
 # 説明コメントなしでテンプレートを生成
 md2cv init -l ja -f cv --no-comments -o my-cv.md
@@ -90,6 +93,12 @@ md2cv -i examples/example-cv-ja.md --stylesheet custom.css
 
 # 詳細ログを有効化
 md2cv -i examples/example-cv-ja.md --verbose
+
+# カバーレターを PDF で生成
+md2cv -i examples/cover_letter.md -f cover_letter
+
+# カバーレターを HTML で生成
+md2cv -i examples/cover_letter.md -f cover_letter -t html
 ```
 
 ## CLI コマンド
@@ -113,14 +122,14 @@ md2cv -i input.md [options]  # 'generate' は省略可能
 md2cv init [options]
 ```
 
-| オプション         | 説明                                          | デフォルト |
-| ------------------ | --------------------------------------------- | ---------- |
-| `-o, --output`     | 出力ファイルパス（デフォルト: 標準出力）      | 標準出力   |
-| `-l, --lang`       | テンプレート言語（`en`, `ja`）                | `en`       |
-| `-f, --format`     | 出力フォーマット（`cv`, `rirekisho`, `both`） | `cv`       |
-| `--no-comments`    | テンプレートから説明コメントを除外            | -          |
-| `--list-templates` | 利用可能なテンプレートと詳細を表示            | -          |
-| `--list-sections`  | 指定フォーマットの利用可能なセクションを表示  | -          |
+| オプション         | 説明                                                          | デフォルト |
+| ------------------ | ------------------------------------------------------------- | ---------- |
+| `-o, --output`     | 出力ファイルパス（デフォルト: 標準出力）                      | 標準出力   |
+| `-l, --lang`       | テンプレート言語（`en`, `ja`）                                | `en`       |
+| `-f, --format`     | 出力フォーマット（`cv`, `rirekisho`, `both`, `cover_letter`） | `cv`       |
+| `--no-comments`    | テンプレートから説明コメントを除外                            | -          |
+| `--list-templates` | 利用可能なテンプレートと詳細を表示                            | -          |
+| `--list-sections`  | 指定フォーマットの利用可能なセクションを表示                  | -          |
 
 ## generate オプション
 
@@ -130,7 +139,7 @@ md2cv init [options]
 | -------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | `-i, --input <file>`       | 入力 Markdown ファイル（必須）                                                                              | -                              |
 | `-o, --output <path>`      | 出力ファイルパス（拡張子なし）                                                                              | 入力ファイルと同じディレクトリ |
-| `-f, --format <format>`    | 出力フォーマット: `cv`, `rirekisho`, `both`                                                                 | `cv`                           |
+| `-f, --format <format>`    | 出力フォーマット: `cv`, `rirekisho`, `both`, `cover_letter`                                                 | `cv`                           |
 | `-t, --output-type <type>` | 出力タイプ: `pdf`, `html`, `both`                                                                           | `pdf`                          |
 | `-p, --paper-size <size>`  | 用紙サイズ: `a3`, `a4`, `b4`, `b5`, `letter`                                                                | `a4`                           |
 | `-c, --config <file>`      | 設定ファイル（JSON または YAML）                                                                            | -                              |
@@ -185,6 +194,13 @@ dob: 1990-01-15
 | `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | いいえ |
 | `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | いいえ |
 | `photo`                  | `PHOTO`, `PHOTO_PATH`                              | いいえ |
+| `job_title`              | `JOB_TITLE`                                        | いいえ |
+| `recipient_name`         | `RECIPIENT_NAME`                                   | いいえ |
+| `recipient_company`      | `RECIPIENT_COMPANY`                                | いいえ |
+| `subject`                | `SUBJECT`                                          | いいえ |
+| `date`                   | `DATE`                                             | いいえ |
+
+`job_title`、`recipient_name`、`recipient_company`、`subject`、`date` はカバーレターフォーマットで使用されます。`date` を省略すると現在の日付が使用されます。
 
 優先順位: フロントマターの値が環境変数より優先されます。
 
@@ -333,17 +349,54 @@ items:
 
 #### セクション一覧
 
-| セクション ID    | 対応タグ                                                                  | フォーマット |
-| ---------------- | ------------------------------------------------------------------------- | ------------ |
-| `summary`        | 概要, 職務要約, Summary, Professional Summary, Profile, Executive Summary | CV           |
-| `experience`     | 職歴, 職務経歴, Experience, Work Experience, Professional Experience      | 両方         |
-| `education`      | 学歴, Education                                                           | 両方         |
-| `skills`         | スキル, Skills, Technical Skills                                          | 両方         |
-| `certifications` | 免許・資格, 資格, 免許, Certifications                                    | 両方         |
-| `languages`      | 語学, Languages, Language Skills                                          | CV           |
-| `competencies`   | 自己PR, Core Competencies, Key Competencies, Superpowers                  | 両方         |
-| `motivation`     | 志望動機, 志望の動機, Motivation                                          | 履歴書       |
-| `notes`          | 本人希望記入欄, Notes                                                     | 履歴書       |
+| セクション ID       | 対応タグ                                                                  | フォーマット |
+| ------------------- | ------------------------------------------------------------------------- | ------------ |
+| `summary`           | 概要, 職務要約, Summary, Professional Summary, Profile, Executive Summary | CV           |
+| `experience`        | 職歴, 職務経歴, Experience, Work Experience, Professional Experience      | 両方         |
+| `education`         | 学歴, Education                                                           | 両方         |
+| `skills`            | スキル, Skills, Technical Skills                                          | 両方         |
+| `certifications`    | 免許・資格, 資格, 免許, Certifications                                    | 両方         |
+| `languages`         | 語学, Languages, Language Skills                                          | CV           |
+| `competencies`      | 自己PR, Core Competencies, Key Competencies, Superpowers                  | 両方         |
+| `motivation`        | 志望動機, 志望の動機, Motivation                                          | 履歴書       |
+| `notes`             | 本人希望記入欄, Notes                                                     | 履歴書       |
+| `cover_letter_body` | Cover Letter, Body, Letter                                                | カバーレター |
+
+### カバーレター
+
+カバーレターフォーマットは、フロントマターでヘッダー情報と宛先を指定し、`# Cover Letter` セクションに本文を記述します：
+
+```markdown
+---
+name: 山田 太郎
+job_title: ソフトウェアエンジニア
+email_address: taro@example.com
+phone_number: 090-1234-5678
+home_address: 東京都千代田区
+linkedin: https://linkedin.com/in/taroyamada
+recipient_name: 採用ご担当者様
+recipient_company: 株式会社サンプル
+subject: ソフトウェアエンジニア職
+date: 2026年2月13日
+---
+
+# Cover Letter
+
+貴社のソフトウェアエンジニア職に応募いたします。
+10年以上のスケーラブルな分散システム構築の経験を活かし、
+貴社のチームに貢献できると確信しております。
+
+現職では、パフォーマンスベンチマークプラットフォームの開発をリードし、
+大規模なシステム信頼性の確保に取り組んでおります。
+
+ご検討のほど、よろしくお願いいたします。
+```
+
+生成コマンド：
+
+```bash
+md2cv -i cover_letter.md -f cover_letter
+```
 
 ### Markdown 書式
 

@@ -2,13 +2,13 @@
 
 [English](README.md) | [日本語](README.ja.md)
 
-md2cv is a command-line tool that transforms Markdown documents into formatted PDF and HTML resumes. Simply write your CV in Markdown, and let md2cv handle the formatting and layout. The tool supports both western-style CVs and Japanese-style documents including rirekisho (履歴書) and shokumu-keirekisho (職務経歴書).
+md2cv is a command-line tool that transforms Markdown documents into formatted PDF and HTML resumes. Simply write your CV in Markdown, and let md2cv handle the formatting and layout. The tool supports western-style CVs, Japanese-style documents including rirekisho (履歴書) and shokumu-keirekisho (職務経歴書), and cover letters.
 
 ## Key Features
 
 - Write your CV in Markdown
 - Generate PDF and HTML outputs
-- Multiple format support: western-style CV and Japanese rirekisho (履歴書)
+- Multiple format support: western-style CV, Japanese rirekisho (履歴書), and cover letter
 
 ## Installation
 
@@ -39,6 +39,9 @@ md2cv init -l ja -f rirekisho -o my-rirekisho.md
 
 # Generate a template for both formats
 md2cv init -l en -f both -o my-resume.md
+
+# Generate a cover letter template
+md2cv init -l en -f cover_letter -o my-cover-letter.md
 
 # Generate template without explanatory comments
 md2cv init -l en -f cv --no-comments -o my-cv.md
@@ -90,6 +93,12 @@ md2cv -i examples/example-cv-en.md --stylesheet custom.css
 
 # Enable verbose logging
 md2cv -i examples/example-cv-en.md --verbose
+
+# Generate a cover letter PDF
+md2cv -i examples/cover_letter.md -f cover_letter
+
+# Generate a cover letter HTML
+md2cv -i examples/cover_letter.md -f cover_letter -t html
 ```
 
 ## CLI Commands
@@ -113,14 +122,14 @@ Generate a markdown template to help you get started.
 md2cv init [options]
 ```
 
-| Option             | Description                                      | Default |
-| ------------------ | ------------------------------------------------ | ------- |
-| `-o, --output`     | Output file path (default: stdout)               | stdout  |
-| `-l, --lang`       | Template language (`en`, `ja`)                   | `en`    |
-| `-f, --format`     | Output format (`cv`, `rirekisho`, `both`)        | `cv`    |
-| `--no-comments`    | Exclude explanatory comments from template       | -       |
-| `--list-templates` | List available templates and their details       | -       |
-| `--list-sections`  | List available sections for the specified format | -       |
+| Option             | Description                                               | Default |
+| ------------------ | --------------------------------------------------------- | ------- |
+| `-o, --output`     | Output file path (default: stdout)                        | stdout  |
+| `-l, --lang`       | Template language (`en`, `ja`)                            | `en`    |
+| `-f, --format`     | Output format (`cv`, `rirekisho`, `both`, `cover_letter`) | `cv`    |
+| `--no-comments`    | Exclude explanatory comments from template                | -       |
+| `--list-templates` | List available templates and their details                | -       |
+| `--list-sections`  | List available sections for the specified format          | -       |
 
 ## Generate Options
 
@@ -130,7 +139,7 @@ The following options are available for the `generate` command:
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | `-i, --input <file>`       | Input markdown file (required)                                                                                              | -               |
 | `-o, --output <path>`      | Output file path (without extension)                                                                                        | Input directory |
-| `-f, --format <format>`    | Output format: `cv`, `rirekisho`, `both`                                                                                    | `cv`            |
+| `-f, --format <format>`    | Output format: `cv`, `rirekisho`, `both`, `cover_letter`                                                                    | `cv`            |
 | `-t, --output-type <type>` | Output type: `pdf`, `html`, `both`                                                                                          | `pdf`           |
 | `-p, --paper-size <size>`  | Paper size: `a3`, `a4`, `b4`, `b5`, `letter`                                                                                | `a4`            |
 | `-c, --config <file>`      | Configuration file (JSON or YAML)                                                                                           | -               |
@@ -180,6 +189,13 @@ Frontmatter fields can also be set via environment variables. You can provide al
 | `dob`                    | `DOB`, `DATE_OF_BIRTH`                             | No       |
 | `linkedin`               | `LINKEDIN`, `LINKEDIN_URL`                         | No       |
 | `photo`                  | `PHOTO`, `PHOTO_PATH`                              | No       |
+| `job_title`              | `JOB_TITLE`                                        | No       |
+| `recipient_name`         | `RECIPIENT_NAME`                                   | No       |
+| `recipient_company`      | `RECIPIENT_COMPANY`                                | No       |
+| `subject`                | `SUBJECT`                                          | No       |
+| `date`                   | `DATE`                                             | No       |
+
+The fields `job_title`, `recipient_name`, `recipient_company`, `subject`, and `date` are used by the cover letter format. If `date` is omitted, the current date is used.
 
 Priority: Frontmatter values override environment variables.
 
@@ -328,17 +344,55 @@ Available to start immediately. Open to relocation.
 
 #### Section Reference
 
-| Section ID       | Supported Tags                                                            | Format    |
-| ---------------- | ------------------------------------------------------------------------- | --------- |
-| `summary`        | Summary, Professional Summary, Profile, Executive Summary, 概要, 職務要約 | CV        |
-| `experience`     | Experience, Work Experience, Professional Experience, 職歴, 職務経歴      | Both      |
-| `education`      | Education, 学歴                                                           | Both      |
-| `skills`         | Skills, Technical Skills, スキル                                          | Both      |
-| `certifications` | Certifications, 免許・資格, 資格, 免許.                                   | Both      |
-| `languages`      | Languages, Language Skills語学                                            | CV        |
-| `competencies`   | Core Competencies, Key Competencies, Superpowers, 自己PR                  | Both      |
-| `motivation`     | Motivation, 志望動機, 志望の動機                                          | Rirekisho |
-| `notes`          | Notes, 本人希望記入欄                                                     | Rirekisho |
+| Section ID          | Supported Tags                                                            | Format       |
+| ------------------- | ------------------------------------------------------------------------- | ------------ |
+| `summary`           | Summary, Professional Summary, Profile, Executive Summary, 概要, 職務要約 | CV           |
+| `experience`        | Experience, Work Experience, Professional Experience, 職歴, 職務経歴      | Both         |
+| `education`         | Education, 学歴                                                           | Both         |
+| `skills`            | Skills, Technical Skills, スキル                                          | Both         |
+| `certifications`    | Certifications, 免許・資格, 資格, 免許.                                   | Both         |
+| `languages`         | Languages, Language Skills語学                                            | CV           |
+| `competencies`      | Core Competencies, Key Competencies, Superpowers, 自己PR                  | Both         |
+| `motivation`        | Motivation, 志望動機, 志望の動機                                          | Rirekisho    |
+| `notes`             | Notes, 本人希望記入欄                                                     | Rirekisho    |
+| `cover_letter_body` | Cover Letter, Body, Letter                                                | Cover Letter |
+
+### Cover Letter
+
+The cover letter format uses frontmatter for header and recipient information, with a `# Cover Letter` section for the body:
+
+```markdown
+---
+name: John Doe
+job_title: Software Engineer
+email_address: john@example.com
+phone_number: '+1-555-123-4567'
+home_address: Seattle, WA
+linkedin: https://linkedin.com/in/johndoe
+recipient_name: Hiring Manager
+recipient_company: Acme Corp
+subject: Software Engineer Position
+date: February 13, 2026
+---
+
+# Cover Letter
+
+I am writing to express my strong interest in the Software Engineer
+position at Acme Corp. With over 10 years of experience building
+scalable distributed systems, I am excited about the opportunity
+to contribute to your team.
+
+In my current role, I lead the development of performance
+benchmarking platforms that ensure system reliability at massive scale.
+
+Thank you for considering my application.
+```
+
+Generate with:
+
+```bash
+md2cv -i cover_letter.md -f cover_letter
+```
 
 ### Markdown Formatting
 

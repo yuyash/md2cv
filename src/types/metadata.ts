@@ -116,6 +116,36 @@ export const METADATA_FIELDS: Record<string, MetadataFieldDef> = {
     frontmatterKeys: ['photo', 'photo_path'],
     required: false,
   },
+  job_title: {
+    envVars: ['JOB_TITLE'],
+    frontmatterKeys: ['job_title'],
+    required: false,
+  },
+  recipient_name: {
+    envVars: ['RECIPIENT_NAME'],
+    frontmatterKeys: ['recipient_name'],
+    required: false,
+  },
+  recipient_company: {
+    envVars: ['RECIPIENT_COMPANY'],
+    frontmatterKeys: ['recipient_company'],
+    required: false,
+  },
+  subject: {
+    envVars: ['SUBJECT'],
+    frontmatterKeys: ['subject'],
+    required: false,
+  },
+  date: {
+    envVars: ['DATE'],
+    frontmatterKeys: ['date'],
+    required: false,
+  },
+  line_height: {
+    envVars: ['LINE_HEIGHT'],
+    frontmatterKeys: ['line_height'],
+    required: false,
+  },
 } as const;
 
 /**
@@ -153,6 +183,17 @@ export interface CVMetadata {
 
   // Optional photo for rirekisho format
   readonly photo?: string;
+
+  // Optional cover letter fields
+  readonly job_title?: string;
+  readonly recipient_name?: string;
+  readonly recipient_company?: string;
+  readonly subject?: string;
+  /** Cover letter date string (e.g., "February 13, 2026"). Defaults to current date if omitted. */
+  readonly date?: string;
+
+  /** Line height multiplier (e.g., 1.4, 1.6, 2.0). Applied to body text in all formats. */
+  readonly line_height?: string;
 }
 
 // Alias for backward compatibility

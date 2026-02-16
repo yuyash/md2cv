@@ -31,7 +31,9 @@ describe('SECTION_DEFINITIONS', () => {
 
   it('should have valid usage values', () => {
     for (const section of SECTION_DEFINITIONS) {
-      expect(['cv', 'rirekisho', 'both']).toContain(section.usage);
+      expect(['cv', 'rirekisho', 'both', 'cover_letter', 'all']).toContain(
+        section.usage,
+      );
     }
   });
 
