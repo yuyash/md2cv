@@ -47,7 +47,7 @@ export function getTemplateInfo(language: TemplateLanguage): TemplateInfo {
   return {
     language,
     languageName: LANGUAGE_NAMES[language],
-    formats: ['cv', 'rirekisho', 'both'],
+    formats: ['cv', 'rirekisho', 'both', 'cover_letter'],
     sectionCount: definition.sections.length,
     frontmatterFieldCount: definition.frontmatterFields.length,
   };
@@ -144,7 +144,8 @@ export function filterSectionsForFormat(
   format: OutputFormat,
 ): SectionTemplate[] {
   return sections.filter((section) => {
-    if (format === 'both') return true;
+    if (section.usage === 'all') return true;
+    if (format === 'both') return section.usage !== 'cover_letter';
     return section.usage === 'both' || section.usage === format;
   });
 }

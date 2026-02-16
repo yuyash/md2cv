@@ -17,10 +17,15 @@ export type { CVInput };
 /**
  * Generate base CSS styles for English CV
  */
-function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
+function generateStyles(
+  paperSize: PaperSize,
+  marginMm?: PageMargins,
+  lineHeight?: number,
+): string {
   const size = PAGE_SIZES[paperSize];
   // Default to 30mm margins if not specified
   const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+  const lh = lineHeight ?? 1.4;
 
   return `
     :root {
@@ -30,7 +35,7 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
       --cv-font-size-section: 12pt;
       --cv-font-size-small: 10pt;
       --cv-font-size-xs: 9pt;
-      --cv-line-height: 1.4;
+      --cv-line-height: ${lh};
       --cv-color-text: #333;
       --cv-color-heading: #000;
       --cv-color-muted: #555;
@@ -299,7 +304,11 @@ function renderContactInfo(cv: CVInput): string {
  * Generate English HTML CV
  */
 export function generateEnHtml(cv: CVInput, options: CVOptions): string {
-  const styles = generateStyles(options.paperSize, options.marginMm);
+  const styles = generateStyles(
+    options.paperSize,
+    options.marginMm,
+    options.lineHeight,
+  );
   const name = cv.metadata.name;
   const contactHtml = renderContactInfo(cv);
 

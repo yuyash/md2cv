@@ -43,6 +43,37 @@ export const EN_FRONTMATTER_FIELDS: readonly FrontmatterFieldTemplate[] = [
     description: 'Your LinkedIn profile URL for professional networking',
     required: false,
   },
+  {
+    key: 'job_title',
+    example: 'Software Engineer',
+    description: 'Your current job title (used in cover letter header)',
+    required: false,
+  },
+  {
+    key: 'recipient_name',
+    example: 'Hiring Manager',
+    description: 'Name of the person you are addressing the cover letter to',
+    required: false,
+  },
+  {
+    key: 'recipient_company',
+    example: 'Acme Corp',
+    description: 'Company name for the cover letter recipient',
+    required: false,
+  },
+  {
+    key: 'subject',
+    example: 'Software Engineer Position',
+    description: 'Subject line for the cover letter (e.g., position title)',
+    required: false,
+  },
+  {
+    key: 'date',
+    example: 'February 13, 2026',
+    description:
+      'Date of the cover letter (defaults to current date if omitted)',
+    required: false,
+  },
 ] as const;
 
 /**
@@ -197,6 +228,23 @@ Tips:
 - Preferred work location: Remote / Hybrid / On-site
 - Work authorization status if relevant
 - Other relevant notes for the employer`,
+  },
+  {
+    id: 'cover_letter_body',
+    title: 'Cover Letter',
+    description:
+      'The body of your cover letter. Write 3-5 paragraphs: opening (why you are writing), body (your qualifications and fit), and closing (call to action). Set recipient_name, recipient_company, subject, job_title, and date in frontmatter.',
+    usage: 'cover_letter',
+    content: `I am writing to express my strong interest in the [Position] at [Company].
+With [X] years of experience in [field], I am excited about the opportunity to contribute to your team.
+
+In my current role at [Current Company], I [key achievement with measurable impact].
+My experience directly aligns with your needs: [specific connection to job requirements].
+
+I am eager to bring my expertise in [skills] to help [Company] achieve [goal].
+I look forward to discussing how my experience can contribute to your team.
+
+Thank you for considering my application.`,
   },
 ] as const;
 

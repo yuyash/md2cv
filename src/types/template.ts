@@ -36,7 +36,7 @@ export interface SectionTemplate {
   readonly title: string;
   readonly description: string;
   readonly content: string;
-  readonly usage: 'cv' | 'rirekisho' | 'both';
+  readonly usage: 'cv' | 'rirekisho' | 'both' | 'cover_letter' | 'all';
 }
 
 /**
@@ -76,5 +76,5 @@ export interface SectionInfo {
   readonly id: string;
   readonly title: string;
   readonly description: string;
-  readonly usage: 'cv' | 'rirekisho' | 'both';
+  readonly usage: 'cv' | 'rirekisho' | 'both' | 'cover_letter' | 'all';
 }

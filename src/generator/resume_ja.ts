@@ -27,10 +27,15 @@ function getCurrentDateJa(): string {
 /**
  * Generate base CSS styles for Japanese CV
  */
-function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
+function generateStyles(
+  paperSize: PaperSize,
+  marginMm?: PageMargins,
+  lineHeight?: number,
+): string {
   const size = PAGE_SIZES[paperSize];
   // Default to 30mm margins if not specified
   const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+  const lh = lineHeight ?? 1.6;
 
   return `
     :root {
@@ -39,7 +44,7 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
       --cv-font-size-title: 18pt;
       --cv-font-size-section: 12pt;
       --cv-font-size-small: 9pt;
-      --cv-line-height: 1.6;
+      --cv-line-height: ${lh};
       --cv-color-text: #333;
       --cv-color-heading: #000;
       --cv-color-border: #333;
@@ -284,7 +289,11 @@ function filterSections(sections: readonly ParsedSection[]): ParsedSection[] {
  * Generate Japanese HTML CV
  */
 export function generateJaHtml(cv: CVInput, options: CVOptions): string {
-  const styles = generateStyles(options.paperSize, options.marginMm);
+  const styles = generateStyles(
+    options.paperSize,
+    options.marginMm,
+    options.lineHeight,
+  );
   const name = cv.metadata.name_ja ?? cv.metadata.name;
   const currentDate = getCurrentDateJa();
 

@@ -5,7 +5,7 @@
 /**
  * Output format types
  */
-export type OutputFormat = 'cv' | 'rirekisho' | 'both';
+export type OutputFormat = 'cv' | 'rirekisho' | 'both' | 'cover_letter';
 export type OutputType = 'html' | 'pdf' | 'both';
 export type PaperSize = 'a3' | 'a4' | 'b4' | 'b5' | 'letter';
 export type LogFormat = 'json' | 'text';
@@ -52,7 +52,7 @@ export const GENERATE_OPTIONS = {
   },
   format: {
     flags: '-f, --format <format>',
-    description: 'Output format (cv, rirekisho, or both)',
+    description: 'Output format (cv, rirekisho, both, or cover_letter)',
     defaultValue: 'cv',
   },
   outputType: {
@@ -121,7 +121,7 @@ export const INIT_OPTIONS = {
   },
   format: {
     flags: '-f, --format <format>',
-    description: 'Output format (cv, rirekisho, or both)',
+    description: 'Output format (cv, rirekisho, both, or cover_letter)',
     defaultValue: 'cv',
   },
   noComments: {
@@ -200,4 +200,5 @@ export interface CVOptions {
   readonly paperSize: PaperSize;
   readonly customStylesheet?: string;
   readonly marginMm?: PageMargins;
+  readonly lineHeight?: number;
 }
