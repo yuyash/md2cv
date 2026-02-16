@@ -324,6 +324,10 @@ export function generateEnHtml(cv: CVInput, options: CVOptions): string {
     ? `<style class="custom-styles">${options.customStylesheet}</style>`
     : '';
 
+  const headerSourceLineAttr = cv.frontmatterSourceLines
+    ? ` data-source-line="${cv.frontmatterSourceLines.startLine}" data-source-end-line="${cv.frontmatterSourceLines.endLine}"`
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -334,7 +338,7 @@ export function generateEnHtml(cv: CVInput, options: CVOptions): string {
   ${customStylesHtml}
 </head>
 <body class="cv cv--en">
-  <header class="cv-header">
+  <header class="cv-header"${headerSourceLineAttr}>
     <h1 class="cv-name">${escapeHtml(name)}</h1>
     <div class="contact-info">${contactHtml}</div>
   </header>

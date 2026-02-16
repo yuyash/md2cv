@@ -48,6 +48,11 @@ export interface ParsedCV {
   readonly metadata: CVMetadata;
   readonly sections: readonly ParsedSection[];
   readonly rawContent: string;
+  /** Source line range of the frontmatter block (for sync scroll) */
+  readonly frontmatterSourceLines?: {
+    readonly startLine: number;
+    readonly endLine: number;
+  };
 }
 
 /**
@@ -1098,11 +1103,23 @@ export function parseMarkdown(
     // Parse sections
     const sections = parseSections(tree);
 
-    return success({
+    // Extract frontmatter source line range from the YAML AST node
+    const yamlNode = tree.children.find((node) => node.type === 'yaml');
+    const frontmatterSourceLines = yamlNode?.position
+      ? {
+          startLine: yamlNode.position.start.line - 1,
+          endLine: yamlNode.position.end.line - 1,
+        }
+      : undefined;
+
+    const result: ParsedCV = {
       metadata,
       sections,
       rawContent: markdown,
-    });
+      ...(frontmatterSourceLines && { frontmatterSourceLines }),
+    };
+
+    return success(result);
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
     errors.push(

@@ -321,7 +321,7 @@ export function generateJaHtml(cv: CVInput, options: CVOptions): string {
   ${customStylesHtml}
 </head>
 <body class="cv cv--ja">
-  <header class="cv-header">
+  <header class="cv-header"${cv.frontmatterSourceLines ? ` data-source-line="${cv.frontmatterSourceLines.startLine}" data-source-end-line="${cv.frontmatterSourceLines.endLine}"` : ''}>
     <div class="document-title">職務経歴書</div>
     <div class="header-info">
       <div class="header-name">${escapeHtml(name)}</div>
