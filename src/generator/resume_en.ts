@@ -157,6 +157,11 @@ function generateStyles(paperSize: PaperSize, marginMm?: PageMargins): string {
       color: var(--cv-color-heading);
       font-size: var(--cv-font-size-small);
     }
+    .role-team {
+      font-weight: normal;
+      font-style: normal;
+      color: var(--cv-color-text);
+    }
     .project {
       margin-left: 15px;
       margin-top: 4px;

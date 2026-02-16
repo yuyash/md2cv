@@ -354,15 +354,16 @@ export function renderExperience(
         html += '<div class="role">';
 
         html += '<div class="role-header">';
-        html += `<span class="role-title">${escapeHtml(role.title)}</span>`;
+        html += '<span class="role-title">';
+        html += escapeHtml(role.title);
+        if (includeTeam && role.team) {
+          html += `<span class="role-team"> — ${escapeHtml(role.team)}</span>`;
+        }
+        html += '</span>';
         if (dateRange) {
           html += `<span class="entry-date">${escapeHtml(dateRange)}</span>`;
         }
         html += '</div>';
-
-        if (includeTeam && role.team) {
-          html += `<div class="entry-subtitle">${escapeHtml(role.team)}</div>`;
-        }
 
         if (role.summary && role.summary.length > 0) {
           html += '<div class="entry-summary">';
