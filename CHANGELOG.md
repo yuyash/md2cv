@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0](https://github.com/yuyash/md2cv/compare/v2.3.0...v2.4.0) (2026-02-16)
+
+
+### Features
+
+* add frontmatterSourceLines to ParsedCV and CVInput for cv-header sync scroll ([c338512](https://github.com/yuyash/md2cv/commit/c338512bceb09a4fbd176ed04450bb0e64427007))
+* add SourceLines to ParsedCV and CVInput for cv-heade… ([#60](https://github.com/yuyash/md2cv/issues/60)) ([c338512](https://github.com/yuyash/md2cv/commit/c338512bceb09a4fbd176ed04450bb0e64427007))
+
 ## [2.3.0](https://github.com/yuyash/md2cv/compare/v2.2.0...v2.3.0) (2026-02-13)
 
 
