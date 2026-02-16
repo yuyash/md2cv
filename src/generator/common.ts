@@ -26,6 +26,11 @@ import { inlineMarkdownToHtml, markdownToHtml } from './markdown.js';
 export interface CVInput {
   readonly metadata: CVMetadata;
   readonly sections: readonly ParsedSection[];
+  /** Source line range of the frontmatter block (for sync scroll on cv-header) */
+  readonly frontmatterSourceLines?: {
+    readonly startLine: number;
+    readonly endLine: number;
+  };
 }
 
 /**
