@@ -23,8 +23,8 @@ function generateStyles(
   lineHeight?: number,
 ): string {
   const size = PAGE_SIZES[paperSize];
-  // Default to 30mm margins if not specified
-  const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+  // Default to 25mm margins if not specified
+  const margins = marginMm ?? { top: 25, right: 25, bottom: 25, left: 25 };
   const lh = lineHeight ?? 1.4;
 
   return `
@@ -86,15 +86,14 @@ function generateStyles(
       color: var(--cv-color-text);
       text-decoration: none;
     }
+    .contact-info a.contact-link {
+      color: #0066cc;
+    }
     .contact-info a:hover {
       text-decoration: underline;
     }
     section {
       margin-bottom: var(--cv-spacing-section);
-    }
-    .entry {
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     h2 {
       font-size: var(--cv-font-size-section);
@@ -104,8 +103,6 @@ function generateStyles(
       padding-bottom: 2px;
       margin-bottom: 8px;
       color: var(--cv-color-heading);
-      page-break-after: avoid;
-      break-after: avoid;
     }
     .entry {
       margin-bottom: var(--cv-spacing-entry);
@@ -119,6 +116,9 @@ function generateStyles(
     .entry-title {
       font-weight: bold;
       color: var(--cv-color-heading);
+    }
+    .cv-section--education .entry-title {
+      font-weight: normal;
     }
     .entry-subtitle {
       font-style: italic;
@@ -136,6 +136,11 @@ function generateStyles(
     .entry-summary {
       margin-top: 3px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
+      text-align-last: left;
+    }
+    .entry-summary p {
+      margin-bottom: 4px;
     }
     ul {
       margin-left: 18px;
@@ -144,10 +149,14 @@ function generateStyles(
     li {
       margin-bottom: 2px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
+      text-align-last: left;
     }
     p {
       margin-bottom: 6px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
+      text-align-last: left;
     }
     .role {
       margin-bottom: 8px;
@@ -156,14 +165,16 @@ function generateStyles(
       display: flex;
       justify-content: space-between;
       align-items: baseline;
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .role-title {
-      font-weight: 500;
+      font-weight: bold;
       color: var(--cv-color-heading);
       font-size: var(--cv-font-size-small);
     }
     .role-team {
-      font-weight: normal;
+      font-weight: bold;
       font-style: normal;
       color: var(--cv-color-text);
     }
@@ -178,6 +189,7 @@ function generateStyles(
     .competency-entry {
       margin-bottom: 4px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
     }
     .competency-header {
       font-weight: bold;
@@ -292,8 +304,11 @@ function renderContactInfo(cv: CVInput): string {
 
   if (cv.metadata.linkedin) {
     const linkedinUrl = cv.metadata.linkedin;
+    const display = linkedinUrl
+      .replace(/^https?:\/\/(www\.)?/, '')
+      .replace(/\/$/, '');
     parts.push(
-      `<a href="${escapeHtml(linkedinUrl)}">${escapeHtml(linkedinUrl)}</a>`,
+      `<a href="${escapeHtml(linkedinUrl)}" class="contact-link">${escapeHtml(display)}</a>`,
     );
   }
 

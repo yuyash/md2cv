@@ -20,7 +20,7 @@ function generateStyles(
   lineHeight?: number,
 ): string {
   const size = PAGE_SIZES[paperSize];
-  const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+  const margins = marginMm ?? { top: 25, right: 25, bottom: 25, left: 25 };
   const lh = lineHeight ?? 1.2;
 
   return `
@@ -150,7 +150,7 @@ function renderContactBlock(cv: CVInput): string {
   if (cv.metadata.linkedin) {
     const url = cv.metadata.linkedin;
     // Show short display text
-    const display = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const display = url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
     lines.push(`<a href="${escapeHtml(url)}">${escapeHtml(display)}</a>`);
   }
 
