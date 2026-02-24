@@ -372,7 +372,9 @@ export function renderExperience(
 
         if (role.summary && role.summary.length > 0) {
           html += '<div class="entry-summary">';
-          html += role.summary.map((s) => inlineMarkdownToHtml(s)).join(' ');
+          html += role.summary
+            .map((s) => `<p>${inlineMarkdownToHtml(s)}</p>`)
+            .join('');
           html += '</div>';
         }
 

@@ -375,8 +375,8 @@ async function generatePDF(
         scale: 1,
       };
     } else {
-      // CV defaults to 30mm margins, but can be overridden
-      const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+      // CV defaults to 25mm margins, but can be overridden
+      const margins = marginMm ?? { top: 25, right: 25, bottom: 25, left: 25 };
 
       pdfOptions = {
         width: `${size.width}mm`,

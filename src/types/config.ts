@@ -92,7 +92,7 @@ export const GENERATE_OPTIONS = {
   marginMm: {
     flags: '--margin-mm <margins>',
     description:
-      'Page margins in mm for CV format. Format: "top,right,bottom,left" (e.g., "10,15,10,15") or single value for all sides (e.g., "10"). Default: 30mm. Not applicable to rirekisho format.',
+      'Page margins in mm for CV format. Format: "top,right,bottom,left" (e.g., "10,15,10,15") or single value for all sides (e.g., "10"). Default: 25mm. Not applicable to rirekisho format.',
   },
   logFormat: {
     flags: '--log-format <format>',

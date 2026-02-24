@@ -33,8 +33,8 @@ function generateStyles(
   lineHeight?: number,
 ): string {
   const size = PAGE_SIZES[paperSize];
-  // Default to 30mm margins if not specified
-  const margins = marginMm ?? { top: 30, right: 30, bottom: 30, left: 30 };
+  // Default to 25mm margins if not specified
+  const margins = marginMm ?? { top: 25, right: 25, bottom: 25, left: 25 };
   const lh = lineHeight ?? 1.6;
 
   return `
@@ -109,13 +109,9 @@ function generateStyles(
       padding-bottom: 3px;
       margin-bottom: 10px;
       color: var(--cv-color-heading);
-      page-break-after: avoid;
-      break-after: avoid;
     }
     .entry {
       margin-bottom: var(--cv-spacing-entry);
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     .entry-header {
       display: flex;
@@ -126,6 +122,9 @@ function generateStyles(
     .entry-title {
       font-weight: bold;
       color: var(--cv-color-heading);
+    }
+    .cv-section--education .entry-title {
+      font-weight: normal;
     }
     .cert-item {
       font-size: var(--cv-font-size-small);
@@ -146,6 +145,11 @@ function generateStyles(
     .entry-summary {
       margin-top: 4px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
+      text-align-last: left;
+    }
+    .entry-summary p {
+      margin-bottom: 4px;
     }
     ul {
       margin-left: 18px;
@@ -154,10 +158,14 @@ function generateStyles(
     li {
       margin-bottom: 2px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
+      text-align-last: left;
     }
     p {
       margin-bottom: 8px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
+      text-align-last: left;
     }
     .skills-grid {
       display: grid;
@@ -179,6 +187,7 @@ function generateStyles(
     .competency-entry {
       margin-bottom: 4px;
       font-size: var(--cv-font-size-small);
+      text-align: justify;
     }
     .competency-header {
       font-weight: bold;
@@ -190,14 +199,17 @@ function generateStyles(
       display: flex;
       justify-content: space-between;
       align-items: baseline;
+      font-weight: bold;
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .role-title {
-      font-weight: 500;
+      font-weight: bold;
       color: var(--cv-color-heading);
       font-size: var(--cv-font-size-small);
     }
     .role-team {
-      font-weight: normal;
+      font-weight: bold;
       color: var(--cv-color-text);
     }
     .entry-location {
