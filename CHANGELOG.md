@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.2](https://github.com/yuyash/md2cv/compare/v2.5.1...v2.5.2) (2026-02-25)
+
+
+### Bug Fixes
+
+* update CV styling and highlights rendering ([#68](https://github.com/yuyash/md2cv/issues/68)) ([8cd63a0](https://github.com/yuyash/md2cv/commit/8cd63a03154965d893e7ab6fa3ff85ef0c93b30a))
+
 ## [2.5.1](https://github.com/yuyash/md2cv/compare/v2.5.0...v2.5.1) (2026-02-24)
 
 
