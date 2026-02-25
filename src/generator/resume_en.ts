@@ -143,7 +143,7 @@ function generateStyles(
       margin-bottom: 4px;
     }
     ul {
-      margin-left: 18px;
+      margin-left: 24px;
       margin-top: 3px;
     }
     li {
@@ -169,13 +169,14 @@ function generateStyles(
       break-after: avoid;
     }
     .role-title {
-      font-weight: bold;
+      font-weight: normal;
+      font-style: italic;
       color: var(--cv-color-heading);
       font-size: var(--cv-font-size-small);
     }
     .role-team {
-      font-weight: bold;
-      font-style: normal;
+      font-weight: normal;
+      font-style: italic;
       color: var(--cv-color-text);
     }
     .project {
