@@ -151,8 +151,14 @@ function generateStyles(
     .entry-summary p {
       margin-bottom: 4px;
     }
+    .highlights-label {
+      margin-top: 4px;
+      margin-bottom: 0;
+      font-size: var(--cv-font-size-small);
+      font-weight: bold;
+    }
     ul {
-      margin-left: 18px;
+      margin-left: 24px;
       margin-top: 4px;
     }
     li {

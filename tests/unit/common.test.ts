@@ -347,7 +347,7 @@ describe('generator/common', () => {
       expect(html).toContain('Native');
       expect(html).toContain('Japanese');
       expect(html).toContain('Business');
-      expect(html).toContain(' • ');
+      expect(html).toContain(', ');
     });
 
     it('should render language without level', () => {

@@ -78,6 +78,7 @@ export interface DateFormatter {
 export interface LocaleOptions {
   dateFormatter: DateFormatter;
   itemSeparator: string;
+  highlightsLabel?: string;
 }
 
 /**
@@ -138,6 +139,7 @@ export const enLocale: LocaleOptions = {
 export const jaLocale: LocaleOptions = {
   dateFormatter: jaDateFormatter,
   itemSeparator: ', ',
+  highlightsLabel: 'Highlights:',
 };
 
 /**
@@ -309,7 +311,7 @@ export function renderLanguages(entries: readonly LanguageEntry[]): string {
       html += '</span>';
       return html;
     })
-    .join(' • ');
+    .join(', ');
 }
 
 /**
@@ -331,7 +333,11 @@ export function renderCompetencies(
 export function renderExperience(
   entries: readonly ExperienceEntry[],
   formatter: DateFormatter,
-  options?: { includeTeam?: boolean; includeProjects?: boolean },
+  options?: {
+    includeTeam?: boolean;
+    includeProjects?: boolean;
+    highlightsLabel?: string;
+  },
 ): string {
   const includeTeam = options?.includeTeam ?? true;
   const includeProjects = options?.includeProjects ?? true;
@@ -379,6 +385,9 @@ export function renderExperience(
         }
 
         if (role.highlights && role.highlights.length > 0) {
+          if (options?.highlightsLabel) {
+            html += `<p class="highlights-label">${escapeHtml(options.highlightsLabel)}</p>`;
+          }
           html += '<ul>';
           for (const highlight of role.highlights) {
             html += `<li>${inlineMarkdownToHtml(highlight)}</li>`;
@@ -448,7 +457,11 @@ export function renderContentBlock(
     case 'education':
       return renderEducation(block.entries, locale.dateFormatter);
     case 'experience':
-      return renderExperience(block.entries, locale.dateFormatter);
+      return renderExperience(block.entries, locale.dateFormatter, {
+        ...(locale.highlightsLabel !== undefined && {
+          highlightsLabel: locale.highlightsLabel,
+        }),
+      });
     case 'certifications':
       return renderCertifications(block.entries, locale.dateFormatter);
     case 'skills':
@@ -505,7 +518,11 @@ export function renderSectionContent(
     case 'education':
       return renderEducation(content.entries, locale.dateFormatter);
     case 'experience':
-      return renderExperience(content.entries, locale.dateFormatter);
+      return renderExperience(content.entries, locale.dateFormatter, {
+        ...(locale.highlightsLabel !== undefined && {
+          highlightsLabel: locale.highlightsLabel,
+        }),
+      });
     case 'certifications':
       return renderCertifications(content.entries, locale.dateFormatter);
     case 'skills':
